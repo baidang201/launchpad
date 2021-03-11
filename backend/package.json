@@ -1,0 +1,19 @@
+{
+  "name": "@phala/launchpad-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@polkadot/api": "^4.0.3",
+    "bunyan": "^1.8.15",
+    "decimal.js": "^10.2.1",
+    "koa": "^2.13.1",
+    "p-queue": "^6.6.2",
+    "protobufjs": "^6.10.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node --experimental-json-modules --es-module-specifier-resolution=node --harmony-top-level-await --no-warnings ./index.js"
+  }
+}
