@@ -1,0 +1,21 @@
+package  launchpadpackage;
+syntax = "proto3";
+
+message Worker {
+  string stashAccount = "";
+  string controllerAccount = "";
+  string payout = "";
+  string status = "";
+  bool   stakeEnough = false;
+  string accumulatedStake = "0";// bignum
+  string profitLastMonth = "0";// bignum
+  string workerStake = "0";// bignum
+  string userStake = "0";// bignum
+  int32  stakeAccounts = 0;
+  float  commission = 0.0;
+  int32  taskScore = 0;
+  int32  machineScore = 0;
+  double apyprofit = 0;
+  string diffToMinStake = "0";
+  double stakeToMinApyProfit = 0.0;
+}

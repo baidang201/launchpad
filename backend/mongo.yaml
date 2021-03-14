@@ -1,0 +1,20 @@
+# docker-compose -f ./mongo.yaml up -d
+version: "3.5"
+networks:
+  phanetwork:
+    name: phanetwork
+    
+services:  
+  pha-mongo-db:
+    image: mongo
+    container_name: pha-mongo-db
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+    restart: always
+    networks:
+      phanetwork:
+        aliases: 
+          - pha-mongo-db
