@@ -1,0 +1,98 @@
+syntax = "proto3";
+package  launchpadpackage;
+
+message Worker {
+  string stashAccount = 1;
+  string controllerAccount = 2;
+  string payout = 3;
+  string status = 4;
+  bool   stakeEnough = 5;
+  string accumulatedStake = 6;// bignum
+  string profitLastMonth = 7;// bignum
+  string workerStake = 8;// bignum
+  string userStake = 9;// bignum
+  int32  stakeAccountNum = 10;
+  float  commission = 11;
+  int32  taskScore = 12;
+  int32  machineScore = 13;
+  double apyprofit = 14;
+  string diffToMinStake = 15;
+  double stakeToMinApyProfit = 16;
+}
+
+message RoundInfo {
+  int32 total = 1;
+  repeated Worker workers = 2;
+}
+
+message Globalstatistics {
+  float apy = 1;
+  int32 round = 2;
+  int32 roundCycleTime = 3;
+  int32 onlineWorkerNum = 4;
+  int32 workerNum = 5;
+  string stakeSum = 6;//bignum
+  float stakeSupplyRate = 7;
+  string avgStake = 8; //bignum
+  string rewardLastRound = 9;
+}
+
+message Status {
+  int32 success = 1;
+  optional string msg = 2;
+}
+
+//worker
+message WorkerRequest {
+  int32 page = 1;
+  int32 pageSize = 2;
+  bool  filterRuning = 3;
+  bool  filterStakeEnough = 4;
+  bool  filterCommissionLessThen = 5;
+}
+
+message WorkerResponse {
+  Status status = 1;
+  RoundInfo result = 2;
+}
+
+//GlobalStatistics
+message GlobalStatisticsRequest {
+}
+
+message GlobalStatisticsResponse {
+  Status status = 1;
+  Globalstatistics result = 2;
+}
+
+//stakes
+message Stakes {
+  repeated string avgStake = 1;//bignum
+}
+
+message StakesRequest {
+}
+
+message StakesResponse {
+  Status status = 1;
+  Stakes result = 2;
+}
+
+//stakeinfo
+message StakeInfoRequest {
+  string stashAccount = 1;
+}
+
+//common
+message CommonRequest {
+  oneof request {
+    WorkerRequest workerRequest = 1;
+    GlobalStatisticsRequest globalStatisticsRequest = 2;
+    StakesRequest stakesRequest = 3;
+    StakeInfoRequest stakeInfoRequest = 4;
+  }
+}
+
+message CommonResponse {
+  Status status = 1;
+}

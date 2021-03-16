@@ -1,0 +1,262 @@
+{
+  "nested": {
+    "launchpadpackage": {
+      "nested": {
+        "Worker": {
+          "fields": {
+            "stashAccount": {
+              "type": "string",
+              "id": 1
+            },
+            "controllerAccount": {
+              "type": "string",
+              "id": 2
+            },
+            "payout": {
+              "type": "string",
+              "id": 3
+            },
+            "status": {
+              "type": "string",
+              "id": 4
+            },
+            "stakeEnough": {
+              "type": "bool",
+              "id": 5
+            },
+            "accumulatedStake": {
+              "type": "string",
+              "id": 6
+            },
+            "profitLastMonth": {
+              "type": "string",
+              "id": 7
+            },
+            "workerStake": {
+              "type": "string",
+              "id": 8
+            },
+            "userStake": {
+              "type": "string",
+              "id": 9
+            },
+            "stakeAccountNum": {
+              "type": "int32",
+              "id": 10
+            },
+            "commission": {
+              "type": "float",
+              "id": 11
+            },
+            "taskScore": {
+              "type": "int32",
+              "id": 12
+            },
+            "machineScore": {
+              "type": "int32",
+              "id": 13
+            },
+            "apyprofit": {
+              "type": "double",
+              "id": 14
+            },
+            "diffToMinStake": {
+              "type": "string",
+              "id": 15
+            },
+            "stakeToMinApyProfit": {
+              "type": "double",
+              "id": 16
+            }
+          }
+        },
+        "RoundInfo": {
+          "fields": {
+            "total": {
+              "type": "int32",
+              "id": 1
+            },
+            "workers": {
+              "rule": "repeated",
+              "type": "Worker",
+              "id": 2
+            }
+          }
+        },
+        "Globalstatistics": {
+          "fields": {
+            "apy": {
+              "type": "float",
+              "id": 1
+            },
+            "round": {
+              "type": "int32",
+              "id": 2
+            },
+            "roundCycleTime": {
+              "type": "int32",
+              "id": 3
+            },
+            "onlineWorkerNum": {
+              "type": "int32",
+              "id": 4
+            },
+            "workerNum": {
+              "type": "int32",
+              "id": 5
+            },
+            "stakeSum": {
+              "type": "string",
+              "id": 6
+            },
+            "stakeSupplyRate": {
+              "type": "float",
+              "id": 7
+            },
+            "avgStake": {
+              "type": "string",
+              "id": 8
+            },
+            "rewardLastRound": {
+              "type": "string",
+              "id": 9
+            }
+          }
+        },
+        "Status": {
+          "fields": {
+            "success": {
+              "type": "int32",
+              "id": 1
+            },
+            "msg": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "WorkerRequest": {
+          "fields": {
+            "page": {
+              "type": "int32",
+              "id": 1
+            },
+            "pageSize": {
+              "type": "int32",
+              "id": 2
+            },
+            "filterRnning": {
+              "type": "bool",
+              "id": 3
+            },
+            "filterStakeEnough": {
+              "type": "bool",
+              "id": 4
+            },
+            "filterCommissionLessThen": {
+              "type": "bool",
+              "id": 5
+            }
+          }
+        },
+        "WorkerResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "RoundInfo",
+              "id": 2
+            }
+          }
+        },
+        "GlobalStatisticsRequest": {
+          "fields": {}
+        },
+        "GlobalStatisticsResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "Globalstatistics",
+              "id": 2
+            }
+          }
+        },
+        "Stakes": {
+          "fields": {
+            "avgStake": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "StakesRequest": {
+          "fields": {}
+        },
+        "StakesResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "Stakes",
+              "id": 2
+            }
+          }
+        },
+        "StakeInfoRequest": {
+          "fields": {
+            "stashAccount": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "CommonRequest": {
+          "oneofs": {
+            "request": {
+              "oneof": [
+                "workerRequest",
+                "globalStatisticsRequest",
+                "stakesRequest",
+                "stakeInfoRequest"
+              ]
+            }
+          },
+          "fields": {
+            "workerRequest": {
+              "type": "WorkerRequest",
+              "id": 1
+            },
+            "globalStatisticsRequest": {
+              "type": "GlobalStatisticsRequest",
+              "id": 2
+            },
+            "stakesRequest": {
+              "type": "StakesRequest",
+              "id": 3
+            },
+            "stakeInfoRequest": {
+              "type": "StakeInfoRequest",
+              "id": 4
+            }
+          }
+        },
+        "CommonResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}
