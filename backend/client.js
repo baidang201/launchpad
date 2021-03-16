@@ -4,7 +4,6 @@ import fetch from 'node-fetch';
 
 
 function jsFetch(postBuffer, resMessage) {
-  console.log("##postBuffer", postBuffer);
   fetch("http://127.0.0.1:3000", {
       method: 'POST',
       headers: {
@@ -44,4 +43,3 @@ let message3 = protobuf.CommonRequest.create({stakeInfoRequest: {stashAccount: "
 console.log(`message = ${JSON.stringify(message3)}`);
 let buffer3 = protobuf.CommonRequest.encode(message3).finish();
 jsFetch(buffer3);
-
