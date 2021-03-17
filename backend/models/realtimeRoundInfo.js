@@ -1,11 +1,11 @@
-import mongoose from  "../db/mogoose"
+import mongoose from  "../db/mogoose.js"
 
-const Worker = new mongoose.Schema({ 
-  stashAccount: {tyep: String},
-  controllerAccount: {tyep: String},
-  payout: {tyep: String},
+export const Worker = new mongoose.Schema({ 
+  stashAccount: {type: String},
+  controllerAccount: {type: String},
+  payout: {type: String},
   accumulatedStake: {type: mongoose.Decimal128},//bigNum?
-  workerStake: {tyep: mongoose.Decimal128},//bigNum?
+  workerStake: {type: mongoose.Decimal128},//bigNum?
   stakeAccountNum:{type: Number},
   commission: {type: Number},
   taskScore: {type: Number},

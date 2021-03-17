@@ -7,10 +7,10 @@ message Worker {
   string payout = 3;
   string status = 4;
   bool   stakeEnough = 5;
-  string accumulatedStake = 6;// bignum
-  string profitLastMonth = 7;// bignum
-  string workerStake = 8;// bignum
-  string userStake = 9;// bignum
+  string accumulatedStake = 6;  // bignum
+  string profitLastMonth = 7;  // bignum
+  string workerStake = 8;  // bignum
+  string userStake = 9;  // bignum
   int32  stakeAccountNum = 10;
   float  commission = 11;
   int32  taskScore = 12;
@@ -31,9 +31,9 @@ message Globalstatistics {
   int32 roundCycleTime = 3;
   int32 onlineWorkerNum = 4;
   int32 workerNum = 5;
-  string stakeSum = 6;//bignum
+  string stakeSum = 6;  //bignum
   float stakeSupplyRate = 7;
-  string avgStake = 8; //bignum
+  string avgStake = 8;  //bignum
   string rewardLastRound = 9;
 }
 
@@ -67,7 +67,7 @@ message GlobalStatisticsResponse {
 
 //stakes
 message Stakes {
-  repeated string avgStake = 1;//bignum
+  repeated string avgStake = 1;  //bignum
 }
 
 message StakesRequest {

@@ -17,6 +17,7 @@
   },
   "scripts": {
     "start": "node --experimental-json-modules --es-module-specifier-resolution=node --harmony-top-level-await --no-warnings ./index.js",
-    "dev": "nodemon --experimental-json-modules ./index.js"
+    "dev": "nodemon --experimental-json-modules ./index.js",
+    "scandev": "nodemon --experimental-json-modules ./scanServer.js"
   }
 }
