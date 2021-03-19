@@ -4,6 +4,9 @@ import { node }  from './config/index.js'
 import protobuf from './protobuf/protobuf.js'
 import {getWorkers} from './api/workers.js'
 import {getGlobalStatistics} from './api/globalStatistics.js'
+import {getApy} from './api/apy.js'
+import {getAvgStake, getStakeinfo} from './api/stake.js'
+import {getAvgReward, getRewardPenalty} from './api/rewardpenalty.js'
 
 globalThis.$logger = createLogger({
   level: 'info',
@@ -33,6 +36,7 @@ function parsePostData( ctx ) {
               let resultBuff = Buffer.concat(buffers) // 合并接收到的buffer数据
               var result = protobuf.CommonRequest.decode(resultBuff); // 解码接受到的 buffer 数据
               var obj = protobuf.CommonRequest.toObject(result)  // 转换成json对象
+              
               if (obj.workerRequest) {
                 let buffer = getWorkers(obj.workerRequest);
                 resolve( buffer )
@@ -40,9 +44,20 @@ function parsePostData( ctx ) {
                 let buffer = getGlobalStatistics();
     
                 resolve( buffer )
-              } else if (obj.stakesRequest) {
-                let message = protobuf.CommonResponse.create({status: {success: 0}});
-                let buffer = protobuf.CommonResponse.encode(message).finish();
+              } else if (obj.avgStakeRequest) {                
+                let buffer = getAvgStake()
+    
+                resolve( buffer )
+              } else if (obj.stakeInfoRequest) {     
+                let buffer = getStakeinfo(obj.stakeInfoRequest)
+    
+                resolve( buffer )
+              } else if (obj.avgRewardRequest) {                
+                let buffer = getAvgReward()
+    
+                resolve( buffer )
+              } else if (obj.rewardPenaltyRequest) {                
+                let buffer = getRewardPenalty(obj.rewardPenaltyRequest)
     
                 resolve( buffer )
               } else {            

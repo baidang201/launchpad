@@ -80,8 +80,8 @@ message AvgStakeResponse {
 
 //stakeinfo
 message StakeInfo {
-  string accumulatedStake = 1;
-  string workerStake = 2;
+  repeated string accumulatedStake = 1;
+  repeated string workerStake = 2;
 }
 
 message StakeInfoRequest {

@@ -213,10 +213,12 @@
         "StakeInfo": {
           "fields": {
             "accumulatedStake": {
+              "rule": "repeated",
               "type": "string",
               "id": 1
             },
             "workerStake": {
+              "rule": "repeated",
               "type": "string",
               "id": 2
             }

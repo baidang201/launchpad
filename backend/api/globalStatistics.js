@@ -1,6 +1,6 @@
 
 import protobuf from '../protobuf/protobuf.js'
-import {Worker, RealtimeRoundInfo} from '../models/realtimeRoundInfo.js'
+import {RealtimeRoundInfo} from '../models/realtimeRoundInfo.js'
 import mongoose from  "../db/mogoose.js"
 
 export async function getGlobalStatistics() {
@@ -26,5 +26,4 @@ export async function getGlobalStatistics() {
   let message = protobuf.GlobalStatisticsResponse.create(rt);
   let buffer = protobuf.GlobalStatisticsResponse.encode(message).finish();
   return buffer;
-
 }
