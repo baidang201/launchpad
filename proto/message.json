@@ -145,7 +145,7 @@
               "type": "int32",
               "id": 2
             },
-            "filterRnning": {
+            "filterRuning": {
               "type": "bool",
               "id": 3
             },
@@ -186,7 +186,7 @@
             }
           }
         },
-        "Stakes": {
+        "AvgStake": {
           "fields": {
             "avgStake": {
               "rule": "repeated",
@@ -195,17 +195,29 @@
             }
           }
         },
-        "StakesRequest": {
+        "AvgStakeRequest": {
           "fields": {}
         },
-        "StakesResponse": {
+        "AvgStakeResponse": {
           "fields": {
             "status": {
               "type": "Status",
               "id": 1
             },
             "result": {
-              "type": "Stakes",
+              "type": "AvgStake",
+              "id": 2
+            }
+          }
+        },
+        "StakeInfo": {
+          "fields": {
+            "accumulatedStake": {
+              "type": "string",
+              "id": 1
+            },
+            "workerStake": {
+              "type": "string",
               "id": 2
             }
           }
@@ -218,14 +230,121 @@
             }
           }
         },
+        "StakeInfoResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "StakeInfo",
+              "id": 2
+            }
+          }
+        },
+        "RewardPenalty": {
+          "fields": {
+            "reward": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 1
+            },
+            "penalty": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "RewardPenaltyRequest": {
+          "fields": {
+            "stashAccount": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "RewardPenaltyResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "RewardPenalty",
+              "id": 2
+            }
+          }
+        },
+        "AvgReward": {
+          "fields": {
+            "avgreward": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "AvgRewardRequest": {
+          "fields": {
+            "stashAccount": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "AvgRewardResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "AvgReward",
+              "id": 2
+            }
+          }
+        },
+        "Apy": {
+          "fields": {
+            "apy": {
+              "rule": "repeated",
+              "type": "float",
+              "id": 1
+            }
+          }
+        },
+        "ApyRequest": {
+          "fields": {
+            "stashAccount": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "ApyResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "Apy",
+              "id": 2
+            }
+          }
+        },
         "CommonRequest": {
           "oneofs": {
             "request": {
               "oneof": [
                 "workerRequest",
                 "globalStatisticsRequest",
-                "stakesRequest",
-                "stakeInfoRequest"
+                "avgStakeRequest",
+                "stakeInfoRequest",
+                "rewardPenaltyRequest",
+                "avgRewardRequest",
+                "apy"
               ]
             }
           },
@@ -238,13 +357,25 @@
               "type": "GlobalStatisticsRequest",
               "id": 2
             },
-            "stakesRequest": {
-              "type": "StakesRequest",
+            "avgStakeRequest": {
+              "type": "AvgStakeRequest",
               "id": 3
             },
             "stakeInfoRequest": {
               "type": "StakeInfoRequest",
               "id": 4
+            },
+            "rewardPenaltyRequest": {
+              "type": "RewardPenaltyRequest",
+              "id": 5
+            },
+            "avgRewardRequest": {
+              "type": "AvgRewardRequest",
+              "id": 6
+            },
+            "apy": {
+              "type": "Apy",
+              "id": 7
             }
           }
         },

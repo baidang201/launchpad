@@ -66,30 +66,86 @@ message GlobalStatisticsResponse {
 }
 
 //stakes
-message Stakes {
+message AvgStake {
   repeated string avgStake = 1;  //bignum
 }
 
-message StakesRequest {
+message AvgStakeRequest {
 }
 
-message StakesResponse {
+message AvgStakeResponse {
   Status status = 1;
-  Stakes result = 2;
+  AvgStake result = 2;
 }
 
 //stakeinfo
+message StakeInfo {
+  string accumulatedStake = 1;
+  string workerStake = 2;
+}
+
 message StakeInfoRequest {
   string stashAccount = 1;
 }
+
+message StakeInfoResponse {
+  Status status = 1;
+  StakeInfo result = 2;
+}
+
+//rewardpenalty
+message RewardPenalty {
+  repeated string reward = 1;  
+  repeated string penalty = 2;  
+}
+
+message RewardPenaltyRequest {
+  string stashAccount = 1;
+}
+
+message RewardPenaltyResponse {
+  Status status = 1;
+  RewardPenalty result = 2;
+}
+
+//avgreward
+message AvgReward {
+  repeated string avgreward = 1;  
+}
+
+message AvgRewardRequest {
+  string stashAccount = 1;
+}
+
+message AvgRewardResponse {
+  Status status = 1;
+  AvgReward result = 2;
+}
+
+//apy
+message Apy {
+  repeated float apy = 1;
+}
+message ApyRequest {
+  string stashAccount = 1;
+}
+message ApyResponse {
+  Status status = 1;
+  Apy result = 2;
+}
+
+
 
 //common
 message CommonRequest {
   oneof request {
     WorkerRequest workerRequest = 1;
     GlobalStatisticsRequest globalStatisticsRequest = 2;
-    StakesRequest stakesRequest = 3;
+    AvgStakeRequest avgStakeRequest = 3;
     StakeInfoRequest stakeInfoRequest = 4;
+    RewardPenaltyRequest rewardPenaltyRequest = 5;
+    AvgRewardRequest avgRewardRequest = 6;
+    Apy apy = 7;
   }
 }
 
