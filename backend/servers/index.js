@@ -12,7 +12,7 @@ const { default: Queue } = pQueue
 
 const ONE_THOUSAND = new BN('1000', 10)
 const ZERO = new BN('0')
-const LAST_BLOCK = 1477800
+const LAST_BLOCK = 1477800 //todo use the newest blockhight from blockchain
 const LAST_ROUND = 2472
 const DEFAULT_OUTPUT = 'null'
 
@@ -289,19 +289,6 @@ const processRoundAt = async (header, roundNumber, api) => {
 
 
 export const init = async()=> {
-  _status = await Status.findOne({});
-  if (!_status) {
-      _status = new Status({
-          head_block_number: 0,
-          time: null,
-          head_block_id: "",
-
-          last_scan_number: 0,
-          last_scan_time: null
-      });
-      await _status.save();
-  }
-  //console.log("status:" + JSON.stringify(this.status));
 }
 
-
+export default {init, main};

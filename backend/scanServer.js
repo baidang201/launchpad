@@ -1,8 +1,17 @@
-import {init, main}  from "./servers/index.js";
+import realtimeServer  from "./servers/index.js";
+import BlocksHistoryScan  from "./servers/history.js";
 
-await init();
+await realtimeServer.init();
 
-main().catch((error) => {
+const blocksHistoryScan = new BlocksHistoryScan();
+await blocksHistoryScan.init();
+
+// realtimeServer.main().catch((error) => {
+//   console.error(error);
+//   process.exit(-1);
+// })
+
+blocksHistoryScan.main().catch((error) => {
   console.error(error);
   process.exit(-1);
 })

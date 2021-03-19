@@ -21,8 +21,15 @@ export const Worker = new mongoose.Schema({
 export const RealtimeRoundInfo = mongoose.model('realtimeRoundInfo', {
   round: { type: Number },
   avgStake: { type: Number },
-  avgreward: { type: Number },
+  avgreward: { type: Number },//
   accumulatedFire2: { type: Number },
+  apy: {type: Number},
+  roundCycleTime: {type: Number}, //seconds
+  onlineWorkerNum: {type: Number}, 
+  workerNum: {type: Number},
+  stakeSum: {type: mongoose.Decimal128},//bigNum?
+  stakeSupplyRate: {type: Number},
+  rewardLastRound: {type: Number},
   blocktime: {type: Date},
   workers: {type: [Worker]},
 });
