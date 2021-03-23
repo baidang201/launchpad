@@ -61,7 +61,7 @@
               "id": 14
             },
             "diffToMinStake": {
-              "type": "string",
+              "type": "int32",
               "id": 15
             },
             "stakeToMinApyProfit": {

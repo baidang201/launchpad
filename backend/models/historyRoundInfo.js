@@ -4,9 +4,9 @@ export const Worker = new mongoose.Schema({
   stashAccount: {type: String},
   controllerAccount: {type: String},
   payout: {type: String},
-  accumulatedStake: {type: mongoose.Decimal128},//bigNum?
-  workerStake: {type: mongoose.Decimal128},//bigNum?
-  otherPeopleStake: {type: mongoose.Decimal128},//bigNum?
+  accumulatedStake: {type: Number},//PHA
+  workerStake: {type: Number},//PHA
+  userStake: {type: Number},//PHA
   stakeAccountNum:{type: Number},
   commission: {type: Number},
   taskScore: {type: Number},
@@ -21,13 +21,13 @@ export const Worker = new mongoose.Schema({
 
 export const HistoryRoundInfo = mongoose.model('historyRoundInfo', {
   round: { type: Number },
-  avgStake: { type: Number },
-  avgreward: { type: Number },
-  accumulatedFire2: { type: Number },
+  avgStake: { type: Number }, //PHA
+  avgreward: { type: Number },//PHA
+  accumulatedFire2: { type: Number },//PHA
   apyCurrentRound: {type: Number},
   onlineWorkerNum: {type: Number}, 
   workerNum: {type: Number},
-  stakeSum: {type: mongoose.Decimal128},//bigNum?
+  stakeSum: {type: Number},//PHA
   stakeSupplyRate: {type: Number},
   rewardCurrentRound: {type: Number},
   blocktime: {type: Date},

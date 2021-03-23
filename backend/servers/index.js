@@ -4,9 +4,9 @@ import Demical from 'decimal.js'
 import types from '../typedefs.json'
 import BN from 'bn.js'
 import { node }  from '../config/index.js'
-import { Status } from '../models/status.js'
 import { RealtimeRoundInfo } from '../models/realtimeRoundInfo.js'
 import { createLogger } from 'bunyan'
+import { getTokenInfo } from '../servers/tokeninfo.js'
 
 const { default: Queue } = pQueue
 
@@ -15,6 +15,7 @@ const ZERO = new BN('0')
 const LAST_BLOCK = 1477800 //todo use the newest blockhight from blockchain
 const LAST_ROUND = 2472
 const DEFAULT_OUTPUT = 'null'
+const ROUND_CYCLE_TIME = 3600
 
 const queue = new Queue({
   timeout: 90000,
@@ -94,7 +95,6 @@ export const main = async () => {
 
 const processRoundAt = async (header, roundNumber, api) => {
   const blockHash = header.hash
-
   const accumulatedFire2 = (await api.query.phalaModule.accumulatedFire2.at(blockHash)) || new BN('0')
   const accumulatedFire2Demical = new Demical(accumulatedFire2.toString())
   const onlineWorkers = await api.query.phalaModule.onlineWorkers.at(blockHash)
@@ -111,12 +111,18 @@ const processRoundAt = async (header, roundNumber, api) => {
         const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
         stashAccounts[stash] = {
           controller: value.controller,
-          payout: value.payoutPrefs.target
+          payout: value.payoutPrefs.target,
+          commission: value.payoutPrefs.commission,
+          stake: 0,
+          workerStake: 0,
+          userStake: 0,
+          stakeAccountNum: 0,
+          overallScore: 0
         }
       }))
 
   const payoutAccounts = {}
-  console.log("####2 payoutAccounts");
+  console.log("####2 payoutAccounts"); //todo replace form payoutaddress to stashaddress
   await Promise.all(
     (await api.query.phalaModule.fire2.keysAt(blockHash))
       .map(async k => {
@@ -128,7 +134,6 @@ const processRoundAt = async (header, roundNumber, api) => {
           account,
           fire2,
           fire2Human: value.toHuman().replace(/PHA$/, '').replace(' ', ''),
-          prizeRatio: new Demical(fire2).div(accumulatedFire2Demical).toNumber(),
           workerCount: 0,
           payoutComputeReward: 0
         }
@@ -159,6 +164,7 @@ const processRoundAt = async (header, roundNumber, api) => {
         const stash = k.args[0].toString()
         const payout = stashAccounts[stash].payout
         const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
+        stashAccounts[stash].overallScore = value.score.overallScore
 
         if (typeof value.state.Mining === 'undefined') { return }
         accumulatedScore += value.score.overallScore
@@ -174,12 +180,12 @@ const processRoundAt = async (header, roundNumber, api) => {
       }))
 
   console.log("####5 payoutAccount.stake");
-  let accumulatedStake = undefined
+  let accumulatedStake = undefined  
   await Promise.all(
     (await api.query.miningStaking.stakeReceived.keysAt(blockHash))
       .map(async k => {
         const stash = k.args[0].toString()
-        const stashAccount = validStashAccounts[stash]
+        const stashAccount = stashAccounts[stash]
 
         if (!stashAccount) { return }
 
@@ -194,7 +200,30 @@ const processRoundAt = async (header, roundNumber, api) => {
         if (!payoutAccount) { return }
         if (!value) { return }
 
+        stashAccount.stake = value.add(stashAccount.stake  || ZERO)
         payoutAccount.stake = value.add(payoutAccount.stake || ZERO)
+      })
+  )
+
+  await Promise.all(
+    (await api.query.miningStaking.staked.keysAt(blockHash)) //todo  find the double with spial hash
+    .map(async k => {   
+        const from = k.args[0].toString()
+        const to = k.args[1].toString()     
+        const value = (await api.rpc.state.getStorage(k, blockHash))
+
+        const stash = to.toString()
+        const stashAccount = stashAccounts[stash]
+
+        if (!stashAccount) { return }
+
+        stashAccount.stakeAccountNum = stashAccount.stakeAccountNum? (stashAccount.stakeAccountNum + 1): 1;
+
+        if (from.toString() === to.toString()) {
+          stashAccount.workerStake = value.add(stashAccount.workerStake  || ZERO)
+        } else {
+          stashAccount.userStake = value.add(stashAccount.userStake  || ZERO)
+        }
       })
   )
 
@@ -218,7 +247,33 @@ const processRoundAt = async (header, roundNumber, api) => {
     .div(1000)
     .div(1000)
   
-  const avgreward = accumulatedFire2Demical.div(stashCount);
+  const avgreward = accumulatedFire2Demical.div(stashCount)
+    .div(1000)
+    .div(1000)
+    .div(1000)
+    .div(1000);
+
+  const accumulatedFire2PHA = accumulatedFire2Demical
+    .div(1000)
+    .div(1000)
+    .div(1000)
+    .div(1000)
+
+  const stakeSum = accumulatedStakeDemical
+    .div(1000)
+    .div(1000)
+    .div(1000)
+    .div(1000);
+
+  const stakeSupplyRate = async function(stakeSumPHA) {
+    const tokeninfo = await getTokenInfo()
+    const available_supply = tokeninfo.available_supply
+    if (0 === available_supply) {
+      return 0
+    }
+    
+    return stakeSum.div(available_supply)
+  }
 
   const output = {
     roundNumber,
@@ -240,22 +295,41 @@ const processRoundAt = async (header, roundNumber, api) => {
   //for (var [key, value] of stashAccounts) {
   Object.keys(stashAccounts).map(function(key, index) {
     let value = stashAccounts[key];
+    const accumulatedStake = new Demical(value.stake.toString())
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000)
+
+    const workerStake = new Demical(value.workerStake.toString())
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000)
+
+    const userStake = new Demical(value.userStake.toString())
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000)
+
     workers.push({
       stashAccount: key,
       controllerAccount: value.controller,
       payout: value.payout,
-      accumulatedStake: "0",//bigNum?
-      workerStake: "0",//bigNum?
-      stakeAccountNum: 12,
-      commission: 21.3,
-      taskScore: 99,
-      machineScore: 78,
-      onlineReward: 1021,
-      computeReward: 22,
-      reward: 12345,
-      apy: 12.3,
-      apyprofit: 1111.3,
-      penalty: 0
+      accumulatedStake: accumulatedStake,
+      workerStake: workerStake,
+      userStake: userStake,
+      stakeAccountNum: value.stakeAccountNum,
+      commission: value.commission,
+      taskScore: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
+      machineScore: value.overallScore,
+      onlineReward: 1021,   //todo 等待后端合约完善
+      computeReward: 22,    //todo 等待后端合约完善
+      reward: 12345,        //todo 等待后端合约完善
+      apy: 12.3,            //todo 根据mongodb历史数据完善
+      apyprofit: 1111.3,    //todo 根据mongodb历史数据完善
+      penalty: 0 // todo 等待后端合约完善
     });
   });
 
@@ -263,20 +337,32 @@ const processRoundAt = async (header, roundNumber, api) => {
   let realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
   if (!realtimeRoundInfo) {
     realtimeRoundInfo = new RealtimeRoundInfo({
-      round: 0,
-      avgStake: 0,
-      avgreward: 0,
-      accumulatedFire2: 0,
+      round: roundNumber,
+      avgStake: avgStake,
+      avgreward: avgreward,
+      accumulatedFire2: accumulatedFire2PHA,
+      roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+      onlineWorkerNum: onlineWorkers,
+      workerNum: stashCount,
+      stakeSum: stakeSum, 
+      stakeSupplyRate: await stakeSupplyRate(),
+      rewardLastRound: 0, //todo monodb from last round
       blocktime: null,
-      workers:[]
+      workers: workers
     });
   } else {
     console.log("#before insert", roundNumber, avgStake);
     realtimeRoundInfo.set({
       round: roundNumber,
-      avgStake: parseFloat(avgStake),
+      avgStake: avgStake,
       avgreward: avgreward,
-      accumulatedFire2: accumulatedFire2,
+      accumulatedFire2: accumulatedFire2PHA,
+      roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+      onlineWorkerNum: onlineWorkers,
+      workerNum: stashCount,
+      stakeSum: stakeSum, 
+      stakeSupplyRate: await stakeSupplyRate(),
+      rewardLastRound: 0, //todo monodb from last round
       blocktime: null,
       workers: workers
     });

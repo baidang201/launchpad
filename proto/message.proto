@@ -16,7 +16,7 @@ message Worker {
   int32  taskScore = 12;
   int32  machineScore = 13;
   double apyprofit = 14;
-  string diffToMinStake = 15;
+  int32  diffToMinStake = 15;
   double stakeToMinApyProfit = 16;
 }
 
