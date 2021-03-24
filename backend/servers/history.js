@@ -307,10 +307,10 @@ class BlocksHistoryScan {
         .div(1000)
         .div(1000)
 
-      const reward = new Demical(12345);//todo 等待后端合约完善
+      const reward = new Demical(125);//todo 等待后端合约完善
 
       function getApy(reward, userStake) {
-        if (Demical(0) == userStake) {
+        if (userStake.isZero()) {
           return 0
         }
         return reward/userStake*24*365
