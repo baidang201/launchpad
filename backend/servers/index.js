@@ -206,7 +206,7 @@ const processRoundAt = async (header, roundNumber, api) => {
   )
 
   await Promise.all(
-    (await api.query.miningStaking.staked.keysAt(blockHash)) //todo  find the double with spial hash
+    (await api.query.miningStaking.staked.keysAt(blockHash))
     .map(async k => {   
         const from = k.args[0].toString()
         const to = k.args[1].toString()     

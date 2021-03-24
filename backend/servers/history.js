@@ -7,6 +7,7 @@ import { node }  from '../config/index.js'
 import { Status } from '../models/status.js'
 import { HistoryRoundInfo } from '../models/historyRoundInfo.js'
 import { createLogger } from 'bunyan'
+import { getTokenInfo } from '../servers/tokeninfo.js'
 
 const { default: Queue } = pQueue
 
@@ -15,6 +16,7 @@ const ZERO = new BN('0')
 const DEFAULT_OUTPUT = 'null'
 const BLOCK_FIRST_ROUND_START = 1046196
 const defaultLoopBlocksTime = 1000
+const ROUND_CYCLE_TIME = 3600
 
 const queue = new Queue({
   timeout: 90000,
@@ -71,7 +73,8 @@ class BlocksHistoryScan {
     console.log("#### in processBlock");
     console.log("#start status", this.status);
 
-    const blockNumber = this.status.last_scan_number + 1;
+    const blockNumber = this.status.last_scan_number + 600;
+    console.log("####new blockNumber", this.status.last_scan_number, blockNumber);
     
     const lastBlockHeaderHash = await api.rpc.chain.getBlockHash(blockNumber)
     this.lastBlockHeader = await api.rpc.chain.getHeader(lastBlockHeaderHash)
@@ -103,7 +106,13 @@ class BlocksHistoryScan {
           const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
           stashAccounts[stash] = {
             controller: value.controller,
-            payout: value.payoutPrefs.target
+          payout: value.payoutPrefs.target,
+          commission: value.payoutPrefs.commission,
+          stake: 0,
+          workerStake: 0,
+          userStake: 0,
+          stakeAccountNum: 0,
+          overallScore: 0
           }
         }))
 
@@ -151,6 +160,7 @@ class BlocksHistoryScan {
           const stash = k.args[0].toString()
           const payout = stashAccounts[stash].payout
           const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
+        stashAccounts[stash].overallScore = value.score.overallScore
 
           if (typeof value.state.Mining === 'undefined') { return }
           accumulatedScore += value.score.overallScore
@@ -171,7 +181,7 @@ class BlocksHistoryScan {
       (await api.query.miningStaking.stakeReceived.keysAt(blockHash))
         .map(async k => {
           const stash = k.args[0].toString()
-          const stashAccount = validStashAccounts[stash]
+        const stashAccount = stashAccounts[stash]
 
           if (!stashAccount) { return }
 
@@ -186,10 +196,32 @@ class BlocksHistoryScan {
           if (!payoutAccount) { return }
           if (!value) { return }
 
+          stashAccount.stake = value.add(stashAccount.stake  || ZERO)
           payoutAccount.stake = value.add(payoutAccount.stake || ZERO)
         })
     )
+  await Promise.all(
+    (await api.query.miningStaking.staked.keysAt(blockHash))
+    .map(async k => {   
+        const from = k.args[0].toString()
+        const to = k.args[1].toString()     
+        const value = (await api.rpc.state.getStorage(k, blockHash))
 
+        const stash = to.toString()
+        const stashAccount = stashAccounts[stash]
+
+        if (!stashAccount) { return }
+
+        stashAccount.stakeAccountNum = stashAccount.stakeAccountNum? (stashAccount.stakeAccountNum + 1): 1;
+
+        if (from.toString() === to.toString()) {
+          stashAccount.workerStake = value.add(stashAccount.workerStake  || ZERO)
+        } else {
+          stashAccount.userStake = value.add(stashAccount.userStake  || ZERO)
+        }
+      })
+  )
+  
     console.log("####6 count stake");
     accumulatedStake = accumulatedStake || new BN('0')
     const accumulatedStakeDemical = new Demical(accumulatedStake.toString())
@@ -209,8 +241,33 @@ class BlocksHistoryScan {
       .div(1000)
       .div(1000)
       .div(1000)
+  const avgreward = accumulatedFire2Demical.div(stashCount)
+    .div(1000)
+    .div(1000)
+    .div(1000)
+    .div(1000);
+
+  const accumulatedFire2PHA = accumulatedFire2Demical
+    .div(1000)
+    .div(1000)
+    .div(1000)
+    .div(1000)
+
+  const stakeSum = accumulatedStakeDemical
+    .div(1000)
+    .div(1000)
+    .div(1000)
+    .div(1000);
+
+  const stakeSupplyRate = async function(stakeSumPHA) {
+    const tokeninfo = await getTokenInfo()
+    const available_supply = tokeninfo.available_supply
+    if (0 === available_supply) {
+      return 0
+    }
     
-    const avgreward = accumulatedFire2Demical.div(stashCount);
+    return stakeSum.div(available_supply)
+  }
 
     const output = {
       roundNumber,
@@ -232,24 +289,44 @@ class BlocksHistoryScan {
     //for (var [key, value] of stashAccounts) {
     Object.keys(stashAccounts).map(function(key, index) {
       let value = stashAccounts[key];
+    const accumulatedStake = new Demical(value.stake.toString())
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000)
+
+    const workerStake = new Demical(value.workerStake.toString())
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000)
+
+    const userStake = new Demical(value.userStake.toString())
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000)
       workers.push({
         stashAccount: key,
         controllerAccount: value.controller,
         payout: value.payout,
-        accumulatedStake: "0",//bigNum?
-        workerStake: "0",//bigNum?
-        stakeAccountNum: 12,
-        commission: 21.3,
-        taskScore: 99,
-        machineScore: 78,
-        onlineReward: 1021,
-        computeReward: 22,
-        reward: 12345,
-        apy: 12.3,
-        apyprofit: 1111.3,
-        penalty: 0
+        accumulatedStake: accumulatedStake,
+        workerStake: workerStake,
+        userStake: userStake,
+        stakeAccountNum: value.stakeAccountNum,
+        commission: value.commission,
+        taskScore: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
+        machineScore: value.overallScore,
+        onlineReward: 1021,   //todo 等待后端合约完善
+        computeReward: 22,    //todo 等待后端合约完善
+        reward: 12345,        //todo 等待后端合约完善
+        apy: 12.3,            //todo 根据mongodb历史数据完善
+        apyprofit: 1111.3,    //todo 根据mongodb历史数据完善
+        penalty: 0 // todo 等待后端合约完善
       });
     });
+
+    console.log("####8 before insert");
 
     //jsonOutput = JSON.stringify(output)
     let historyRoundInfo = await HistoryRoundInfo.findOne({
@@ -258,21 +335,35 @@ class BlocksHistoryScan {
     if (!historyRoundInfo) {
       historyRoundInfo = new HistoryRoundInfo({
         round: roundNumber,
-        avgStake: parseFloat(avgStake),
+        avgStake: avgStake,
         avgreward: avgreward,
-        accumulatedFire2: accumulatedFire2,
+        accumulatedFire2: accumulatedFire2PHA,
+        roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+        onlineWorkerNum: onlineWorkers,
+        workerNum: stashCount,
+        stakeSum: stakeSum, 
+        stakeSupplyRate: await stakeSupplyRate(),
         blocktime: null,
-        workers: workers
+        workers: workers,
+        apyCurrentRound: 0,
+        rewardCurrentRound: 0,
       });
     } else {
       console.log("#before insert", roundNumber, avgStake, accumulatedFire2.toString());
       historyRoundInfo.set({
         round: roundNumber,
-        avgStake: parseFloat(avgStake),
+        avgStake: avgStake,
         avgreward: avgreward,
-        accumulatedFire2: accumulatedFire2,
+        accumulatedFire2: accumulatedFire2PHA,
+        roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+        onlineWorkerNum: onlineWorkers,
+        workerNum: stashCount,
+        stakeSum: stakeSum, 
+        stakeSupplyRate: await stakeSupplyRate(),
         blocktime: null,
-        workers: workers
+        workers: workers,
+        apyCurrentRound: 0,
+        rewardCurrentRound: 0,
       });
     }
 
