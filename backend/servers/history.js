@@ -307,7 +307,15 @@ class BlocksHistoryScan {
         .div(1000)
         .div(1000)
 
-      const reward = 12345;//todo 等待后端合约完善
+      const reward = new Demical(12345);//todo 等待后端合约完善
+
+      function getApy(reward, userStake) {
+        if (Demical(0) == userStake) {
+          return 0
+        }
+        return reward/userStake*24*365
+      }
+
       workers.push({
         stashAccount: key,
         controllerAccount: value.controller,
@@ -322,7 +330,7 @@ class BlocksHistoryScan {
         onlineReward: 1021,   //todo 等待后端合约完善
         computeReward: 22,    //todo 等待后端合约完善
         reward: reward,        //todo 等待后端合约完善
-        apy: reward/userStake*24*365,
+        apy: getApy(reward, userStake),
         penalty: 0 // todo 等待后端合约完善
       });
     });
