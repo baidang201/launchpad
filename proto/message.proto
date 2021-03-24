@@ -5,7 +5,7 @@ message Worker {
   string stashAccount = 1;
   string controllerAccount = 2;
   string payout = 3;
-  string status = 4;
+  bool   onlineStatus = 4;
   bool   stakeEnough = 5;
   string accumulatedStake = 6;  // bignum
   string profitLastMonth = 7;  // bignum

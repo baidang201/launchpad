@@ -21,7 +21,7 @@ export async function getWorkers(workerRequest) {
   let workers = [];
 
   const filterWorkers = realtimeRoundInfo.workers.filter((element, index) => {
-    const checkfilterRuning = workerRequest.filterRuning? true: true; // todo input status string
+    const checkfilterRuning = workerRequest.filterRuning? true == element.onlineStatus: true;
     const checkfilterStakeEnough = workerRequest.filterStakeEnough?  element.workerStake >= BASE_STAKE_PHA : true;
     const checkfilterCommissionLessThen = workerRequest.filterCommissionLessThen ? element.commission <= COMMISSION_LIMIT: true
     const checkfilterStashAccounts = (workerRequest.filterStashAccounts &&  workerRequest.filterStashAccounts.length > 0) ?
@@ -70,7 +70,7 @@ export async function getWorkers(workerRequest) {
       stashAccount: worker.stashAccount,
       controllerAccount: worker.controllerAccount,
       payout: worker.payout,
-      status: "", //todo@@ in blockchain
+      onlineStatus: worker.onlineStatus,
       stakeEnough: worker.workerStake >= BASE_STAKE_PHA? true : false,
       accumulatedStake:  worker.accumulatedStake.toString(),
       profitLastMonth:  getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),

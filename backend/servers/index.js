@@ -119,7 +119,8 @@ const processRoundAt = async (header, roundNumber, api) => {
           workerStake: 0,
           userStake: 0,
           stakeAccountNum: 0,
-          overallScore: 0
+          overallScore: 0,
+          onlineStatus: false
         }
       }))
 
@@ -168,7 +169,8 @@ const processRoundAt = async (header, roundNumber, api) => {
         const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
         stashAccounts[stash].overallScore = value.score.overallScore
 
-        if (typeof value.state.Mining === 'undefined') { return }
+        if (typeof value.state.mining === 'undefined') { return }
+        stashAccounts[stash].onlineStatus = true
         accumulatedScore += value.score.overallScore
 
         validStashAccounts[stash] = stashAccounts[stash]
@@ -319,6 +321,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       stashAccount: key,
       controllerAccount: value.controller,
       payout: value.payout,
+      onlineStatus: value.onlineStatus,
       accumulatedStake: accumulatedStake,
       workerStake: workerStake,
       userStake: userStake,
@@ -334,8 +337,8 @@ const processRoundAt = async (header, roundNumber, api) => {
     });
   });
 
-  async function getLastRoundReward(round) {
-    let historyRoundInfo = await HistoryRoundInfo.findOne({round: round - 1});
+  async function getLastRoundReward(roundNum) {
+    let historyRoundInfo = await HistoryRoundInfo.findOne({round: roundNum - 1});
     if (!historyRoundInfo) {
       return 0;
     }
@@ -355,7 +358,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(),
-      rewardLastRound: await getLastRoundReward(),
+      rewardLastRound: await getLastRoundReward(roundNumber),
       blocktime: null,
       workers: workers
     });
@@ -371,7 +374,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(),
-      rewardLastRound: await getLastRoundReward(),
+      rewardLastRound: await getLastRoundReward(roundNumber),
       blocktime: null,
       workers: workers
     });

@@ -4,7 +4,7 @@ export const Worker = new mongoose.Schema({
   stashAccount: {type: String},
   controllerAccount: {type: String},
   payout: {type: String},
-  status: {type: String},
+  onlineStatus: {type: Boolean},
   accumulatedStake: {type: Number},//PHA
   workerStake: {type: Number},//PHA
   userStake: {type: Number},//PHA

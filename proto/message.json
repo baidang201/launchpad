@@ -16,8 +16,8 @@
               "type": "string",
               "id": 3
             },
-            "status": {
-              "type": "string",
+            "onlineStatus": {
+              "type": "bool",
               "id": 4
             },
             "stakeEnough": {
