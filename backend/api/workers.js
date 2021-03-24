@@ -1,5 +1,6 @@
 
 import {RealtimeRoundInfo} from '../models/realtimeRoundInfo.js'
+import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 import protobuf from '../protobuf/protobuf.js'
 
 const BASE_STAKE_PHA = 1620
@@ -49,18 +50,18 @@ export async function getWorkers(workerRequest) {
   let historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
 
   //todo add chache in mongodb  or count key in paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)
-  async function getProfitLastMonth(historyRoundInfo, stashAccount) {
+  function getProfitLastMonth(historyRoundInfo, stashAccount) {
     if (!historyRoundInfo) {
       return 0
     }
 
     const filterWorkersRule = x => x.stashAccount === stashAccount;
-    const filterWorkersAccumulatedFire2 = historyRoundInfo.map(roundInfo => roundInfo.workers)
+    const filterReward = historyRoundInfo.map(roundInfo => roundInfo.workers)
       .flat(1)
       .filter(filterWorkersRule)
-      .map(x => x.accumulatedFire2)
-    
-    const profitLastMonth = filterWorkersAccumulatedFire2.reduce((a, b) => a + b, 0)
+      .map(x => x.reward)
+
+    const profitLastMonth = filterReward.reduce((a, b) => a + b, 0)
     return profitLastMonth
   }
 
