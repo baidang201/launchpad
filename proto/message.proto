@@ -15,9 +15,9 @@ message Worker {
   float  commission = 11;
   int32  taskScore = 12;
   int32  machineScore = 13;
-  double apyprofit = 14;
+  double apy = 14;
   int32  diffToMinStake = 15;
-  double stakeToMinApyProfit = 16;
+  double stakeToMinApy = 16;
 }
 
 message RoundInfo {

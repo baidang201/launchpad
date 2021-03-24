@@ -46,24 +46,42 @@ export async function getWorkers(workerRequest) {
 
   const total = filterWorkers.length;
 
+  let historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+
+  //todo add chache in mongodb  or count key in paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)
+  async function getProfitLastMonth(historyRoundInfo, stashAccount) {
+    if (!historyRoundInfo) {
+      return 0
+    }
+
+    const filterWorkersRule = x => x.stashAccount === stashAccount;
+    const filterWorkersAccumulatedFire2 = historyRoundInfo.map(roundInfo => roundInfo.workers)
+      .flat(1)
+      .filter(filterWorkersRule)
+      .map(x => x.accumulatedFire2)
+    
+    const profitLastMonth = filterWorkersAccumulatedFire2.reduce((a, b) => a + b, 0)
+    return profitLastMonth
+  }
+
   for (var worker of paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)) {
     workers.push({
       stashAccount: worker.stashAccount,
       controllerAccount: worker.controllerAccount,
       payout: worker.payout,
-      status: "", // todo@@ in blockchain
+      status: "", //todo@@ in blockchain
       stakeEnough: worker.workerStake >= BASE_STAKE_PHA? true : false,
       accumulatedStake:  worker.accumulatedStake.toString(),
-      profitLastMonth:  "0",//todo@@ 从mongodb计算上个月的
+      profitLastMonth:  getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),
       workerStake: worker.workerStake.toString(),
       userStake: worker.userStake.toString(),
       stakeAccountNum: worker.stakeAccountNum,
       commission: worker.commission,
       taskScore: worker.taskScore,
       machineScore: worker.machineScore,
-      apyprofit: worker.apyprofit,//todo@@ 预估年化 实时计算
+      apy: worker.apy,
       diffToMinStake: worker.workerStake >= BASE_STAKE_PHA? 0 : BASE_STAKE_PHA - worker.workerStake,
-      stakeToMinApyProfit: 9998//todo@@ 基础抵押年化 实时计算
+      stakeToMinApy: 1//todo@@ 基础抵押年化 实时计算 看看产品更新公式
     });
   }
 

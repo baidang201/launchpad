@@ -4,6 +4,7 @@ export const Worker = new mongoose.Schema({
   stashAccount: {type: String},
   controllerAccount: {type: String},
   payout: {type: String},
+  status: {type: String},
   accumulatedStake: {type: Number},//PHA
   workerStake: {type: Number},//PHA
   userStake: {type: Number},//PHA
@@ -15,7 +16,6 @@ export const Worker = new mongoose.Schema({
   computeReward: {type: Number},
   reward: {type: Number},
   apy: {type: Number},
-  apyprofit: {type: Number},
   penalty: {type: Number}, 
   profitLastMonth: {type: Number},
 });

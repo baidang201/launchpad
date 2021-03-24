@@ -1,7 +1,8 @@
 
 import protobuf from '../protobuf/protobuf.js'
 import {RealtimeRoundInfo} from '../models/realtimeRoundInfo.js'
-import mongoose from  "../db/mogoose.js"
+import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
+
 
 export async function getGlobalStatistics() {
   let realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
@@ -11,8 +12,16 @@ export async function getGlobalStatistics() {
     return buffer;
   }
 
+  async function getLastRoundApy(round) {
+    let historyRoundInfo = await HistoryRoundInfo.findOne({round: round - 1});
+    if (!historyRoundInfo) {
+      return 0;
+    }
+    return historyRoundInfo.apyCurrentRound;
+  }
+
   let rt = { status: { success: 0 } , result: {
-     apy: 0, //todo@@ 上一轮from mongodb lastround
+     apy: await getLastRoundApy(realtimeRoundInfo.round),
      round: realtimeRoundInfo.round,
      roundCycleTime: realtimeRoundInfo.roundCycleTime, 
      onlineWorkerNum: realtimeRoundInfo.onlineWorkerNum,
@@ -20,7 +29,7 @@ export async function getGlobalStatistics() {
      stakeSum: realtimeRoundInfo.stakeSum.toString(),  //bignum
      stakeSupplyRate: realtimeRoundInfo.stakeSupplyRate,
      avgStake: realtimeRoundInfo.avgStake.toString(),  //bignum
-     rewardLastRound: "1279123523", //todo@@ 上一轮from mongodb
+     rewardLastRound: realtimeRoundInfo.rewardLastRound.toString(),
   }};
 
   let message = protobuf.GlobalStatisticsResponse.create(rt);

@@ -5,8 +5,10 @@ import types from '../typedefs.json'
 import BN from 'bn.js'
 import { node }  from '../config/index.js'
 import { RealtimeRoundInfo } from '../models/realtimeRoundInfo.js'
+import { HistoryRoundInfo } from '../models/historyRoundInfo.js'
 import { createLogger } from 'bunyan'
 import { getTokenInfo } from '../servers/tokeninfo.js'
+
 
 const { default: Queue } = pQueue
 
@@ -327,10 +329,18 @@ const processRoundAt = async (header, roundNumber, api) => {
       onlineReward: 1021,   //todo 等待后端合约完善
       computeReward: 22,    //todo 等待后端合约完善
       reward: 12345,        //todo 等待后端合约完善
-      apy: 12.3,            //todo@@ 根据mongodb历史数据完善
+      apy: 1,            //todo@@ 根据mongodb历史数据完善 看看产品更新公式
       penalty: 0 // todo 等待后端合约完善
     });
   });
+
+  async function getLastRoundReward(round) {
+    let historyRoundInfo = await HistoryRoundInfo.findOne({round: round - 1});
+    if (!historyRoundInfo) {
+      return 0;
+    }
+    return historyRoundInfo.accumulatedFire2;
+  }
 
   //jsonOutput = JSON.stringify(output)
   let realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
@@ -345,7 +355,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(),
-      rewardLastRound: 0, //todo@@ monodb from last round
+      rewardLastRound: await getLastRoundReward(),
       blocktime: null,
       workers: workers
     });
@@ -361,7 +371,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(),
-      rewardLastRound: 0, //todo@@ monodb from last round
+      rewardLastRound: await getLastRoundReward(),
       blocktime: null,
       workers: workers
     });

@@ -15,7 +15,6 @@ export const Worker = new mongoose.Schema({
   computeReward: {type: Number},
   reward: {type: Number},
   apy: {type: Number},
-  apyprofit: {type: Number},
   penalty: {type: Number},  
 });
 
