@@ -49,6 +49,8 @@ message WorkerRequest {
   bool  filterRuning = 3;
   bool  filterStakeEnough = 4;
   bool  filterCommissionLessThen = 5;
+  string sortFieldName = 6;
+  repeated string filterStashAccounts = 7;
 }
 
 message WorkerResponse {
@@ -145,7 +147,7 @@ message CommonRequest {
     StakeInfoRequest stakeInfoRequest = 4;
     RewardPenaltyRequest rewardPenaltyRequest = 5;
     AvgRewardRequest avgRewardRequest = 6;
-    Apy apy = 7;
+    ApyRequest apyRequest = 7;
   }
 }
 

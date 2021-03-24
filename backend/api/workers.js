@@ -23,11 +23,28 @@ export async function getWorkers(workerRequest) {
     const checkfilterRuning = workerRequest.filterRuning? true: true; // todo input status string
     const checkfilterStakeEnough = workerRequest.filterStakeEnough?  element.workerStake >= BASE_STAKE_PHA : true;
     const checkfilterCommissionLessThen = workerRequest.filterCommissionLessThen ? element.commission <= COMMISSION_LIMIT: true
+    const checkfilterStashAccounts = (workerRequest.filterStashAccounts &&  workerRequest.filterStashAccounts.length > 0) ?
+      workerRequest.filterStashAccounts.indexOf(element.stashAccount) >= 0 : true
 
-    return checkfilterRuning && checkfilterStakeEnough && checkfilterCommissionLessThen
-  });
+    return checkfilterRuning && checkfilterStakeEnough && checkfilterCommissionLessThen && checkfilterStashAccounts
+  })
+  .sort((a, b) => {
+    if ( 'profitLastMonth' == workerRequest.sortFieldName) {
+      return b.profitLastMonth - a.profitLastMonth
+    } else if ( 'accumulatedStake' == workerRequest.sortFieldName) {
+      return b.accumulatedStake - a.accumulatedStake
+    } else if ( 'commission' == workerRequest.sortFieldName) {
+      return b.commission - a.commission
+    } else if ( 'taskScore' == workerRequest.sortFieldName) {
+      return buffer.taskScore - a.taskScore
+    } else if ( 'machineScore' == workerRequest.sortFieldName) {
+      return b.machineScore - a.machineScore
+    } else {
+      return a.apy -  b.apy
+    }
+  })
+
   const total = filterWorkers.length;
-
 
   for (var worker of paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)) {
     workers.push({

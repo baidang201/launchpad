@@ -156,6 +156,15 @@
             "filterCommissionLessThen": {
               "type": "bool",
               "id": 5
+            },
+            "sortFieldName": {
+              "type": "string",
+              "id": 6
+            },
+            "filterStashAccounts": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 7
             }
           }
         },
@@ -346,7 +355,7 @@
                 "stakeInfoRequest",
                 "rewardPenaltyRequest",
                 "avgRewardRequest",
-                "apy"
+                "apyRequest"
               ]
             }
           },
@@ -375,8 +384,8 @@
               "type": "AvgRewardRequest",
               "id": 6
             },
-            "apy": {
-              "type": "Apy",
+            "apyRequest": {
+              "type": "ApyRequest",
               "id": 7
             }
           }

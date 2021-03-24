@@ -16,7 +16,8 @@ export const Worker = new mongoose.Schema({
   reward: {type: Number},
   apy: {type: Number},
   apyprofit: {type: Number},
-  penalty: {type: Number},  
+  penalty: {type: Number}, 
+  profitLastMonth: {type: Number},
 });
 
 export const RealtimeRoundInfo = mongoose.model('realtimeRoundInfo', {

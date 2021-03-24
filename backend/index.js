@@ -60,6 +60,10 @@ function parsePostData( ctx ) {
                 let buffer = getRewardPenalty(obj.rewardPenaltyRequest)
     
                 resolve( buffer )
+              } else if (obj.apyRequest) {                
+                let buffer = getApy(obj.apyRequest)
+    
+                resolve( buffer )
               } else {            
                 let message = protobuf.CommonResponse.create({status: {msg: "unknow request", success: -1}});
                 let buffer = protobuf.CommonResponse.encode(message).finish();
