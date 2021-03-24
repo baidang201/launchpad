@@ -1,18 +1,25 @@
 import protobuf from '../protobuf/protobuf.js'
 import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
+import {padArrayStart} from '../utils/index.js'
 
-export async function getApy() {
-  let historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//24 days
+export async function getApy(apyRequest) {
+  let historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: 1}).limit(30*24);//24 days
   if (!historyRoundInfo) {
     let message = protobuf.ApyResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     let buffer = protobuf.ApyResponse.encode(message).finish();
     return buffer;
   }
 
-  const apys = [];
+  const filterWorkersRule = x => x.stashAccount === apyRequest.stashAccount;
+  const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
+    .filter((element, index) => {return 0 == index % 3} )
+    .flat(1)
+    .filter(filterWorkersRule)
+
+  const apys = filterWorkers.map(x => x.reward/x.userStake * 24*365);
 
   let rt = { status: { success: 0 } , result: {
-    apy: apys
+    apy: padArrayStart(apys, 180, 0)
   }};
 
   let message = protobuf.ApyResponse.create(rt);
