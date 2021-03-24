@@ -136,7 +136,17 @@ message ApyResponse {
   Apy result = 2;
 }
 
-
+//commission
+message Commission {
+  repeated float commission = 1;
+}
+message CommissionRequest {
+  string stashAccount = 1;
+}
+message CommissionResponse {
+  Status status = 1;
+  Commission result = 2;
+}
 
 //common
 message CommonRequest {
@@ -148,6 +158,7 @@ message CommonRequest {
     RewardPenaltyRequest rewardPenaltyRequest = 5;
     AvgRewardRequest avgRewardRequest = 6;
     ApyRequest apyRequest = 7;
+    CommissionRequest commissionRequest = 8;
   }
 }
 

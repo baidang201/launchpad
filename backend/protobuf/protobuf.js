@@ -27,6 +27,9 @@ const AvgRewardResponse = root.lookupType("launchpadpackage.AvgRewardResponse");
 const ApyRequest = root.lookupType("launchpadpackage.ApyRequest");
 const ApyResponse = root.lookupType("launchpadpackage.ApyResponse");
 
+const CommissionRequest = root.lookupType("launchpadpackage.CommissionRequest");
+const CommissionResponse = root.lookupType("launchpadpackage.CommissionResponse");
+
 export default {Worker, RoundInfo, Globalstatistics, Status, 
   CommonRequest, CommonResponse,
   WorkerRequest, WorkerResponse,
@@ -35,5 +38,6 @@ export default {Worker, RoundInfo, Globalstatistics, Status,
   StakeInfoRequest, StakeInfoResponse,
   RewardPenaltyRequest, RewardPenaltyResponse,
   AvgRewardRequest, AvgRewardResponse,
-  ApyRequest, ApyResponse
+  ApyRequest, ApyResponse,
+  CommissionRequest, CommissionResponse
 };

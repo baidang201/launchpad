@@ -57,7 +57,7 @@ function teststake() {
   console.log(buffer2);
   jsFetch(buffer2, protobuf.AvgStakeResponse);
 
-  let message3 = protobuf.CommonRequest.create({stakeInfoRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
+  let message3 = protobuf.CommonRequest.create({stakeInfoRequest: {stashAccount: "41rqEQk9YWqVt3RHAyDquCauZJyatUDEDDtMTcNfvYP1MTB6"}});
   console.log(`message = ${JSON.stringify(message3)}`);
   let buffer3 = protobuf.CommonRequest.encode(message3).finish();
   jsFetch(buffer3, protobuf.StakeInfoResponse);
@@ -83,12 +83,21 @@ function testapy() {
   jsFetch(buffer6, protobuf.ApyResponse);
 }
 
-testworkerRequest()
+function testcommission() {
+  let message6 = protobuf.CommonRequest.create({commissionRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
+  console.log(`message = ${JSON.stringify(message6)}`);
+  let buffer6 = protobuf.CommonRequest.encode(message6).finish();
+  jsFetch(buffer6, protobuf.CommissionResponse);
+}
 
-testglobalStatisticsRequest()
+// testworkerRequest()
 
-teststake()
+// testglobalStatisticsRequest()
 
-testreward()
+// teststake()
 
-testapy()
+// testreward()
+
+// testapy()
+
+testcommission()

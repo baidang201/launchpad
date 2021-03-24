@@ -5,6 +5,7 @@ import protobuf from './protobuf/protobuf.js'
 import {getWorkers} from './api/workers.js'
 import {getGlobalStatistics} from './api/globalStatistics.js'
 import {getApy} from './api/apy.js'
+import {getCommission} from './api/commission.js'
 import {getAvgStake, getStakeinfo} from './api/stake.js'
 import {getAvgReward, getRewardPenalty} from './api/rewardpenalty.js'
 
@@ -64,7 +65,11 @@ function parsePostData( ctx ) {
                 let buffer = getApy(obj.apyRequest)
     
                 resolve( buffer )
-              } else {            
+              } else if (obj.commissionRequest) {                
+                let buffer = getCommission(obj.commissionRequest)
+    
+                resolve( buffer )
+              }else {            
                 let message = protobuf.CommonResponse.create({status: {msg: "unknow request", success: -1}});
                 let buffer = protobuf.CommonResponse.encode(message).finish();
     

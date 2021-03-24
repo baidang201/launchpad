@@ -345,6 +345,35 @@
             }
           }
         },
+        "Commission": {
+          "fields": {
+            "commission": {
+              "rule": "repeated",
+              "type": "float",
+              "id": 1
+            }
+          }
+        },
+        "CommissionRequest": {
+          "fields": {
+            "stashAccount": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "CommissionResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "Commission",
+              "id": 2
+            }
+          }
+        },
         "CommonRequest": {
           "oneofs": {
             "request": {
@@ -355,7 +384,8 @@
                 "stakeInfoRequest",
                 "rewardPenaltyRequest",
                 "avgRewardRequest",
-                "apyRequest"
+                "apyRequest",
+                "commissionRequest"
               ]
             }
           },
@@ -387,6 +417,10 @@
             "apyRequest": {
               "type": "ApyRequest",
               "id": 7
+            },
+            "commissionRequest": {
+              "type": "CommissionRequest",
+              "id": 8
             }
           }
         },
