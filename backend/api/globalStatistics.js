@@ -12,15 +12,15 @@ export async function getGlobalStatistics() {
   }
 
   let rt = { status: { success: 0 } , result: {
-     apy: 0,
+     apy: 0, //todo from mongodb
      round: realtimeRoundInfo.round,
-     roundCycleTime: 3, //todo
-     onlineWorkerNum: 4, //todo
-     workerNum: realtimeRoundInfo.workers.length,
-     stakeSum: "189123632356235",  //bignum //todo
-     stakeSupplyRate: 22.2,//todo staket / feixiaohao.supply
+     roundCycleTime: realtimeRoundInfo.roundCycleTime, 
+     onlineWorkerNum: realtimeRoundInfo.onlineWorkerNum,
+     workerNum: realtimeRoundInfo.workerNum,
+     stakeSum: realtimeRoundInfo.stakeSum.toString(),  //bignum
+     stakeSupplyRate: realtimeRoundInfo.stakeSupplyRate,
      avgStake: realtimeRoundInfo.avgStake.toString(),  //bignum
-     rewardLastRound: "1279123523", // todo
+     rewardLastRound: "1279123523", //todo from mongodb
   }};
 
   let message = protobuf.GlobalStatisticsResponse.create(rt);
