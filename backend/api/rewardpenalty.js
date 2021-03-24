@@ -35,14 +35,11 @@ export async function getAvgReward() {
     let buffer = protobuf.AvgRewardResponse.encode(message).finish();
     return buffer;
   }
-  const filterAvgReward = historyRoundInfo.filter((element, index) => {
-    return 0 == index % 3
-  });
 
-  const avgrewards = filterAvgReward.map(x => x.avgreward.toString())
+  const avgrewards = sumEvery(historyRoundInfo.map(x => x.avgreward), 4);
 
   let rt = { status: { success: 0 } , result: {
-    avgreward: padArrayStart(avgrewards, 180, '0')
+    avgreward: padArrayStart(avgrewards.map(x => x.toString()), 180, '0')
   }};
 
   let message = protobuf.AvgRewardResponse.create(rt);

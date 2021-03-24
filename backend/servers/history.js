@@ -289,23 +289,25 @@ class BlocksHistoryScan {
     //for (var [key, value] of stashAccounts) {
     Object.keys(stashAccounts).map(function(key, index) {
       let value = stashAccounts[key];
-    const accumulatedStake = new Demical(value.stake.toString())
-      .div(1000)
-      .div(1000)
-      .div(1000)
-      .div(1000)
+      const accumulatedStake = new Demical(value.stake.toString())
+        .div(1000)
+        .div(1000)
+        .div(1000)
+        .div(1000)
 
-    const workerStake = new Demical(value.workerStake.toString())
-      .div(1000)
-      .div(1000)
-      .div(1000)
-      .div(1000)
+      const workerStake = new Demical(value.workerStake.toString())
+        .div(1000)
+        .div(1000)
+        .div(1000)
+        .div(1000)
 
-    const userStake = new Demical(value.userStake.toString())
-      .div(1000)
-      .div(1000)
-      .div(1000)
-      .div(1000)
+      const userStake = new Demical(value.userStake.toString())
+        .div(1000)
+        .div(1000)
+        .div(1000)
+        .div(1000)
+
+      const reward = 12345;//todo 等待后端合约完善
       workers.push({
         stashAccount: key,
         controllerAccount: value.controller,
@@ -319,15 +321,15 @@ class BlocksHistoryScan {
         machineScore: value.overallScore,
         onlineReward: 1021,   //todo 等待后端合约完善
         computeReward: 22,    //todo 等待后端合约完善
-        reward: 12345,        //todo 等待后端合约完善
-        apy: 12.3,            //todo 根据mongodb历史数据完善
-        apyprofit: 1111.3,    //todo 根据mongodb历史数据完善
+        reward: reward,        //todo 等待后端合约完善
+        apy: reward/userStake*24*365,
         penalty: 0 // todo 等待后端合约完善
       });
     });
 
     console.log("####8 before insert");
 
+    const stakeSumOfUserStake = workers.map(x => x.userStake).reduce((a, b) => a + b, 0)
     //jsonOutput = JSON.stringify(output)
     let historyRoundInfo = await HistoryRoundInfo.findOne({
       round: roundNumber
@@ -337,7 +339,7 @@ class BlocksHistoryScan {
         round: roundNumber,
         avgStake: avgStake,
         avgreward: avgreward,
-        accumulatedFire2: accumulatedFire2PHA,
+        accumulatedFire2: accumulatedFire2PHA, //总奖励
         roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
         onlineWorkerNum: onlineWorkers,
         workerNum: stashCount,
@@ -345,8 +347,7 @@ class BlocksHistoryScan {
         stakeSupplyRate: await stakeSupplyRate(),
         blocktime: null,
         workers: workers,
-        apyCurrentRound: 0,
-        rewardCurrentRound: 0,
+        apyCurrentRound: accumulatedFire2PHA/stakeSumOfUserStake*24*365 ,
       });
     } else {
       console.log("#before insert", roundNumber, avgStake, accumulatedFire2.toString());
@@ -362,8 +363,7 @@ class BlocksHistoryScan {
         stakeSupplyRate: await stakeSupplyRate(),
         blocktime: null,
         workers: workers,
-        apyCurrentRound: 0,
-        rewardCurrentRound: 0,
+        apyCurrentRound: accumulatedFire2PHA/stakeSumOfUserStake*24*365,
       });
     }
 

@@ -122,7 +122,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       }))
 
   const payoutAccounts = {}
-  console.log("####2 payoutAccounts"); //todo replace form payoutaddress to stashaddress
+  console.log("####2 payoutAccounts");
   await Promise.all(
     (await api.query.phalaModule.fire2.keysAt(blockHash))
       .map(async k => {
@@ -327,8 +327,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       onlineReward: 1021,   //todo 等待后端合约完善
       computeReward: 22,    //todo 等待后端合约完善
       reward: 12345,        //todo 等待后端合约完善
-      apy: 12.3,            //todo 根据mongodb历史数据完善
-      apyprofit: 1111.3,    //todo 根据mongodb历史数据完善
+      apy: 12.3,            //todo@@ 根据mongodb历史数据完善
       penalty: 0 // todo 等待后端合约完善
     });
   });
@@ -346,7 +345,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(),
-      rewardLastRound: 0, //todo monodb from last round
+      rewardLastRound: 0, //todo@@ monodb from last round
       blocktime: null,
       workers: workers
     });
@@ -362,7 +361,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(),
-      rewardLastRound: 0, //todo monodb from last round
+      rewardLastRound: 0, //todo@@ monodb from last round
       blocktime: null,
       workers: workers
     });

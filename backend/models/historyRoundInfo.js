@@ -29,7 +29,6 @@ export const HistoryRoundInfo = mongoose.model('historyRoundInfo', {
   workerNum: {type: Number},
   stakeSum: {type: Number},//PHA
   stakeSupplyRate: {type: Number},
-  rewardCurrentRound: {type: Number},
   blocktime: {type: Date},
   workers: {type: [Worker]},
 });

@@ -12,7 +12,7 @@ export async function getGlobalStatistics() {
   }
 
   let rt = { status: { success: 0 } , result: {
-     apy: 0, //todo from mongodb
+     apy: 0, //todo@@ 上一轮from mongodb lastround
      round: realtimeRoundInfo.round,
      roundCycleTime: realtimeRoundInfo.roundCycleTime, 
      onlineWorkerNum: realtimeRoundInfo.onlineWorkerNum,
@@ -20,7 +20,7 @@ export async function getGlobalStatistics() {
      stakeSum: realtimeRoundInfo.stakeSum.toString(),  //bignum
      stakeSupplyRate: realtimeRoundInfo.stakeSupplyRate,
      avgStake: realtimeRoundInfo.avgStake.toString(),  //bignum
-     rewardLastRound: "1279123523", //todo from mongodb
+     rewardLastRound: "1279123523", //todo@@ 上一轮from mongodb
   }};
 
   let message = protobuf.GlobalStatisticsResponse.create(rt);

@@ -16,7 +16,7 @@ export async function getApy(apyRequest) {
     .flat(1)
     .filter(filterWorkersRule)
 
-  const apys = filterWorkers.map(x => x.reward/x.userStake * 24*365);
+  const apys = filterWorkers.map(x => x.apy);
 
   let rt = { status: { success: 0 } , result: {
     apy: padArrayStart(apys, 180, 0)

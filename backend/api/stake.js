@@ -38,14 +38,10 @@ export async function getAvgStake() {
     return buffer;
   }
 
-  const filterAvgStake = historyRoundInfo.filter((element, index) => {
-    return 0 == index % 3
-  });
-
-  const avgStakes = filterAvgStake.map(x => x.avgStake.toString())
-
+  const avgStakes = averageEvery(historyRoundInfo.map(x => x.avgStake), 4);
+  
   let rt = { status: { success: 0 } , result: {
-    avgStake: padArrayStart(avgStakes, 180, '0')
+    avgStake: padArrayStart(avgStakes.map(x => x.toString()), 180, '0')
   }};
 
   let message = protobuf.AvgStakeResponse.create(rt);

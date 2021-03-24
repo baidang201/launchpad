@@ -11,7 +11,7 @@ function paginate(array, page_size, page_number) {
 }
 
 export async function getWorkers(workerRequest) {
-  let realtimeRoundInfo = await RealtimeRoundInfo.findOne({});//todo 根据条件过滤
+  let realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
   if (!realtimeRoundInfo) {
     let message = protobuf.WorkerResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     let buffer = protobuf.WorkerResponse.encode(message).finish();
@@ -51,19 +51,19 @@ export async function getWorkers(workerRequest) {
       stashAccount: worker.stashAccount,
       controllerAccount: worker.controllerAccount,
       payout: worker.payout,
-      status: "", // todo
+      status: "", // todo@@ in blockchain
       stakeEnough: worker.workerStake >= BASE_STAKE_PHA? true : false,
       accumulatedStake:  worker.accumulatedStake.toString(),
-      profitLastMonth:  "0",//todo
+      profitLastMonth:  "0",//todo@@ 从mongodb计算上个月的
       workerStake: worker.workerStake.toString(),
       userStake: worker.userStake.toString(),
       stakeAccountNum: worker.stakeAccountNum,
       commission: worker.commission,
       taskScore: worker.taskScore,
       machineScore: worker.machineScore,
-      apyprofit: worker.apyprofit,//todo 上个round计算
+      apyprofit: worker.apyprofit,//todo@@ 预估年化 实时计算
       diffToMinStake: worker.workerStake >= BASE_STAKE_PHA? 0 : BASE_STAKE_PHA - worker.workerStake,
-      stakeToMinApyProfit: 9998//todo 实时计算，
+      stakeToMinApyProfit: 9998//todo@@ 基础抵押年化 实时计算
     });
   }
 
