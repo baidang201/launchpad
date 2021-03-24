@@ -90,14 +90,14 @@ function testcommission() {
   jsFetch(buffer6, protobuf.CommissionResponse);
 }
 
-// testworkerRequest()
+testworkerRequest()
 
-// testglobalStatisticsRequest()
+testglobalStatisticsRequest()
 
-// teststake()
+teststake()
 
-// testreward()
+testreward()
 
-// testapy()
+testapy()
 
 testcommission()

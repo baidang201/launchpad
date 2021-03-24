@@ -6,10 +6,10 @@ await realtimeServer.init();
 const blocksHistoryScan = new BlocksHistoryScan();
 await blocksHistoryScan.init();
 
-// realtimeServer.main().catch((error) => {
-//   console.error(error);
-//   process.exit(-1);
-// })
+realtimeServer.main().catch((error) => {
+  console.error(error);
+  process.exit(-1);
+})
 
 blocksHistoryScan.main().catch((error) => {
   console.error(error);
