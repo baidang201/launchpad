@@ -12,13 +12,13 @@ function paginate(array, page_size, page_number) {
 }
 
 export async function getWorkers(workerRequest) {
-  let realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
+  const realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
   if (!realtimeRoundInfo) {
-    let message = protobuf.WorkerResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
-    let buffer = protobuf.WorkerResponse.encode(message).finish();
+    const message = protobuf.WorkerResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
+    const buffer = protobuf.WorkerResponse.encode(message).finish();
     return buffer;
   }
-  let workers = [];
+  const workers = [];
 
   const filterWorkers = realtimeRoundInfo.workers.filter((element, index) => {
     const checkfilterRuning = workerRequest.filterRuning? true == element.onlineStatus: true;
@@ -47,7 +47,7 @@ export async function getWorkers(workerRequest) {
 
   const total = filterWorkers.length;
 
-  let historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
 
   //todo add chache in mongodb  or count key in paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)
   function getProfitLastMonth(historyRoundInfo, stashAccount) {
@@ -65,7 +65,7 @@ export async function getWorkers(workerRequest) {
     return profitLastMonth
   }
 
-  for (var worker of paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)) {
+  for (const worker of paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)) {
     workers.push({
       stashAccount: worker.stashAccount,
       controllerAccount: worker.controllerAccount,
@@ -86,7 +86,7 @@ export async function getWorkers(workerRequest) {
     });
   }
 
-  let message = protobuf.WorkerResponse.create({ status: { success: 0 } , result: {total: total, workers: workers}});
-  let buffer = protobuf.WorkerResponse.encode(message).finish();
+  const message = protobuf.WorkerResponse.create({ status: { success: 0 } , result: {total: total, workers: workers}});
+  const buffer = protobuf.WorkerResponse.encode(message).finish();
   return buffer;
 }

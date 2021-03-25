@@ -51,7 +51,7 @@ class BlocksHistoryScan {
 
     //console.log({ chain: phalaChain }, `Connected to chain ${phalaChain} using ${phalaNodeName} v${phalaNodeVersion}`)
 
-    let that = this;
+    const that = this;
     (function iteratorBlocks() {
       that.processBlock(api).then((nextTimeout) => {
           nextTimeout = nextTimeout || defaultLoopBlocksTime;
@@ -286,7 +286,6 @@ class BlocksHistoryScan {
     }
 
     let workers = []
-    //for (var [key, value] of stashAccounts) {
     Object.keys(stashAccounts).map(function(key, index) {
       let value = stashAccounts[key];
       const accumulatedStake = new Demical(value.stake.toString())

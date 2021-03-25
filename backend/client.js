@@ -15,8 +15,8 @@ function jsFetch(postBuffer, resMessage) {
           {
             //WorkerResponse
       　　　 console.log('response',response)
-            var msg = resMessage.decode(new Uint8Array(response))
-            var resObj = resMessage.toObject(msg)
+            const msg = resMessage.decode(new Uint8Array(response))
+            const resObj = resMessage.toObject(msg)
             console.log('resObj', resObj)
             console.log('resObj', JSON.stringify( resObj))
           }  
@@ -26,7 +26,7 @@ function jsFetch(postBuffer, resMessage) {
 }
 
 function testworkerRequest() {
-  let message4 = protobuf.CommonRequest.create({workerRequest: 
+  const message4 = protobuf.CommonRequest.create({workerRequest: 
     {
       page: 1, 
       pageSize: 5, 
@@ -36,63 +36,63 @@ function testworkerRequest() {
       sortFieldName: 'commission',
       filterStashAccounts: []}});
   console.log(`message = ${JSON.stringify(message4)}`);
-  let buffer4 = protobuf.CommonRequest.encode(message4).finish();
+  const buffer4 = protobuf.CommonRequest.encode(message4).finish();
   jsFetch(buffer4, protobuf.WorkerResponse);
 }
 
 function testglobalStatisticsRequest() {
-  let message = protobuf.CommonRequest.create({globalStatisticsRequest: {}});
+  const message = protobuf.CommonRequest.create({globalStatisticsRequest: {}});
   console.log(`message = ${JSON.stringify(message)}`);
-  let buffer = protobuf.CommonRequest.encode(message).finish();
+  const buffer = protobuf.CommonRequest.encode(message).finish();
   console.log(buffer);
   jsFetch(buffer, protobuf.GlobalStatisticsResponse);
   
 }
 
 function teststake() {
-  let message2 = protobuf.CommonRequest.create({avgStakeRequest: {}});
+  const message2 = protobuf.CommonRequest.create({avgStakeRequest: {}});
   console.log(`message = ${JSON.stringify(message2)}`);
-  let buffer2 = protobuf.CommonRequest.encode(message2).finish();
+  const buffer2 = protobuf.CommonRequest.encode(message2).finish();
   console.log(buffer2);
   jsFetch(buffer2, protobuf.AvgStakeResponse);
 
-  let message3 = protobuf.CommonRequest.create({stakeInfoRequest: {stashAccount: "41rqEQk9YWqVt3RHAyDquCauZJyatUDEDDtMTcNfvYP1MTB6"}});
+  const message3 = protobuf.CommonRequest.create({stakeInfoRequest: {stashAccount: "41rqEQk9YWqVt3RHAyDquCauZJyatUDEDDtMTcNfvYP1MTB6"}});
   console.log(`message = ${JSON.stringify(message3)}`);
-  let buffer3 = protobuf.CommonRequest.encode(message3).finish();
+  const buffer3 = protobuf.CommonRequest.encode(message3).finish();
   jsFetch(buffer3, protobuf.StakeInfoResponse);
 }
 
 function testreward() {
-  let message5 = protobuf.CommonRequest.create({avgRewardRequest: {}});
+  const message5 = protobuf.CommonRequest.create({avgRewardRequest: {}});
   console.log(`message = ${JSON.stringify(message5)}`);
-  let buffer5 = protobuf.CommonRequest.encode(message5).finish();
+  const buffer5 = protobuf.CommonRequest.encode(message5).finish();
   jsFetch(buffer5, protobuf.AvgRewardResponse);
 
-  let message6 = protobuf.CommonRequest.create({rewardPenaltyRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
+  const message6 = protobuf.CommonRequest.create({rewardPenaltyRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
   console.log(`message = ${JSON.stringify(message6)}`);
-  let buffer6 = protobuf.CommonRequest.encode(message6).finish();
+  const buffer6 = protobuf.CommonRequest.encode(message6).finish();
   jsFetch(buffer6, protobuf.RewardPenaltyResponse);
 }
 
 
 function testapy() {
-  let message6 = protobuf.CommonRequest.create({apyRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
+  const message6 = protobuf.CommonRequest.create({apyRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
   console.log(`message = ${JSON.stringify(message6)}`);
-  let buffer6 = protobuf.CommonRequest.encode(message6).finish();
+  const buffer6 = protobuf.CommonRequest.encode(message6).finish();
   jsFetch(buffer6, protobuf.ApyResponse);
 }
 
 function testcommission() {
-  let message6 = protobuf.CommonRequest.create({commissionRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
+  const message6 = protobuf.CommonRequest.create({commissionRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
   console.log(`message = ${JSON.stringify(message6)}`);
-  let buffer6 = protobuf.CommonRequest.encode(message6).finish();
+  const buffer6 = protobuf.CommonRequest.encode(message6).finish();
   jsFetch(buffer6, protobuf.CommissionResponse);
 }
 
 function testunknow() {
-  let message6 = protobuf.CommonRequest.create({unknowRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
+  const message6 = protobuf.CommonRequest.create({unknowRequest: {stashAccount: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
   console.log(`message = ${JSON.stringify(message6)}`);
-  let buffer6 = protobuf.CommonRequest.encode(message6).finish();
+  const buffer6 = protobuf.CommonRequest.encode(message6).finish();
   jsFetch(buffer6, protobuf.CommonResponse);
 }
 

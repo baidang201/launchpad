@@ -1,7 +1,7 @@
 import protobuf from "protobufjs"
 import jsonDescriptor from "../../proto/message.json"
 
-let root = protobuf.Root.fromJSON(jsonDescriptor);
+const root = protobuf.Root.fromJSON(jsonDescriptor);
 const Worker = root.lookupType("launchpadpackage.Worker");
 const RoundInfo = root.lookupType("launchpadpackage.RoundInfo");
 const Globalstatistics = root.lookupType("launchpadpackage.Globalstatistics");

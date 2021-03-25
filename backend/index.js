@@ -45,9 +45,9 @@ function parsePostData( ctx ) {
           if (error) {
               console.log("error:", error)
           } else {
-              let resultBuff = Buffer.concat(buffers) // 合并接收到的buffer数据
-              var result = protobuf.CommonRequest.decode(resultBuff); // 解码接受到的 buffer 数据
-              var obj = protobuf.CommonRequest.toObject(result)  // 转换成json对象
+              const resultBuff = Buffer.concat(buffers) // 合并接收到的buffer数据
+              const result = protobuf.CommonRequest.decode(resultBuff); // 解码接受到的 buffer 数据
+              const obj = protobuf.CommonRequest.toObject(result)  // 转换成json对象
               
               const firstProperity = Object.keys(obj)[0]
               if (firstProperity) {
@@ -73,7 +73,7 @@ function parsePostData( ctx ) {
 app.use(async ctx => {
   if ( ctx.url === '/' && ctx.method === 'POST' ) {
     // 当POST请求的时候，解析POST表单里的数据，并显示出来
-    let postData = await parsePostData( ctx )
+    const postData = await parsePostData( ctx )
     ctx.body = postData
     ctx.set('content-type', 'application/octet-stream');  
     ctx.status = 200;          

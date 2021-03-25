@@ -5,22 +5,22 @@ import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 
 
 export async function getGlobalStatistics() {
-  let realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
+  const realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
   if (!realtimeRoundInfo) {
-    let message = protobuf.GlobalStatisticsResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
-    let buffer = protobuf.GlobalStatisticsResponse.encode(message).finish();
+    const message = protobuf.GlobalStatisticsResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
+    const buffer = protobuf.GlobalStatisticsResponse.encode(message).finish();
     return buffer;
   }
 
   async function getLastRoundApy(round) {
-    let historyRoundInfo = await HistoryRoundInfo.findOne({round: round - 1});
+    const historyRoundInfo = await HistoryRoundInfo.findOne({round: round - 1});
     if (!historyRoundInfo) {
       return 0;
     }
     return historyRoundInfo.apyCurrentRound;
   }
 
-  let rt = { status: { success: 0 } , result: {
+  const rt = { status: { success: 0 } , result: {
      apy: await getLastRoundApy(realtimeRoundInfo.round),
      round: realtimeRoundInfo.round,
      roundCycleTime: realtimeRoundInfo.roundCycleTime, 
@@ -32,7 +32,7 @@ export async function getGlobalStatistics() {
      rewardLastRound: realtimeRoundInfo.rewardLastRound.toString(),
   }};
 
-  let message = protobuf.GlobalStatisticsResponse.create(rt);
-  let buffer = protobuf.GlobalStatisticsResponse.encode(message).finish();
+  const message = protobuf.GlobalStatisticsResponse.create(rt);
+  const buffer = protobuf.GlobalStatisticsResponse.encode(message).finish();
   return buffer;
 }

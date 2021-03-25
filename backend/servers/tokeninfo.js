@@ -1,4 +1,4 @@
-let url = 'https://fxhapi.feixiaohao.com/public/v1/ticker?code=phala';
+const url = 'https://fxhapi.feixiaohao.com/public/v1/ticker?code=phala';
 
 import rp  from 'request-promise';
 
@@ -7,20 +7,20 @@ let cacheTime = 0;
 
 export async function getTokenInfo() {
   if (!cacheObject) {
-    let r = await refreshCache();
+    const r = await refreshCache();
   }
-  let now = new Date().getTime();
+  const now = new Date().getTime();
   if ((now - cacheTime) >  60 * 60 * 1000) {
       refreshCache().catch(console.log);
   }
-  let obj = cacheObject || {available_supply: 0};
+  const obj = cacheObject || {available_supply: 0};
   return obj;
 }
 
 
 async function refreshCache() {
     console.log('refreshCache');
-    var options = {
+    const options = {
         uri: url,
         qs: {
         },
@@ -30,10 +30,10 @@ async function refreshCache() {
         json: true // Automatically parses the JSON string in the response
     };
 
-    let repos = await rp(options)
+    const repos = await rp(options)
     if (repos && repos.length) {
-        let result = repos[0];
-        let obj = getObjectFromFeixiaohaoData(result);
+        const result = repos[0];
+        const obj = getObjectFromFeixiaohaoData(result);
         cacheObject = obj;
         cacheTime = new Date().getTime();
         console.log("refrest cache:" + JSON.stringify(obj));
@@ -43,7 +43,7 @@ async function refreshCache() {
 }
 
 function getObjectFromFeixiaohaoData(result) {
-    let obj = {
+    const obj = {
         available_supply: result.available_supply,
     }
     return obj;

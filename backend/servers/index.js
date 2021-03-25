@@ -296,9 +296,8 @@ const processRoundAt = async (header, roundNumber, api) => {
   }
 
   let workers = []
-  //for (var [key, value] of stashAccounts) {
   Object.keys(stashAccounts).map(function(key, index) {
-    let value = stashAccounts[key];
+    const value = stashAccounts[key];
     const accumulatedStake = new Demical(value.stake.toString())
       .div(1000)
       .div(1000)
@@ -338,7 +337,7 @@ const processRoundAt = async (header, roundNumber, api) => {
   });
 
   async function getLastRoundReward(roundNum) {
-    let historyRoundInfo = await HistoryRoundInfo.findOne({round: roundNum - 1});
+    const historyRoundInfo = await HistoryRoundInfo.findOne({round: roundNum - 1});
     if (!historyRoundInfo) {
       return 0;
     }
