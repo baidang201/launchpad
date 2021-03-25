@@ -13,10 +13,12 @@
     "mongoose": "^5.12.0",
     "node-fetch": "^2.6.1",
     "p-queue": "^6.6.2",
-    "protobufjs": "^6.10.2"
+    "protobufjs": "^6.10.2",
+    "request-promise": "^4.2.6"
   },
   "scripts": {
     "start": "node --experimental-json-modules --es-module-specifier-resolution=node --harmony-top-level-await --no-warnings ./index.js",
-    "dev": "nodemon --experimental-json-modules ./index.js"
+    "dev": "nodemon --experimental-json-modules ./index.js",
+    "scandev": "nodemon --experimental-json-modules ./scanServer.js"
   }
 }

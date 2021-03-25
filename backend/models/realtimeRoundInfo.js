@@ -1,11 +1,13 @@
-import mongoose from  "../db/mogoose"
+import mongoose from  "../db/mogoose.js"
 
-const Worker = new mongoose.Schema({ 
-  stashAccount: {tyep: String},
-  controllerAccount: {tyep: String},
-  payout: {tyep: String},
-  accumulatedStake: {type: mongoose.Decimal128},//bigNum?
-  workerStake: {tyep: mongoose.Decimal128},//bigNum?
+export const Worker = new mongoose.Schema({ 
+  stashAccount: {type: String},
+  controllerAccount: {type: String},
+  payout: {type: String},
+  onlineStatus: {type: Boolean},
+  accumulatedStake: {type: Number},//PHA
+  workerStake: {type: Number},//PHA
+  userStake: {type: Number},//PHA
   stakeAccountNum:{type: Number},
   commission: {type: Number},
   taskScore: {type: Number},
@@ -14,15 +16,22 @@ const Worker = new mongoose.Schema({
   computeReward: {type: Number},
   reward: {type: Number},
   apy: {type: Number},
-  apyprofit: {type: Number},
-  penalty: {type: Number},  
+  penalty: {type: Number}, 
+  profitLastMonth: {type: Number},
 });
 
 export const RealtimeRoundInfo = mongoose.model('realtimeRoundInfo', {
   round: { type: Number },
-  avgStake: { type: Number },
-  avgreward: { type: Number },
-  accumulatedFire2: { type: Number },
+  avgStake: { type: Number }, //PHA
+  avgreward: { type: Number },//PHA
+  accumulatedFire2: { type: Number },//PHA
+  apy: {type: Number},
+  roundCycleTime: {type: Number}, //seconds
+  onlineWorkerNum: {type: Number}, 
+  workerNum: {type: Number},
+  stakeSum: {type: Number},//PHA
+  stakeSupplyRate: {type: Number},
+  rewardLastRound: {type: Number},
   blocktime: {type: Date},
   workers: {type: [Worker]},
 });
