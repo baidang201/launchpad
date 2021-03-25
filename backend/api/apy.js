@@ -12,7 +12,7 @@ export async function getApy(apyRequest) {
 
   const filterWorkersRule = x => x.stashAccount === apyRequest.stashAccount;
   const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
-    .filter((element, index) => {return 0 == index % 3} )
+    .filter((element, index) => {return 0 == index % 4} )
     .flat(1)
     .filter(filterWorkersRule)
 

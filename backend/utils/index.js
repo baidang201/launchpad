@@ -1,4 +1,7 @@
 export function padArrayStart(arr, len, padding){
+  if (arr.length >= len) {
+    return arr
+  }
   return Array(len - arr.length).fill(padding).concat(arr);
 }
 
