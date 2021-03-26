@@ -4,17 +4,21 @@ import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 import {padArrayStart, sumEvery, averageEvery} from '../utils/index.js'
 
 export async function getStakeinfo(stakeInfoRequest) {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
+  const historyRoundInfo = await HistoryRoundInfo
+  .find( {'workers.stashAccount':  stakeInfoRequest.stashAccount})
+  .select({'workers.$': 1})
+  .sort({round: -1})
+  .limit(30*24)
+  .lean();//30 days
+
   if (!historyRoundInfo) {
     const message = protobuf.StakeInfoResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.StakeInfoResponse.encode(message).finish();
     return buffer;
   }
 
-  const filterWorkersRule = x => x.stashAccount === stakeInfoRequest.stashAccount;
   const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
     .flat(1)
-    .filter(filterWorkersRule)
   
   const accumulatedStakes = averageEvery(filterWorkers.map(x => x.accumulatedStake), 4).reverse();
   const workerStakes = averageEvery(filterWorkers.map(x => x.workerStake), 4).reverse();
@@ -31,7 +35,13 @@ export async function getStakeinfo(stakeInfoRequest) {
 
 
 export async function getAvgStake() {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
+  const historyRoundInfo = await HistoryRoundInfo
+  .find({})
+  .select({avgStake: 1})
+  .sort({round: -1})
+  .limit(30*24)
+  .lean();//30 days
+
   if (!historyRoundInfo) {
     const message = protobuf.AvgStakeResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.AvgStakeResponse.encode(message).finish();
