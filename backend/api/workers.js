@@ -47,7 +47,12 @@ export async function getWorkers(workerRequest) {
 
   const total = filterWorkers.length;
 
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
+  const historyRoundInfo = await HistoryRoundInfo
+  .find({})
+  .select({'workers.reward': 1, 'workers.stashAccount': 1})
+  .sort({round: -1})
+  .limit(30*24)
+  .lean();//30 days
 
   //todo add chache in mongodb  or count key in paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)
   function getProfitLastMonth(historyRoundInfo, stashAccount) {
