@@ -1,5 +1,5 @@
 import protobuf from "protobufjs"
-import jsonDescriptor from "../../proto/message.json"
+import jsonDescriptor from "../../../proto/message.json"
 
 const root = protobuf.Root.fromJSON(jsonDescriptor);
 const Worker = root.lookupType("launchpadpackage.Worker");

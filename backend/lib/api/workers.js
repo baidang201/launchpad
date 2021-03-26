@@ -21,25 +21,25 @@ export async function getWorkers(workerRequest) {
   const workers = [];
 
   const filterWorkers = realtimeRoundInfo.workers.filter((element, index) => {
-    const checkfilterRuning = workerRequest.filterRuning? true == element.onlineStatus: true;
-    const checkfilterStakeEnough = workerRequest.filterStakeEnough?  element.workerStake >= BASE_STAKE_PHA : true;
-    const checkfilterCommissionLessThen = workerRequest.filterCommissionLessThen ? element.commission <= COMMISSION_LIMIT: true
-    const checkfilterStashAccounts = (workerRequest.filterStashAccounts &&  workerRequest.filterStashAccounts.length > 0) ?
-      workerRequest.filterStashAccounts.indexOf(element.stashAccount) >= 0 : true
+    const checkfilterRuning = workerRequest.filter_runing? true == element.online_status: true;
+    const checkfilterStakeEnough = workerRequest.filter_stake_enough?  element.worker_stake >= BASE_STAKE_PHA : true;
+    const checkfilterCommissionLessThen = workerRequest.filter_commission_less_then ? element.commission <= COMMISSION_LIMIT: true
+    const checkfilterStashAccounts = (workerRequest.filter_stash_accounts &&  workerRequest.filter_stash_accounts.length > 0) ?
+      workerRequest.filter_stash_accounts.indexOf(element.stash_account) >= 0 : true
 
     return checkfilterRuning && checkfilterStakeEnough && checkfilterCommissionLessThen && checkfilterStashAccounts
   })
   .sort((a, b) => {
-    if ( 'profitLastMonth' == workerRequest.sortFieldName) {
-      return b.profitLastMonth - a.profitLastMonth
-    } else if ( 'accumulatedStake' == workerRequest.sortFieldName) {
-      return b.accumulatedStake - a.accumulatedStake
-    } else if ( 'commission' == workerRequest.sortFieldName) {
+    if ( 'profit_last_month' == workerRequest.sort_field_name) {
+      return b.profit_last_month - a.profit_last_month
+    } else if ( 'accumulated_stake' == workerRequest.sort_field_name) {
+      return b.accumulated_stake - a.accumulated_stake
+    } else if ( 'commission' == workerRequest.sort_field_name) {
       return b.commission - a.commission
-    } else if ( 'taskScore' == workerRequest.sortFieldName) {
-      return buffer.taskScore - a.taskScore
-    } else if ( 'machineScore' == workerRequest.sortFieldName) {
-      return b.machineScore - a.machineScore
+    } else if ( 'task_score' == workerRequest.sort_field_name) {
+      return b.task_score - a.task_score
+    } else if ( 'machine_score' == workerRequest.sort_field_name) {
+      return b.machine_score - a.machine_score
     } else {
       return a.apy -  b.apy
     }
@@ -60,7 +60,7 @@ export async function getWorkers(workerRequest) {
       return 0
     }
 
-    const filterWorkersRule = x => x.stashAccount === stashAccount;
+    const filterWorkersRule = x => x.stash_account === stashAccount;
     const filterReward = historyRoundInfo.map(roundInfo => roundInfo.workers)
       .flat(1)
       .filter(filterWorkersRule)
@@ -70,24 +70,24 @@ export async function getWorkers(workerRequest) {
     return profitLastMonth
   }
 
-  for (const worker of paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)) {
+  for (const worker of paginate(filterWorkers, workerRequest.page_size, workerRequest.page)) {
     workers.push({
-      stashAccount: worker.stashAccount,
-      controllerAccount: worker.controllerAccount,
+      stash_account: worker.stash_account,
+      controller_account: worker.controller_account,
       payout: worker.payout,
-      onlineStatus: worker.onlineStatus,
-      stakeEnough: worker.workerStake >= BASE_STAKE_PHA? true : false,
-      accumulatedStake:  worker.accumulatedStake.toString(),
-      profitLastMonth:  getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),
-      workerStake: worker.workerStake.toString(),
-      userStake: worker.userStake.toString(),
-      stakeAccountNum: worker.stakeAccountNum,
+      online_status: worker.online_status,
+      stake_enough: worker.worker_stake >= BASE_STAKE_PHA? true : false,
+      accumulated_stake:  worker.accumulated_stake.toString(),
+      profit_last_month:  getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),
+      worker_stake: worker.worker_stake.toString(),
+      user_stake: worker.user_stake.toString(),
+      stake_account_num: worker.stake_account_num,
       commission: worker.commission,
-      taskScore: worker.taskScore,
-      machineScore: worker.machineScore,
+      task_score: worker.task_score,
+      machine_score: worker.machine_score,
       apy: worker.apy,
-      diffToMinStake: worker.workerStake >= BASE_STAKE_PHA? 0 : BASE_STAKE_PHA - worker.workerStake,
-      stakeToMinApy: 1//todo@@ 基础抵押年化 实时计算 看看产品更新公式
+      diff_to_min_stake: worker.worker_stake >= BASE_STAKE_PHA? 0 : BASE_STAKE_PHA - worker.worker_stake,
+      stake_to_min_apy: 1//todo@@ 基础抵押年化 实时计算 看看产品更新公式
     });
   }
 

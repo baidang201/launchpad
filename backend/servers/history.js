@@ -4,8 +4,8 @@ import Demical from 'decimal.js'
 import types from '../typedefs.json'
 import BN from 'bn.js'
 import { node }  from '../config/index.js'
-import { Status } from '../models/status.js'
-import { HistoryRoundInfo } from '../models/historyRoundInfo.js'
+import { Status } from '../lib/models/status.js'
+import { HistoryRoundInfo } from '../lib/models/historyRoundInfo.js'
 import { createLogger } from 'bunyan'
 import { getTokenInfo } from '../servers/tokeninfo.js'
 
@@ -69,7 +69,7 @@ class BlocksHistoryScan {
 
   processBlock = async (api) => {
 
-    const blockNumber = this.status.last_scan_number + 600;
+    const blockNumber = this.status.last_scan_number + 1;
     const lastBlockHeaderHash = await api.rpc.chain.getBlockHash(blockNumber)
     this.lastBlockHeader = await api.rpc.chain.getHeader(lastBlockHeaderHash)
     
@@ -188,27 +188,28 @@ class BlocksHistoryScan {
           payoutAccount.stake = value.add(payoutAccount.stake || ZERO)
         })
     )
-  await Promise.all(
-    (await api.query.miningStaking.staked.keysAt(blockHash))
-    .map(async k => {   
-        const from = k.args[0].toString()
-        const to = k.args[1].toString()     
-        const value = (await api.rpc.state.getStorage(k, blockHash))
 
-        const stash = to.toString()
-        const stashAccount = stashAccounts[stash]
+    await Promise.all(
+      (await api.query.miningStaking.staked.keysAt(blockHash))
+      .map(async k => {   
+          const from = k.args[0].toString()
+          const to = k.args[1].toString()     
+          const value = (await api.rpc.state.getStorage(k, blockHash))
 
-        if (!stashAccount) { return }
+          const stash = to.toString()
+          const stashAccount = stashAccounts[stash]
 
-        stashAccount.stakeAccountNum = stashAccount.stakeAccountNum? (stashAccount.stakeAccountNum + 1): 1;
+          if (!stashAccount) { return }
 
-        if (from.toString() === to.toString()) {
-          stashAccount.workerStake = value.add(stashAccount.workerStake  || ZERO)
-        } else {
-          stashAccount.userStake = value.add(stashAccount.userStake  || ZERO)
-        }
-      })
-  )
+          stashAccount.stakeAccountNum = stashAccount.stakeAccountNum? (stashAccount.stakeAccountNum + 1): 1;
+
+          if (from.toString() === to.toString()) {
+            stashAccount.workerStake = value.add(stashAccount.workerStake  || ZERO)
+          } else {
+            stashAccount.userStake = value.add(stashAccount.userStake  || ZERO)
+          }
+        })
+    )
   
     accumulatedStake = accumulatedStake || new BN('0')
     const accumulatedStakeDemical = new Demical(accumulatedStake.toString())
@@ -227,48 +228,41 @@ class BlocksHistoryScan {
       .div(1000)
       .div(1000)
       .div(1000)
-  const avgreward = accumulatedFire2Demical.div(stashCount)
-    .div(1000)
-    .div(1000)
-    .div(1000)
-    .div(1000);
 
-  const accumulatedFire2PHA = accumulatedFire2Demical
-    .div(1000)
-    .div(1000)
-    .div(1000)
-    .div(1000)
+    const avgReward = accumulatedFire2Demical.div(stashCount)
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000);
 
-  const stakeSum = accumulatedStakeDemical
-    .div(1000)
-    .div(1000)
-    .div(1000)
-    .div(1000);
+    const accumulatedFire2PHA = accumulatedFire2Demical
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000)
 
-  const stakeSupplyRate = async function(stakeSumPHA) {
-    const tokeninfo = await getTokenInfo()
-    const available_supply = tokeninfo.available_supply
-    if (0 === available_supply) {
-      return 0
+    const stakeSum = accumulatedStakeDemical
+      .div(1000)
+      .div(1000)
+      .div(1000)
+      .div(1000);
+
+    const stakeSupplyRate = async function(stakeSumPHA) {
+      const tokeninfo = await getTokenInfo()
+      const available_supply = tokeninfo.available_supply
+      if (0 === available_supply) {
+        return 0
+      }
+      
+      return stakeSum.div(available_supply)
     }
-    
-    return stakeSum.div(available_supply)
-  }
 
-    const output = {
-      roundNumber,
-      updatedAt: Date.now(),
-      accumulatedFire2: accumulatedFire2.toString(),
-      onlineWorkers: onlineWorkers.toString(),
-      totalPower: totalPower.toString(),
-      accumulatedStake: accumulatedStake.toString(),
-      accumulatedStakeHuman: api.createType('BalanceOf', accumulatedStake).toHuman().replace(/PHA$/, '').replace(' ', '').trim(),
-      stashAccounts: validStashAccounts,
-      payoutAccounts,
-      stashCount,
-      avgStakeDemical,
-      avgStake: parseFloat(avgStake),
-      avgScore: accumulatedScore / onlineWorkers.toNumber()
+    const getApyCurrentRound = function(accumulatedFire2PHA, stakeSumOfUserStake) {
+      if (0 == stakeSumOfUserStake) {
+        return 0;
+      }
+
+      return accumulatedFire2PHA/stakeSumOfUserStake*24*365;
     }
 
     let workers = []
@@ -302,25 +296,25 @@ class BlocksHistoryScan {
       }
 
       workers.push({
-        stashAccount: key,
-        controllerAccount: value.controller,
+        stash_account: key,
+        controller_account: value.controller,
         payout: value.payout,
-        accumulatedStake: accumulatedStake,
-        workerStake: workerStake,
-        userStake: userStake,
-        stakeAccountNum: value.stakeAccountNum,
+        accumulated_stake: accumulatedStake,
+        worker_stake: workerStake,
+        user_stake: userStake,
+        stake_account_num: value.stakeAccountNum,
         commission: value.commission,
-        taskScore: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
-        machineScore: value.overallScore,
-        onlineReward: 1021,   //todo 等待后端合约完善
-        computeReward: 22,    //todo 等待后端合约完善
+        task_score: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
+        machine_score: value.overallScore,
+        online_reward: 1021,   //todo 等待后端合约完善
+        compute_reward: 22,    //todo 等待后端合约完善
         reward: reward,        //todo 等待后端合约完善
         apy: getApy(reward, userStake),
         penalty: 0 // todo 等待后端合约完善
       });
     });
 
-    const stakeSumOfUserStake = workers.map(x => x.userStake).reduce((a, b) => a + b, 0)
+    const stakeSumOfUserStake = workers.map(x => x.user_stake).reduce((a, b) => a + b, 0)
     //jsonOutput = JSON.stringify(output)
     let historyRoundInfo = await HistoryRoundInfo.findOne({
       round: roundNumber
@@ -328,32 +322,32 @@ class BlocksHistoryScan {
     if (!historyRoundInfo) {
       historyRoundInfo = new HistoryRoundInfo({
         round: roundNumber,
-        avgStake: avgStake,
-        avgreward: avgreward,
-        accumulatedFire2: accumulatedFire2PHA, //总奖励
-        roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
-        onlineWorkerNum: onlineWorkers,
-        workerNum: stashCount,
-        stakeSum: stakeSum, 
-        stakeSupplyRate: await stakeSupplyRate(),
+        avg_stake: avgStake,
+        avg_reward: avgReward,
+        accumulated_fire2: accumulatedFire2PHA, //总奖励
+        round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
+        online_worker_num: onlineWorkers,
+        worker_num: stashCount,
+        stake_sum: stakeSum, 
+        stake_supply_rate: await stakeSupplyRate(),
         blocktime: null,
         workers: workers,
-        apyCurrentRound: accumulatedFire2PHA/stakeSumOfUserStake*24*365 ,
+        apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
       });
     } else {
       historyRoundInfo.set({
         round: roundNumber,
-        avgStake: avgStake,
-        avgreward: avgreward,
-        accumulatedFire2: accumulatedFire2PHA,
-        roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
-        onlineWorkerNum: onlineWorkers,
-        workerNum: stashCount,
-        stakeSum: stakeSum, 
-        stakeSupplyRate: await stakeSupplyRate(),
+        avg_stake: avgStake,
+        avg_reward: avgReward,
+        accumulated_fire2: accumulatedFire2PHA,
+        round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
+        online_worker_num: onlineWorkers,
+        worker_num: stashCount,
+        stake_sum: stakeSum, 
+        stake_supply_rate: await stakeSupplyRate(),
         blocktime: null,
         workers: workers,
-        apyCurrentRound: accumulatedFire2PHA/stakeSumOfUserStake*24*365,
+        apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
       });
     }
 

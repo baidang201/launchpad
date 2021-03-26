@@ -1,13 +1,13 @@
 import { createLogger } from 'bunyan'
 import Koa from 'koa'
 import { node }  from './config/index.js'
-import protobuf from './protobuf/protobuf.js'
-import {getWorkers} from './api/workers.js'
-import {getGlobalStatistics} from './api/globalStatistics.js'
-import {getApy} from './api/apy.js'
-import {getCommission} from './api/commission.js'
-import {getAvgStake, getStakeinfo} from './api/stake.js'
-import {getAvgReward, getRewardPenalty} from './api/rewardpenalty.js'
+import protobuf from './lib/protobuf/protobuf.js'
+import {getWorkers} from './lib/api/workers.js'
+import {getGlobalStatistics} from './lib/api/globalStatistics.js'
+import {getApy} from './lib/api/apy.js'
+import {getCommission} from './lib/api/commission.js'
+import {getAvgStake, getStakeinfo} from './lib/api/stake.js'
+import {getAvgReward, getRewardPenalty} from './lib/api/rewardpenalty.js'
 
 globalThis.$logger = createLogger({
   level: 'info',
@@ -21,14 +21,14 @@ app.on('error', (err, ctx) => {
 })
 
 const dispatchTable = {
-  'workerRequest'               : function(obj) {  const buffer = getWorkers(obj.workerRequest);  return buffer},
-  'globalStatisticsRequest'     : function(obj) {  const buffer = getGlobalStatistics();  return buffer },
-  'avgStakeRequest'             : function(obj) {  const buffer = getAvgStake();  return buffer},
-  'stakeInfoRequest'            : function(obj) {  const buffer = getStakeinfo(obj.stakeInfoRequest); return buffer},
-  'avgRewardRequest'            : function(obj) {  const buffer = getAvgReward(); return buffer},
-  'rewardPenaltyRequest'        : function(obj) {  const buffer = getRewardPenalty(obj.rewardPenaltyRequest); return buffer},
-  'apyRequest'                  : function(obj) {  const buffer = getApy(obj.apyRequest); return buffer},
-  'commissionRequest'           : function(obj) {  const buffer = getCommission(obj.commissionRequest); return buffer},
+  'worker_request'               : function(obj) {  const buffer = getWorkers(obj.worker_request);  return buffer},
+  'global_statistics_request'     : function(obj) {  const buffer = getGlobalStatistics();  return buffer },
+  'avg_stake_request'             : function(obj) {  const buffer = getAvgStake();  return buffer},
+  'stake_info_request'            : function(obj) {  const buffer = getStakeinfo(obj.stake_info_request); return buffer},
+  'avg_reward_request'            : function(obj) {  const buffer = getAvgReward(); return buffer},
+  'reward_penalty_request'        : function(obj) {  const buffer = getRewardPenalty(obj.reward_penalty_request); return buffer},
+  'apy_request'                  : function(obj) {  const buffer = getApy(obj.apy_request); return buffer},
+  'commission_request'           : function(obj) {  const buffer = getCommission(obj.commission_request); return buffer},
 };
 
 function getUnknowrequestBuff() {
@@ -54,7 +54,7 @@ function parsePostData( ctx ) {
               const resultBuff = Buffer.concat(buffers) // 合并接收到的buffer数据
               const result = protobuf.CommonRequest.decode(resultBuff); // 解码接受到的 buffer 数据
               const obj = protobuf.CommonRequest.toObject(result)  // 转换成json对象
-              
+
               const firstProperity = Object.keys(obj)[0]
               if (firstProperity) {
                 if (dispatchTable[firstProperity]) {

@@ -4,7 +4,7 @@ import {padArrayStart} from '../utils/index.js'
 
 export async function getCommission(commissionRequest) {
   const historyRoundInfo = await HistoryRoundInfo
-    .find( {'workers.stashAccount':  commissionRequest.stashAccount})
+    .find( {'workers.stash_account':  commissionRequest.stash_account})
     .select({round:1, 'workers.commission.$': 1})
     .sort({round: -1})
     .limit(30*24).lean();//30 days

@@ -4,10 +4,10 @@ import Demical from 'decimal.js'
 import types from '../typedefs.json'
 import BN from 'bn.js'
 import { node }  from '../config/index.js'
-import { RealtimeRoundInfo } from '../models/realtimeRoundInfo.js'
-import { HistoryRoundInfo } from '../models/historyRoundInfo.js'
+import { RealtimeRoundInfo } from '../lib/models/realtimeRoundInfo.js'
+import { HistoryRoundInfo } from '../lib/models/historyRoundInfo.js'
 import { createLogger } from 'bunyan'
-import { getTokenInfo } from '../servers/tokeninfo.js'
+import { getTokenInfo } from './tokeninfo.js'
 
 
 const { default: Queue } = pQueue
@@ -242,7 +242,7 @@ const processRoundAt = async (header, roundNumber, api) => {
     .div(1000)
     .div(1000)
   
-  const avgreward = accumulatedFire2Demical.div(stashCount)
+  const avgReward = accumulatedFire2Demical.div(stashCount)
     .div(1000)
     .div(1000)
     .div(1000)
@@ -270,22 +270,6 @@ const processRoundAt = async (header, roundNumber, api) => {
     return stakeSum.div(available_supply)
   }
 
-  const output = {
-    roundNumber,
-    updatedAt: Date.now(),
-    accumulatedFire2: accumulatedFire2.toString(),
-    onlineWorkers: onlineWorkers.toString(),
-    totalPower: totalPower.toString(),
-    accumulatedStake: accumulatedStake.toString(),
-    accumulatedStakeHuman: api.createType('BalanceOf', accumulatedStake).toHuman().replace(/PHA$/, '').replace(' ', '').trim(),
-    stashAccounts: validStashAccounts,
-    payoutAccounts,
-    stashCount,
-    avgStakeDemical,
-    avgStake: parseFloat(avgStake),
-    avgScore: accumulatedScore / onlineWorkers.toNumber()
-  }
-
   let workers = []
   Object.keys(stashAccounts).map(function(key, index) {
     const value = stashAccounts[key];
@@ -308,19 +292,19 @@ const processRoundAt = async (header, roundNumber, api) => {
       .div(1000)
 
     workers.push({
-      stashAccount: key,
-      controllerAccount: value.controller,
+      stash_account: key,
+      controller_account: value.controller,
       payout: value.payout,
-      onlineStatus: value.onlineStatus,
-      accumulatedStake: accumulatedStake,
-      workerStake: workerStake,
-      userStake: userStake,
-      stakeAccountNum: value.stakeAccountNum,
+      online_status: value.onlineStatus,
+      accumulated_stake: accumulatedStake,
+      worker_stake: workerStake,
+      user_stake: userStake,
+      stake_account_num: value.stakeAccountNum,
       commission: value.commission,
-      taskScore: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
-      machineScore: value.overallScore,
-      onlineReward: 1021,   //todo 等待后端合约完善
-      computeReward: 22,    //todo 等待后端合约完善
+      task_score: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
+      machine_score: value.overallScore,
+      online_reward: 1021,   //todo 等待后端合约完善
+      compute_reward: 22,    //todo 等待后端合约完善
       reward: 12345,        //todo 等待后端合约完善
       apy: 1,            //todo@@ 根据mongodb历史数据完善 看看产品更新公式
       penalty: 0 // todo 等待后端合约完善
@@ -340,30 +324,30 @@ const processRoundAt = async (header, roundNumber, api) => {
   if (!realtimeRoundInfo) {
     realtimeRoundInfo = new RealtimeRoundInfo({
       round: roundNumber,
-      avgStake: avgStake,
-      avgreward: avgreward,
-      accumulatedFire2: accumulatedFire2PHA,
-      roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
-      onlineWorkerNum: onlineWorkers,
-      workerNum: stashCount,
-      stakeSum: stakeSum, 
-      stakeSupplyRate: await stakeSupplyRate(),
-      rewardLastRound: await getLastRoundReward(roundNumber),
+      avg_stake: avgStake,
+      avg_reward: avgReward,
+      accumulated_fire2: accumulatedFire2PHA,
+      round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
+      online_worker_num: onlineWorkers,
+      worker_num: stashCount,
+      stake_sum: stakeSum, 
+      stake_supply_rate: await stakeSupplyRate(),
+      reward_last_round: await getLastRoundReward(roundNumber),
       blocktime: null,
       workers: workers
     });
   } else {
     realtimeRoundInfo.set({
       round: roundNumber,
-      avgStake: avgStake,
-      avgreward: avgreward,
-      accumulatedFire2: accumulatedFire2PHA,
-      roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
-      onlineWorkerNum: onlineWorkers,
-      workerNum: stashCount,
-      stakeSum: stakeSum, 
-      stakeSupplyRate: await stakeSupplyRate(),
-      rewardLastRound: await getLastRoundReward(roundNumber),
+      avg_stake: avgStake,
+      avg_reward: avgReward,
+      accumulated_fire2: accumulatedFire2PHA,
+      round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
+      online_worker_num: onlineWorkers,
+      worker_num: stashCount,
+      stake_sum: stakeSum, 
+      stake_supply_rate: await stakeSupplyRate(),
+      reward_last_round: await getLastRoundReward(roundNumber),
       blocktime: null,
       workers: workers
     });

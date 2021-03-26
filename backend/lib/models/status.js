@@ -1,4 +1,4 @@
-import mongoose from  "../db/mogoose.js"
+import mongoose from  "../../db/mogoose.js"
 //get_dynamic_global_properties
 export const Status = mongoose.model('status', {
     head_block_number: Number,

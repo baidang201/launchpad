@@ -4,11 +4,11 @@
       "nested": {
         "Worker": {
           "fields": {
-            "stashAccount": {
+            "stash_account": {
               "type": "string",
               "id": 1
             },
-            "controllerAccount": {
+            "controller_account": {
               "type": "string",
               "id": 2
             },
@@ -16,31 +16,31 @@
               "type": "string",
               "id": 3
             },
-            "onlineStatus": {
+            "online_status": {
               "type": "bool",
               "id": 4
             },
-            "stakeEnough": {
+            "stake_enough": {
               "type": "bool",
               "id": 5
             },
-            "accumulatedStake": {
+            "accumulated_stake": {
               "type": "string",
               "id": 6
             },
-            "profitLastMonth": {
+            "profit_last_month": {
               "type": "string",
               "id": 7
             },
-            "workerStake": {
+            "worker_stake": {
               "type": "string",
               "id": 8
             },
-            "userStake": {
+            "user_stake": {
               "type": "string",
               "id": 9
             },
-            "stakeAccountNum": {
+            "stake_account_num": {
               "type": "int32",
               "id": 10
             },
@@ -48,11 +48,11 @@
               "type": "float",
               "id": 11
             },
-            "taskScore": {
+            "task_score": {
               "type": "int32",
               "id": 12
             },
-            "machineScore": {
+            "machine_score": {
               "type": "int32",
               "id": 13
             },
@@ -60,11 +60,11 @@
               "type": "double",
               "id": 14
             },
-            "diffToMinStake": {
+            "diff_to_min_stake": {
               "type": "int32",
               "id": 15
             },
-            "stakeToMinApy": {
+            "stake_to_min_apy": {
               "type": "double",
               "id": 16
             }
@@ -93,31 +93,31 @@
               "type": "int32",
               "id": 2
             },
-            "roundCycleTime": {
+            "round_cycle_time": {
               "type": "int32",
               "id": 3
             },
-            "onlineWorkerNum": {
+            "online_worker_num": {
               "type": "int32",
               "id": 4
             },
-            "workerNum": {
+            "worker_num": {
               "type": "int32",
               "id": 5
             },
-            "stakeSum": {
+            "stake_sum": {
               "type": "string",
               "id": 6
             },
-            "stakeSupplyRate": {
+            "stake_supply_rate": {
               "type": "float",
               "id": 7
             },
-            "avgStake": {
+            "avg_stake": {
               "type": "string",
               "id": 8
             },
-            "rewardLastRound": {
+            "reward_last_round": {
               "type": "string",
               "id": 9
             }
@@ -141,27 +141,27 @@
               "type": "int32",
               "id": 1
             },
-            "pageSize": {
+            "page_size": {
               "type": "int32",
               "id": 2
             },
-            "filterRuning": {
+            "filter_runing": {
               "type": "bool",
               "id": 3
             },
-            "filterStakeEnough": {
+            "filter_stake_enough": {
               "type": "bool",
               "id": 4
             },
-            "filterCommissionLessThen": {
+            "filter_commission_less_then": {
               "type": "bool",
               "id": 5
             },
-            "sortFieldName": {
+            "sort_field_name": {
               "type": "string",
               "id": 6
             },
-            "filterStashAccounts": {
+            "filter_stash_accounts": {
               "rule": "repeated",
               "type": "string",
               "id": 7
@@ -197,7 +197,7 @@
         },
         "AvgStake": {
           "fields": {
-            "avgStake": {
+            "avg_stake": {
               "rule": "repeated",
               "type": "string",
               "id": 1
@@ -221,12 +221,12 @@
         },
         "StakeInfo": {
           "fields": {
-            "accumulatedStake": {
+            "accumulated_stake": {
               "rule": "repeated",
               "type": "string",
               "id": 1
             },
-            "workerStake": {
+            "worker_stake": {
               "rule": "repeated",
               "type": "string",
               "id": 2
@@ -235,7 +235,7 @@
         },
         "StakeInfoRequest": {
           "fields": {
-            "stashAccount": {
+            "stash_account": {
               "type": "string",
               "id": 1
             }
@@ -269,7 +269,7 @@
         },
         "RewardPenaltyRequest": {
           "fields": {
-            "stashAccount": {
+            "stash_account": {
               "type": "string",
               "id": 1
             }
@@ -289,7 +289,7 @@
         },
         "AvgReward": {
           "fields": {
-            "avgreward": {
+            "avg_reward": {
               "rule": "repeated",
               "type": "string",
               "id": 1
@@ -298,7 +298,7 @@
         },
         "AvgRewardRequest": {
           "fields": {
-            "stashAccount": {
+            "stash_account": {
               "type": "string",
               "id": 1
             }
@@ -327,7 +327,7 @@
         },
         "ApyRequest": {
           "fields": {
-            "stashAccount": {
+            "stash_account": {
               "type": "string",
               "id": 1
             }
@@ -356,7 +356,7 @@
         },
         "CommissionRequest": {
           "fields": {
-            "stashAccount": {
+            "stash_account": {
               "type": "string",
               "id": 1
             }
@@ -378,47 +378,47 @@
           "oneofs": {
             "request": {
               "oneof": [
-                "workerRequest",
-                "globalStatisticsRequest",
-                "avgStakeRequest",
-                "stakeInfoRequest",
-                "rewardPenaltyRequest",
-                "avgRewardRequest",
-                "apyRequest",
-                "commissionRequest"
+                "worker_request",
+                "global_statistics_request",
+                "avg_stake_request",
+                "stake_info_request",
+                "reward_penalty_request",
+                "avg_reward_request",
+                "apy_request",
+                "commission_request"
               ]
             }
           },
           "fields": {
-            "workerRequest": {
+            "worker_request": {
               "type": "WorkerRequest",
               "id": 1
             },
-            "globalStatisticsRequest": {
+            "global_statistics_request": {
               "type": "GlobalStatisticsRequest",
               "id": 2
             },
-            "avgStakeRequest": {
+            "avg_stake_request": {
               "type": "AvgStakeRequest",
               "id": 3
             },
-            "stakeInfoRequest": {
+            "stake_info_request": {
               "type": "StakeInfoRequest",
               "id": 4
             },
-            "rewardPenaltyRequest": {
+            "reward_penalty_request": {
               "type": "RewardPenaltyRequest",
               "id": 5
             },
-            "avgRewardRequest": {
+            "avg_reward_request": {
               "type": "AvgRewardRequest",
               "id": 6
             },
-            "apyRequest": {
+            "apy_request": {
               "type": "ApyRequest",
               "id": 7
             },
-            "commissionRequest": {
+            "commission_request": {
               "type": "CommissionRequest",
               "id": 8
             }

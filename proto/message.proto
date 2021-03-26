@@ -2,22 +2,22 @@ syntax = "proto3";
 package  launchpadpackage;
 
 message Worker {
-  string stashAccount = 1;
-  string controllerAccount = 2;
+  string stash_account = 1;
+  string controller_account = 2;
   string payout = 3;
-  bool   onlineStatus = 4;
-  bool   stakeEnough = 5;
-  string accumulatedStake = 6;  // bignum
-  string profitLastMonth = 7;  // bignum
-  string workerStake = 8;  // bignum
-  string userStake = 9;  // bignum
-  int32  stakeAccountNum = 10;
+  bool   online_status = 4;
+  bool   stake_enough = 5;
+  string accumulated_stake = 6;  // bignum
+  string profit_last_month = 7;  // bignum
+  string worker_stake = 8;  // bignum
+  string user_stake = 9;  // bignum
+  int32  stake_account_num = 10;
   float  commission = 11;
-  int32  taskScore = 12;
-  int32  machineScore = 13;
+  int32  task_score = 12;
+  int32  machine_score = 13;
   double apy = 14;
-  int32  diffToMinStake = 15;
-  double stakeToMinApy = 16;
+  int32  diff_to_min_stake = 15;
+  double stake_to_min_apy = 16;
 }
 
 message RoundInfo {
@@ -28,13 +28,13 @@ message RoundInfo {
 message Globalstatistics {
   float apy = 1;
   int32 round = 2;
-  int32 roundCycleTime = 3;
-  int32 onlineWorkerNum = 4;
-  int32 workerNum = 5;
-  string stakeSum = 6;  //bignum
-  float stakeSupplyRate = 7;
-  string avgStake = 8;  //bignum
-  string rewardLastRound = 9;
+  int32 round_cycle_time = 3;
+  int32 online_worker_num = 4;
+  int32 worker_num = 5;
+  string stake_sum = 6;  //bignum
+  float  stake_supply_rate = 7;
+  string avg_stake = 8;  //bignum
+  string reward_last_round = 9;
 }
 
 message Status {
@@ -44,13 +44,13 @@ message Status {
 
 //worker
 message WorkerRequest {
-  int32 page = 1;
-  int32 pageSize = 2;
-  bool  filterRuning = 3;
-  bool  filterStakeEnough = 4;
-  bool  filterCommissionLessThen = 5;
-  string sortFieldName = 6;
-  repeated string filterStashAccounts = 7;
+  int32  page = 1;
+  int32  page_size = 2;
+  bool   filter_runing = 3;
+  bool   filter_stake_enough = 4;
+  bool   filter_commission_less_then = 5;
+  string sort_field_name = 6;
+  repeated string filter_stash_accounts = 7;
 }
 
 message WorkerResponse {
@@ -69,7 +69,7 @@ message GlobalStatisticsResponse {
 
 //stakes
 message AvgStake {
-  repeated string avgStake = 1;  //bignum
+  repeated string avg_stake = 1;  //bignum
 }
 
 message AvgStakeRequest {
@@ -82,12 +82,12 @@ message AvgStakeResponse {
 
 //stakeinfo
 message StakeInfo {
-  repeated string accumulatedStake = 1;
-  repeated string workerStake = 2;
+  repeated string accumulated_stake = 1;
+  repeated string worker_stake = 2;
 }
 
 message StakeInfoRequest {
-  string stashAccount = 1;
+  string stash_account = 1;
 }
 
 message StakeInfoResponse {
@@ -102,7 +102,7 @@ message RewardPenalty {
 }
 
 message RewardPenaltyRequest {
-  string stashAccount = 1;
+  string stash_account = 1;
 }
 
 message RewardPenaltyResponse {
@@ -112,11 +112,11 @@ message RewardPenaltyResponse {
 
 //avgreward
 message AvgReward {
-  repeated string avgreward = 1;  
+  repeated string avg_reward = 1;  
 }
 
 message AvgRewardRequest {
-  string stashAccount = 1;
+  string stash_account = 1;
 }
 
 message AvgRewardResponse {
@@ -129,7 +129,7 @@ message Apy {
   repeated float apy = 1;
 }
 message ApyRequest {
-  string stashAccount = 1;
+  string stash_account = 1;
 }
 message ApyResponse {
   Status status = 1;
@@ -141,7 +141,7 @@ message Commission {
   repeated float commission = 1;
 }
 message CommissionRequest {
-  string stashAccount = 1;
+  string stash_account = 1;
 }
 message CommissionResponse {
   Status status = 1;
@@ -151,14 +151,14 @@ message CommissionResponse {
 //common
 message CommonRequest {
   oneof request {
-    WorkerRequest workerRequest = 1;
-    GlobalStatisticsRequest globalStatisticsRequest = 2;
-    AvgStakeRequest avgStakeRequest = 3;
-    StakeInfoRequest stakeInfoRequest = 4;
-    RewardPenaltyRequest rewardPenaltyRequest = 5;
-    AvgRewardRequest avgRewardRequest = 6;
-    ApyRequest apyRequest = 7;
-    CommissionRequest commissionRequest = 8;
+    WorkerRequest worker_request = 1;
+    GlobalStatisticsRequest global_statistics_request = 2;
+    AvgStakeRequest avg_stake_request = 3;
+    StakeInfoRequest stake_info_request = 4;
+    RewardPenaltyRequest reward_penalty_request = 5;
+    AvgRewardRequest avg_reward_request = 6;
+    ApyRequest apy_request = 7;
+    CommissionRequest commission_request = 8;
   }
 }
 
