@@ -53,8 +53,6 @@ export const main = async () => {
   return api.rpc.chain.subscribeNewHeads(async header => {
     const number = header.number.toNumber()
 
-    console.log("#### get number", number);
-
     if (number > LAST_BLOCK) {
       if (jsonOutput !== DEFAULT_OUTPUT) { return }
       if (!lastBlockHeader) {
@@ -105,7 +103,6 @@ const processRoundAt = async (header, roundNumber, api) => {
   const stashAccounts = {}
   const stashKeys = await api.query.phalaModule.stashState.keysAt(blockHash)
   const stashCount = stashKeys.length
-  console.log("####1 stashAccounts");
   await Promise.all(
     (stashKeys)
       .map(async k => {
@@ -125,7 +122,6 @@ const processRoundAt = async (header, roundNumber, api) => {
       }))
 
   const payoutAccounts = {}
-  console.log("####2 payoutAccounts");
   await Promise.all(
     (await api.query.phalaModule.fire2.keysAt(blockHash))
       .map(async k => {
@@ -142,7 +138,6 @@ const processRoundAt = async (header, roundNumber, api) => {
         }
       }))
 
-  console.log("####3 payoutComputeReward");
   await Promise.all(
     (await api.query.phalaModule.payoutComputeReward.keysAt(blockHash))
       .map(async k => {
@@ -158,7 +153,6 @@ const processRoundAt = async (header, roundNumber, api) => {
       })
   )
 
-  console.log("####4 workerState");
   const validStashAccounts = {}
   let accumulatedScore = 0
   await Promise.all(
@@ -183,7 +177,6 @@ const processRoundAt = async (header, roundNumber, api) => {
         }
       }))
 
-  console.log("####5 payoutAccount.stake");
   let accumulatedStake = undefined  
   await Promise.all(
     (await api.query.miningStaking.stakeReceived.keysAt(blockHash))
@@ -231,7 +224,6 @@ const processRoundAt = async (header, roundNumber, api) => {
       })
   )
 
-  console.log("####6 count stake");
   accumulatedStake = accumulatedStake || new BN('0')
   const accumulatedStakeDemical = new Demical(accumulatedStake.toString())
   Object.entries(payoutAccounts).forEach(([k, v]) => {
@@ -243,7 +235,6 @@ const processRoundAt = async (header, roundNumber, api) => {
     payoutAccounts[k].stakeRatio = valueDemical.div(accumulatedStakeDemical).toNumber()
   })
 
-  console.log("####7 count stake reward");
   const avgStakeDemical = accumulatedStakeDemical.div(stashCount)
   const avgStake = avgStakeDemical
     .div(1000)
@@ -362,7 +353,6 @@ const processRoundAt = async (header, roundNumber, api) => {
       workers: workers
     });
   } else {
-    console.log("#before insert", roundNumber, avgStake);
     realtimeRoundInfo.set({
       round: roundNumber,
       avgStake: avgStake,

@@ -49,8 +49,6 @@ class BlocksHistoryScan {
       api.rpc.system.version()
     ])).map(i => i.toString());
 
-    //console.log({ chain: phalaChain }, `Connected to chain ${phalaChain} using ${phalaNodeName} v${phalaNodeVersion}`)
-
     const that = this;
     (function iteratorBlocks() {
       that.processBlock(api).then((nextTimeout) => {
@@ -70,12 +68,8 @@ class BlocksHistoryScan {
   }
 
   processBlock = async (api) => {
-    console.log("#### in processBlock");
-    console.log("#start status", this.status);
 
     const blockNumber = this.status.last_scan_number + 600;
-    console.log("####new blockNumber", this.status.last_scan_number, blockNumber);
-    
     const lastBlockHeaderHash = await api.rpc.chain.getBlockHash(blockNumber)
     this.lastBlockHeader = await api.rpc.chain.getHeader(lastBlockHeaderHash)
     
@@ -97,8 +91,6 @@ class BlocksHistoryScan {
     const stashKeys = await api.query.phalaModule.stashState.keysAt(blockHash)
     const stashCount = stashKeys.length
 
-    console.log("#get roundNumber", roundNumber);
-    console.log("####1 stashAccounts");
     await Promise.all(
       (stashKeys)
         .map(async k => {
@@ -117,7 +109,6 @@ class BlocksHistoryScan {
         }))
 
     const payoutAccounts = {}
-    console.log("####2 payoutAccounts");
     await Promise.all(
       (await api.query.phalaModule.fire2.keysAt(blockHash))
         .map(async k => {
@@ -135,7 +126,6 @@ class BlocksHistoryScan {
           }
         }))
 
-    console.log("####3 payoutComputeReward");
     await Promise.all(
       (await api.query.phalaModule.payoutComputeReward.keysAt(blockHash))
         .map(async k => {
@@ -151,7 +141,6 @@ class BlocksHistoryScan {
         })
     )
 
-    console.log("####4 workerState");
     const validStashAccounts = {}
     let accumulatedScore = 0
     await Promise.all(
@@ -175,7 +164,6 @@ class BlocksHistoryScan {
           }
         }))
 
-    console.log("####5 payoutAccount.stake");
     let accumulatedStake = undefined
     await Promise.all(
       (await api.query.miningStaking.stakeReceived.keysAt(blockHash))
@@ -222,7 +210,6 @@ class BlocksHistoryScan {
       })
   )
   
-    console.log("####6 count stake");
     accumulatedStake = accumulatedStake || new BN('0')
     const accumulatedStakeDemical = new Demical(accumulatedStake.toString())
     Object.entries(payoutAccounts).forEach(([k, v]) => {
@@ -234,7 +221,6 @@ class BlocksHistoryScan {
       payoutAccounts[k].stakeRatio = valueDemical.div(accumulatedStakeDemical).toNumber()
     })
 
-    console.log("####7 count stake reward");
     const avgStakeDemical = accumulatedStakeDemical.div(stashCount)
     const avgStake = avgStakeDemical
       .div(1000)
@@ -334,8 +320,6 @@ class BlocksHistoryScan {
       });
     });
 
-    console.log("####8 before insert");
-
     const stakeSumOfUserStake = workers.map(x => x.userStake).reduce((a, b) => a + b, 0)
     //jsonOutput = JSON.stringify(output)
     let historyRoundInfo = await HistoryRoundInfo.findOne({
@@ -357,7 +341,6 @@ class BlocksHistoryScan {
         apyCurrentRound: accumulatedFire2PHA/stakeSumOfUserStake*24*365 ,
       });
     } else {
-      console.log("#before insert", roundNumber, avgStake, accumulatedFire2.toString());
       historyRoundInfo.set({
         round: roundNumber,
         avgStake: avgStake,
@@ -381,8 +364,6 @@ class BlocksHistoryScan {
       last_scan_round: roundNumber
     })
     await this.status.save();
-    console.log("#end status", number, this.status);
-    //$logger.info(`Updated output from round #${roundNumber}.`)
   }
 
 
@@ -401,7 +382,6 @@ class BlocksHistoryScan {
         await _status.save();
     }
     this.status = _status;
-    //console.log("status:" + JSON.stringify(this.status));
   }
 }
 
