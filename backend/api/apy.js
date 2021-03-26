@@ -3,18 +3,21 @@ import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 import {padArrayStart} from '../utils/index.js'
 
 export async function getApy(apyRequest) {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+  const historyRoundInfo = await HistoryRoundInfo
+    .find( {'workers.stashAccount':  apyRequest.stashAccount})
+    .select({round:1, 'workers.apy.$': 1})
+    .sort({round: -1})
+    .limit(30*24).lean();//30 days
+
   if (!historyRoundInfo) {
     const message = protobuf.ApyResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.ApyResponse.encode(message).finish();
     return buffer;
   }
 
-  const filterWorkersRule = x => x.stashAccount === apyRequest.stashAccount;
   const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
     .filter((element, index) => {return 0 == index % 4} )
     .flat(1)
-    .filter(filterWorkersRule)
 
   const apys = filterWorkers.map(x => x.apy).reverse();
 

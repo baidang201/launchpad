@@ -3,18 +3,21 @@ import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 import {padArrayStart} from '../utils/index.js'
 
 export async function getCommission(commissionRequest) {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+  const historyRoundInfo = await HistoryRoundInfo
+    .find( {'workers.stashAccount':  commissionRequest.stashAccount})
+    .select({round:1, 'workers.commission.$': 1})
+    .sort({round: -1})
+    .limit(30*24).lean();//30 days
+
   if (!historyRoundInfo) {
     const message = protobuf.CommissionResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.CommissionResponse.encode(message).finish();
     return buffer;
   }
 
-  const filterWorkersRule = x => x.stashAccount === commissionRequest.stashAccount;
   const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
     .filter((element, index) => {return 0 == index % 4} )
     .flat(1)
-    .filter(filterWorkersRule)
 
   const commissions = filterWorkers.map(x => x.commission).reverse();
 

@@ -4,7 +4,7 @@ import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 import {padArrayStart, sumEvery, averageEvery} from '../utils/index.js'
 
 export async function getStakeinfo(stakeInfoRequest) {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
   if (!historyRoundInfo) {
     const message = protobuf.StakeInfoResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.StakeInfoResponse.encode(message).finish();
@@ -31,7 +31,7 @@ export async function getStakeinfo(stakeInfoRequest) {
 
 
 export async function getAvgStake() {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
   if (!historyRoundInfo) {
     const message = protobuf.AvgStakeResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.AvgStakeResponse.encode(message).finish();

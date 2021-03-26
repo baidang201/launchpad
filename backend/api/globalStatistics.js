@@ -5,7 +5,7 @@ import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 
 
 export async function getGlobalStatistics() {
-  const realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
+  const realtimeRoundInfo = await RealtimeRoundInfo.findOne({}).lean();
   if (!realtimeRoundInfo) {
     const message = protobuf.GlobalStatisticsResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.GlobalStatisticsResponse.encode(message).finish();

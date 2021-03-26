@@ -12,7 +12,7 @@ function paginate(array, page_size, page_number) {
 }
 
 export async function getWorkers(workerRequest) {
-  const realtimeRoundInfo = await RealtimeRoundInfo.findOne({});
+  const realtimeRoundInfo = await RealtimeRoundInfo.findOne({}).lean();
   if (!realtimeRoundInfo) {
     const message = protobuf.WorkerResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.WorkerResponse.encode(message).finish();
@@ -47,7 +47,7 @@ export async function getWorkers(workerRequest) {
 
   const total = filterWorkers.length;
 
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
 
   //todo add chache in mongodb  or count key in paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)
   function getProfitLastMonth(historyRoundInfo, stashAccount) {

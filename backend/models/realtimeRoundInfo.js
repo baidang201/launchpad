@@ -1,7 +1,7 @@
 import mongoose from  "../db/mogoose.js"
 
 export const Worker = new mongoose.Schema({ 
-  stashAccount: {type: String},
+  stashAccount: {type: String, index: true},
   controllerAccount: {type: String},
   payout: {type: String},
   onlineStatus: {type: Boolean},

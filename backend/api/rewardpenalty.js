@@ -3,7 +3,7 @@ import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 import {padArrayStart, sumEvery, averageEvery} from '../utils/index.js'
 
 export async function getRewardPenalty(rewardPenaltyRequest) {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
   if (!historyRoundInfo) {
     const message = protobuf.RewardPenaltyResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.RewardPenaltyResponse.encode(message).finish();
@@ -29,7 +29,7 @@ export async function getRewardPenalty(rewardPenaltyRequest) {
 }
 
 export async function getAvgReward() {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24);//30 days
+  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
   if (!historyRoundInfo) {
     const message = protobuf.AvgRewardResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.AvgRewardResponse.encode(message).finish();
