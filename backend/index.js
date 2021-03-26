@@ -31,6 +31,12 @@ const dispatchTable = {
   'commissionRequest'           : function(obj) {  const buffer = getCommission(obj.commissionRequest); return buffer},
 };
 
+function getUnknowrequestBuff() {
+  const message = protobuf.CommonResponse.create({status: {msg: "unknow request", success: -1}});
+  const buffer = protobuf.CommonResponse.encode(message).finish();
+  return buffer
+}
+
 // 解析上下文里node原生请求的POST参数
 function parsePostData( ctx ) {
   return new Promise((resolve, reject) => {
@@ -54,11 +60,10 @@ function parsePostData( ctx ) {
                 if (dispatchTable[firstProperity]) {
                   resolve( dispatchTable[firstProperity](obj) );
                 } else {
-                  const message = protobuf.CommonResponse.create({status: {msg: "unknow request", success: -1}});
-                  const buffer = protobuf.CommonResponse.encode(message).finish();
-      
-                  return resolve( buffer )
+                  resolve( getUnknowrequestBuff() )
                 }
+              } else {
+                resolve( getUnknowrequestBuff() )  
               }
           }
       });
