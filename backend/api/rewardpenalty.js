@@ -3,17 +3,20 @@ import {HistoryRoundInfo} from '../models/historyRoundInfo.js'
 import {padArrayStart, sumEvery, averageEvery} from '../utils/index.js'
 
 export async function getRewardPenalty(rewardPenaltyRequest) {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
+  const historyRoundInfo = await HistoryRoundInfo
+  .find( {'workers.stashAccount':  rewardPenaltyRequest.stashAccount})
+  .select({'workers.$': 1})
+  .sort({round: -1})
+  .limit(30*24)
+  .lean();//30 days
   if (!historyRoundInfo) {
     const message = protobuf.RewardPenaltyResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.RewardPenaltyResponse.encode(message).finish();
     return buffer;
   }
 
-  const filterWorkersRule = x => x.stashAccount === rewardPenaltyRequest.stashAccount;
   const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
     .flat(1)
-    .filter(filterWorkersRule)
 
   const rewards = sumEvery(filterWorkers.map(x => x.reward), 4).reverse();
   const penaltys = sumEvery(filterWorkers.map(x => x.penalty), 4).reverse();
@@ -29,7 +32,13 @@ export async function getRewardPenalty(rewardPenaltyRequest) {
 }
 
 export async function getAvgReward() {
-  const historyRoundInfo = await HistoryRoundInfo.find({}).sort({round: -1}).limit(30*24).lean();//30 days
+  const historyRoundInfo = await HistoryRoundInfo
+  .find({})
+  .select({avgreward: 1})
+  .sort({round: -1})
+  .limit(30*24)
+  .lean();//30 days
+
   if (!historyRoundInfo) {
     const message = protobuf.AvgRewardResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.AvgRewardResponse.encode(message).finish();
