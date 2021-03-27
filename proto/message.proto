@@ -39,7 +39,7 @@ message Globalstatistics {
 
 message Status {
   int32 success = 1;
-  optional string msg = 2;
+  string msg = 2;
 }
 
 //worker
