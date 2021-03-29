@@ -11,18 +11,18 @@ function jsFetch(postBuffer, resMessage) {
       },
       body: postBuffer
     }).then(res => res.arrayBuffer())
-    .catch(error => logger.warn('Error:', error))
+    .catch(error => logger.info('Error:', error))
     .then(response => { 
           {
             //WorkerResponse
-            logger.warn('response',response)
+            logger.info('response',response)
             const msg = resMessage.decode(new Uint8Array(response))
             const resObj = resMessage.toObject(msg)
-            logger.warn('resObj', resObj)
-            logger.warn('resObj', JSON.stringify( resObj))
+            logger.info('resObj', resObj)
+            logger.info('resObj', JSON.stringify( resObj))
           }  
     }, err => {
-      logger.warn('err', err)
+      logger.info('err', err)
     })
 }
 
@@ -36,41 +36,41 @@ function testworkerRequest() {
       filter_commission_less_then: true, 
       sort_field_name: 'commission',
       filter_stash_accounts: []}});
-  logger.warn(`message = ${JSON.stringify(message4)}`);
+  logger.info(`message = ${JSON.stringify(message4)}`);
   const buffer4 = protobuf.CommonRequest.encode(message4).finish();
   jsFetch(buffer4, protobuf.WorkerResponse);
 }
 
 function testglobalStatisticsRequest() {
   const message = protobuf.CommonRequest.create({global_statistics_request: {}});
-  logger.warn(`message = ${JSON.stringify(message)}`);
+  logger.info(`message = ${JSON.stringify(message)}`);
   const buffer = protobuf.CommonRequest.encode(message).finish();
-  logger.warn(buffer);
+  logger.info(buffer);
   jsFetch(buffer, protobuf.GlobalStatisticsResponse);
   
 }
 
 function teststake() {
   const message2 = protobuf.CommonRequest.create({avg_stake_request: {}});
-  logger.warn(`message = ${JSON.stringify(message2)}`);
+  logger.info(`message = ${JSON.stringify(message2)}`);
   const buffer2 = protobuf.CommonRequest.encode(message2).finish();
-  logger.warn(buffer2);
+  logger.info(buffer2);
   jsFetch(buffer2, protobuf.AvgStakeResponse);
 
   const message3 = protobuf.CommonRequest.create({stake_info_request: {stash_account: "41rqEQk9YWqVt3RHAyDquCauZJyatUDEDDtMTcNfvYP1MTB6"}});
-  logger.warn(`message = ${JSON.stringify(message3)}`);
+  logger.info(`message = ${JSON.stringify(message3)}`);
   const buffer3 = protobuf.CommonRequest.encode(message3).finish();
   jsFetch(buffer3, protobuf.StakeInfoResponse);
 }
 
 function testreward() {
   const message5 = protobuf.CommonRequest.create({avg_reward_request: {}});
-  logger.warn(`message = ${JSON.stringify(message5)}`);
+  logger.info(`message = ${JSON.stringify(message5)}`);
   const buffer5 = protobuf.CommonRequest.encode(message5).finish();
   jsFetch(buffer5, protobuf.AvgRewardResponse);
 
   const message6 = protobuf.CommonRequest.create({reward_penalty_request: {stash_account: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
-  logger.warn(`message = ${JSON.stringify(message6)}`);
+  logger.info(`message = ${JSON.stringify(message6)}`);
   const buffer6 = protobuf.CommonRequest.encode(message6).finish();
   jsFetch(buffer6, protobuf.RewardPenaltyResponse);
 }
@@ -78,21 +78,21 @@ function testreward() {
 
 function testapy() {
   const message6 = protobuf.CommonRequest.create({apy_request: {stash_account: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
-  logger.warn(`message = ${JSON.stringify(message6)}`);
+  logger.info(`message = ${JSON.stringify(message6)}`);
   const buffer6 = protobuf.CommonRequest.encode(message6).finish();
   jsFetch(buffer6, protobuf.ApyResponse);
 }
 
 function testcommission() {
   const message6 = protobuf.CommonRequest.create({commission_request: {stash_account: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
-  logger.warn(`message = ${JSON.stringify(message6)}`);
+  logger.info(`message = ${JSON.stringify(message6)}`);
   const buffer6 = protobuf.CommonRequest.encode(message6).finish();
   jsFetch(buffer6, protobuf.CommissionResponse);
 }
 
 function testunknow() {
   const message6 = protobuf.CommonRequest.create({unknow_request: {stash_account: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
-  logger.warn(`message = ${JSON.stringify(message6)}`);
+  logger.info(`message = ${JSON.stringify(message6)}`);
   const buffer6 = protobuf.CommonRequest.encode(message6).finish();
   jsFetch(buffer6, protobuf.CommonResponse);
 }

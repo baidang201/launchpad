@@ -25,9 +25,6 @@ const queue = new Queue({
 })
 
 let jsonOutput = DEFAULT_OUTPUT
-let lastBlockHeader
-let _status = null
-
 
 export const main = async () => {
   const provider = new WsProvider(node.WS_ENDPOINT)
@@ -45,44 +42,12 @@ export const main = async () => {
 
   return api.rpc.chain.subscribeNewHeads(async header => {
     const number = header.number.toNumber()
+    const roundInfo = (await api.query.phalaModule.round.at(header.hash)) || new BN('0')
+    const roundNumber = roundInfo.round.toNumber()
 
-    if (number > LAST_BLOCK) {
-      if (jsonOutput !== DEFAULT_OUTPUT) { return }
-      if (!lastBlockHeader) {
-        const lastBlockHeaderHash = await api.rpc.chain.getBlockHash(LAST_BLOCK)
-        lastBlockHeader = await api.rpc.chain.getHeader(lastBlockHeaderHash)
-      }
-      return queue.add(() => processRoundAt(lastBlockHeader, LAST_ROUND, api).catch(console.error))
-    }
+    logger.info(`realtime block round #${roundNumber} blocknum#${number}...`)
 
-    if (number === roundStartAt) {
-      return queue.add(() => processRoundAt(header, currentRound, api).catch(console.error))
-    }
-
-    const events = await api.query.system.events.at(header.hash)
-
-    let hasEvent = false
-
-    events.forEach(record => {
-      const { event } = record
-
-      if (event.section === 'phalaModule' && event.method === 'NewMiningRound') {
-        hasEvent = true
-        currentRound = event.data[0].toNumber()
-        logger.info(`Starting round #${currentRound} at block #${number + 1}...`)
-      }
-    })
-
-    if (hasEvent) {
-      roundStartAt = number + 1
-    } else {
-      if (!(roundStartAt && currentRound)) {
-        roundStartAt = number + 1
-        const roundInfo = await api.query.phalaModule.round.at(header.hash)
-        currentRound = roundInfo.round.toNumber()
-        logger.info(`Starting round #${currentRound} at block #${roundInfo.startBlock.toNumber()}...`)
-      }
-    }
+    return queue.add(() => processRoundAt(header, roundNumber, api).catch(console.error))
   })
 }
 
@@ -260,7 +225,6 @@ const processRoundAt = async (header, roundNumber, api) => {
     if (0 === available_supply) {
       return 0
     }
-    logger.info("###stakeSumPHA", stakeSumPHA, available_supply)
     
     return stakeSumPHA.div(available_supply)
   }
@@ -350,7 +314,9 @@ const processRoundAt = async (header, roundNumber, api) => {
 
   await realtimeRoundInfo.save();
 
-  logger.info(`@@@Updated output from round #${roundNumber}. blocknum#${number}`)
+  jsonOutput = JSON.stringify(realtimeRoundInfo)
+
+  logger.info(`@@@ realtime Updated output from round #${roundNumber}. blocknum#${number}`)
 }
 
 

@@ -245,8 +245,6 @@ class BlocksHistoryScan {
       if (0 === available_supply) {
         return 0
       }
-
-      logger.info("###stakeSumPHA", stakeSumPHA, available_supply)
       
       return stakeSumPHA.div(available_supply)
     }
@@ -328,12 +326,7 @@ class BlocksHistoryScan {
         workers: workers,
         apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
       });
-
-      logger.info("###new", JSON.stringify( workers))
     } else {
-
-      logger.info("###old",  JSON.stringify( historyRoundInfo.workers))
-
       historyRoundInfo.set({
         round: roundNumber,
         avg_stake: avgStake,
@@ -348,11 +341,7 @@ class BlocksHistoryScan {
         workers: workers,
         apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
       });
-
-      logger.info("###save",  JSON.stringify( workers))
     }
-
-    logger.info("logger.info(this.modifiedPaths());", historyRoundInfo.modifiedPaths());
 
     await historyRoundInfo.save();
 
@@ -362,7 +351,7 @@ class BlocksHistoryScan {
     })
     await this.status.save();
 
-    logger.info("### history insert `Updated output from round #${roundNumber}. in block number`", roundNumber, number)
+    logger.info(`### history insert Updated output from round #${roundNumber}. in blocknum #${number}`)
   }
 
 

@@ -1,6 +1,10 @@
 import { createLogger } from 'bunyan'
 
-export const logger = createLogger({
-  level: 'info',
-  name: 'dashboard'
-})
+export let logger = null;
+
+if( !logger ){
+  logger = createLogger({
+    level: 'info',
+    name: 'dashboard'
+  })
+}

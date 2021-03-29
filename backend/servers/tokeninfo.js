@@ -8,7 +8,8 @@ let cacheTime = 0;
 
 export async function getTokenInfo() {
   if (!cacheObject) {
-    cacheObject = await refreshCache();
+    const rt = await refreshCache();
+    logger.info("refrest rt:", rt);
   }
   const now = new Date().getTime();
   if ((now - cacheTime) >  60 * 60 * 1000) {

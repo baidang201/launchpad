@@ -21,7 +21,7 @@
     "scan": "node --experimental-json-modules --es-module-specifier-resolution=node --harmony-top-level-await --no-warnings ./scanServer.js",
     "dev": "nodemon --experimental-json-modules ./index.js",
     "scandev": "nodemon --experimental-json-modules ./scanServer.js",
-    "lint": "eslint --ext .js ../backend --fix"
+    "lint": "eslint --fix --ext .js,.jsx ."
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.19.0",

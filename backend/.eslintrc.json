@@ -28,6 +28,6 @@
           "allow": ["warn", "error"]
         }
       ],
-      "consistent-this": [2, "that"]
+      "@typescript-eslint/no-this-alias": ["off"]
     }
   }

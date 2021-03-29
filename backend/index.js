@@ -44,7 +44,7 @@ function parsePostData( ctx ) {
       // 监听end事件
       ctx.req.addListener('end', function(error) {
           if (error) {
-              logger.warn("error:", error)
+              logger.info("error:", error)
           } else {
               const resultBuff = Buffer.concat(buffers) // 合并接收到的buffer数据
               const result = protobuf.CommonRequest.decode(resultBuff); // 解码接受到的 buffer 数据
