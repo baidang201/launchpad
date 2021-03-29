@@ -21,7 +21,7 @@ apt  install protobuf-compiler
 cd  xxx/stakepad/
 
 
-\
+
 # 实时矿工列表接口
 
 # 
