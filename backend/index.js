@@ -31,7 +31,7 @@ const dispatchTable = {
   'commission_request'           : function(obj) {  const buffer = getCommission(obj.commission_request); return buffer},
 };
 
-function getUnknowrequestBuff() {
+function getUnknownRequestBuffer() {
   const message = protobuf.CommonResponse.create({status: {msg: "unknow request", success: -1}});
   const buffer = protobuf.CommonResponse.encode(message).finish();
   return buffer
@@ -41,7 +41,7 @@ function getUnknowrequestBuff() {
 function parsePostData( ctx ) {
   return new Promise((resolve, reject) => {
     try {
-      var buffers = [];
+      let buffers = [];
       // 监听data事件，接受传入的buffer数据，放入buffers数组中
       ctx.req.addListener('data', function(chunk) {
           buffers.push(chunk);
@@ -55,15 +55,15 @@ function parsePostData( ctx ) {
               const result = protobuf.CommonRequest.decode(resultBuff); // 解码接受到的 buffer 数据
               const obj = protobuf.CommonRequest.toObject(result)  // 转换成json对象
 
-              const firstProperity = Object.keys(obj)[0]
-              if (firstProperity) {
-                if (dispatchTable[firstProperity]) {
-                  resolve( dispatchTable[firstProperity](obj) );
+              const firstProperty = Object.keys(obj)[0]
+              if (firstProperty) {
+                if (dispatchTable[firstProperty]) {
+                  resolve( dispatchTable[firstProperty](obj) );
                 } else {
-                  resolve( getUnknowrequestBuff() )
+                  resolve( getUnknownRequestBuffer() )
                 }
               } else {
-                resolve( getUnknowrequestBuff() )  
+                resolve( getUnknownRequestBuffer() )  
               }
           }
       });

@@ -16,7 +16,7 @@ export async function getApy(apyRequest) {
   }
 
   const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
-    .filter((element, index) => {return 0 == index % 4} )
+    .filter((element, index) => {return 0 === index % 4} )
     .flat(1)
 
   const apys = filterWorkers.map(x => x.apy).reverse();

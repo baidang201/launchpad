@@ -16,7 +16,7 @@ export async function getCommission(commissionRequest) {
   }
 
   const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
-    .filter((element, index) => {return 0 == index % 4} )
+    .filter((element, index) => {return 0 === index % 4} )
     .flat(1)
 
   const commissions = filterWorkers.map(x => x.commission).reverse();

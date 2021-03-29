@@ -21,7 +21,7 @@ export async function getWorkers(workerRequest) {
   const workers = [];
 
   const filterWorkers = realtimeRoundInfo.workers.filter((element, index) => {
-    const checkfilterRuning = workerRequest.filter_runing? true == element.online_status: true;
+    const checkfilterRuning = workerRequest.filter_runing? true === element.online_status: true;
     const checkfilterStakeEnough = workerRequest.filter_stake_enough?  element.worker_stake >= BASE_STAKE_PHA : true;
     const checkfilterCommissionLessThen = workerRequest.filter_commission_less_then ? element.commission <= COMMISSION_LIMIT: true
     const checkfilterStashAccounts = (workerRequest.filter_stash_accounts &&  workerRequest.filter_stash_accounts.length > 0) ?
@@ -30,15 +30,15 @@ export async function getWorkers(workerRequest) {
     return checkfilterRuning && checkfilterStakeEnough && checkfilterCommissionLessThen && checkfilterStashAccounts
   })
   .sort((a, b) => {
-    if ( 'profit_last_month' == workerRequest.sort_field_name) {
+    if ( 'profit_last_month' === workerRequest.sort_field_name) {
       return b.profit_last_month - a.profit_last_month
-    } else if ( 'accumulated_stake' == workerRequest.sort_field_name) {
+    } else if ( 'accumulated_stake' === workerRequest.sort_field_name) {
       return b.accumulated_stake - a.accumulated_stake
-    } else if ( 'commission' == workerRequest.sort_field_name) {
+    } else if ( 'commission' === workerRequest.sort_field_name) {
       return b.commission - a.commission
-    } else if ( 'task_score' == workerRequest.sort_field_name) {
+    } else if ( 'task_score' === workerRequest.sort_field_name) {
       return b.task_score - a.task_score
-    } else if ( 'machine_score' == workerRequest.sort_field_name) {
+    } else if ( 'machine_score' === workerRequest.sort_field_name) {
       return b.machine_score - a.machine_score
     } else {
       return a.apy -  b.apy

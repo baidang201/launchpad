@@ -1,6 +1,6 @@
 import pQueue from 'p-queue'
 import { ApiPromise, WsProvider } from '@polkadot/api'
-import Demical from 'decimal.js'
+import Decimal from 'decimal.js'
 import types from '../typedefs.json'
 import BN from 'bn.js'
 import { node }  from '../config/index.js'
@@ -96,7 +96,7 @@ export const main = async () => {
 const processRoundAt = async (header, roundNumber, api) => {
   const blockHash = header.hash
   const accumulatedFire2 = (await api.query.phalaModule.accumulatedFire2.at(blockHash)) || new BN('0')
-  const accumulatedFire2Demical = new Demical(accumulatedFire2.toString())
+  const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
   const onlineWorkers = await api.query.phalaModule.onlineWorkers.at(blockHash)
   const totalPower = await api.query.phalaModule.totalPower.at(blockHash)
 
@@ -225,36 +225,36 @@ const processRoundAt = async (header, roundNumber, api) => {
   )
 
   accumulatedStake = accumulatedStake || new BN('0')
-  const accumulatedStakeDemical = new Demical(accumulatedStake.toString())
+  const accumulatedStakeDecimal = new Decimal(accumulatedStake.toString())
   Object.entries(payoutAccounts).forEach(([k, v]) => {
     const value = payoutAccounts[k].stake || new BN('0')
-    const valueDemical = new Demical(value.toString())
+    const valueDecimal = new Decimal(value.toString())
 
     payoutAccounts[k].stake = value.toString()
     payoutAccounts[k].stakeHuman = api.createType('BalanceOf', payoutAccounts[k].stake).toHuman().replace(/PHA$/, '').replace(' ', '').trim()
-    payoutAccounts[k].stakeRatio = valueDemical.div(accumulatedStakeDemical).toNumber()
+    payoutAccounts[k].stakeRatio = valueDecimal.div(accumulatedStakeDecimal).toNumber()
   })
 
-  const avgStakeDemical = accumulatedStakeDemical.div(stashCount)
-  const avgStake = avgStakeDemical
+  const avgStakeDecimal = accumulatedStakeDecimal.div(stashCount)
+  const avgStake = avgStakeDecimal
     .div(1000)
     .div(1000)
     .div(1000)
     .div(1000)
   
-  const avgReward = accumulatedFire2Demical.div(stashCount)
+  const avgReward = accumulatedFire2Decimal.div(stashCount)
     .div(1000)
     .div(1000)
     .div(1000)
     .div(1000);
 
-  const accumulatedFire2PHA = accumulatedFire2Demical
+  const accumulatedFire2PHA = accumulatedFire2Decimal
     .div(1000)
     .div(1000)
     .div(1000)
     .div(1000)
 
-  const stakeSum = accumulatedStakeDemical
+  const stakeSum = accumulatedStakeDecimal
     .div(1000)
     .div(1000)
     .div(1000)
@@ -273,19 +273,19 @@ const processRoundAt = async (header, roundNumber, api) => {
   let workers = []
   Object.keys(stashAccounts).map(function(key, index) {
     const value = stashAccounts[key];
-    const accumulatedStake = new Demical(value.stake.toString())
+    const accumulatedStake = new Decimal(value.stake.toString())
       .div(1000)
       .div(1000)
       .div(1000)
       .div(1000)
 
-    const workerStake = new Demical(value.workerStake.toString())
+    const workerStake = new Decimal(value.workerStake.toString())
       .div(1000)
       .div(1000)
       .div(1000)
       .div(1000)
 
-    const userStake = new Demical(value.userStake.toString())
+    const userStake = new Decimal(value.userStake.toString())
       .div(1000)
       .div(1000)
       .div(1000)
@@ -355,7 +355,7 @@ const processRoundAt = async (header, roundNumber, api) => {
 
   await realtimeRoundInfo.save();
 
-  $logger.info(`Updated output from round #${roundNumber}.`)
+  $logger.info(`@@@Updated output from round #${roundNumber}.`)
 }
 
 
