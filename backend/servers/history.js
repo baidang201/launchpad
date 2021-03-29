@@ -254,7 +254,7 @@ class BlocksHistoryScan {
         return 0
       }
       
-      return stakeSum.div(available_supply)
+      return stakeSumPHA.div(available_supply)
     }
 
     const getApyCurrentRound = function(accumulatedFire2PHA, stakeSumOfUserStake) {
@@ -329,7 +329,7 @@ class BlocksHistoryScan {
         online_worker_num: onlineWorkers,
         worker_num: stashCount,
         stake_sum: stakeSum, 
-        stake_supply_rate: await stakeSupplyRate(),
+        stake_supply_rate: await stakeSupplyRate(stakeSum),
         blocktime: null,
         workers: workers,
         apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
@@ -344,7 +344,7 @@ class BlocksHistoryScan {
         online_worker_num: onlineWorkers,
         worker_num: stashCount,
         stake_sum: stakeSum, 
-        stake_supply_rate: await stakeSupplyRate(),
+        stake_supply_rate: await stakeSupplyRate(stakeSum),
         blocktime: null,
         workers: workers,
         apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
@@ -359,7 +359,7 @@ class BlocksHistoryScan {
     })
     await this.status.save();
 
-    console.log("### history insert `Updated output from round #${roundNumber}.`", roundNumber)
+    console.log("### history insert `Updated output from round #${roundNumber}.`", roundNumber, number)
   }
 
 

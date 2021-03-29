@@ -95,6 +95,7 @@ export const main = async () => {
 
 const processRoundAt = async (header, roundNumber, api) => {
   const blockHash = header.hash
+  const number = header.number.toNumber()
   const accumulatedFire2 = (await api.query.phalaModule.accumulatedFire2.at(blockHash)) || new BN('0')
   const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
   const onlineWorkers = await api.query.phalaModule.onlineWorkers.at(blockHash)
@@ -267,7 +268,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       return 0
     }
     
-    return stakeSum.div(available_supply)
+    return stakeSumPHA.div(available_supply)
   }
 
   let workers = []
@@ -331,7 +332,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       online_worker_num: onlineWorkers,
       worker_num: stashCount,
       stake_sum: stakeSum, 
-      stake_supply_rate: await stakeSupplyRate(),
+      stake_supply_rate: await stakeSupplyRate(stakeSum),
       reward_last_round: await getLastRoundReward(roundNumber),
       blocktime: null,
       workers: workers
@@ -346,7 +347,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       online_worker_num: onlineWorkers,
       worker_num: stashCount,
       stake_sum: stakeSum, 
-      stake_supply_rate: await stakeSupplyRate(),
+      stake_supply_rate: await stakeSupplyRate(stakeSum),
       reward_last_round: await getLastRoundReward(roundNumber),
       blocktime: null,
       workers: workers
@@ -355,7 +356,7 @@ const processRoundAt = async (header, roundNumber, api) => {
 
   await realtimeRoundInfo.save();
 
-  $logger.info(`@@@Updated output from round #${roundNumber}.`)
+  $logger.info(`@@@Updated output from round #${roundNumber}   blocknum ${number}`)
 }
 
 
