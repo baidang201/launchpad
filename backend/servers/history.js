@@ -6,8 +6,8 @@ import BN from 'bn.js'
 import { node }  from '../config/index.js'
 import { Status } from '../lib/models/status.js'
 import { HistoryRoundInfo } from '../lib/models/historyRoundInfo.js'
-import { createLogger } from 'bunyan'
 import { getTokenInfo } from '../servers/tokeninfo.js'
+import {logger} from '../lib/utils/log.js'
 
 const { default: Queue } = pQueue
 
@@ -24,13 +24,6 @@ const queue = new Queue({
   concurrency: 1
 })
 
-globalThis.$logger = createLogger({
-  level: 'info',
-  name: 'dashboard'
-})
-
-let jsonOutput = DEFAULT_OUTPUT
-
 class BlocksHistoryScan {
   constructor(opts, wsRpc) {
     this.defaultLoopBlocksTime = 1000;//默认区块扫描间隔时间，1000
@@ -41,7 +34,6 @@ class BlocksHistoryScan {
   main = async () => {
     const provider = new WsProvider(node.WS_ENDPOINT)
     const api = await ApiPromise.create({ provider, types })
-    globalThis.api = api
 
     const [phalaChain, phalaNodeName, phalaNodeVersion] = (await Promise.all([
       api.rpc.system.chain(),
@@ -57,8 +49,8 @@ class BlocksHistoryScan {
               iteratorBlocks();
           }, nextTimeout)
       }).catch((err) => {
-          console.log("iteratorBlocks error: " + new Date().toString());
-          console.log(err);
+          logger.warn("iteratorBlocks error: " + new Date().toString());
+          logger.warn(err);
           let nextTimeout = defaultLoopBlocksTime;
           setTimeout(() => {
               iteratorBlocks();
@@ -253,8 +245,11 @@ class BlocksHistoryScan {
       if (0 === available_supply) {
         return 0
       }
+
+      //logger.warn("###stakeSumPHA", stakeSumPHA, available_supply)
+      console.log("###stakeSumPHA", stakeSumPHA, available_supply)
       
-      return stakeSum.div(available_supply)
+      return stakeSumPHA.div(available_supply)
     }
 
     const getApyCurrentRound = function(accumulatedFire2PHA, stakeSumOfUserStake) {
@@ -329,12 +324,17 @@ class BlocksHistoryScan {
         online_worker_num: onlineWorkers,
         worker_num: stashCount,
         stake_sum: stakeSum, 
-        stake_supply_rate: await stakeSupplyRate(),
+        stake_supply_rate: await stakeSupplyRate(stakeSum),
         blocktime: null,
         workers: workers,
         apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
       });
+
+      logger.warn("###new", JSON.stringify( workers))
     } else {
+
+      logger.warn("###old",  JSON.stringify( historyRoundInfo.workers))
+
       historyRoundInfo.set({
         round: roundNumber,
         avg_stake: avgStake,
@@ -344,12 +344,16 @@ class BlocksHistoryScan {
         online_worker_num: onlineWorkers,
         worker_num: stashCount,
         stake_sum: stakeSum, 
-        stake_supply_rate: await stakeSupplyRate(),
+        stake_supply_rate: await stakeSupplyRate(stakeSum),
         blocktime: null,
         workers: workers,
         apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
       });
+
+      logger.warn("###save",  JSON.stringify( workers))
     }
+
+    logger.warn("logger.warn(this.modifiedPaths());", historyRoundInfo.modifiedPaths());
 
     await historyRoundInfo.save();
 
@@ -359,7 +363,7 @@ class BlocksHistoryScan {
     })
     await this.status.save();
 
-    console.log("### history insert `Updated output from round #${roundNumber}.`", roundNumber)
+    logger.warn("### history insert `Updated output from round #${roundNumber}. in block number`", roundNumber, number)
   }
 
 

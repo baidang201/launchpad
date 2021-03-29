@@ -6,9 +6,8 @@ import BN from 'bn.js'
 import { node }  from '../config/index.js'
 import { RealtimeRoundInfo } from '../lib/models/realtimeRoundInfo.js'
 import { HistoryRoundInfo } from '../lib/models/historyRoundInfo.js'
-import { createLogger } from 'bunyan'
-import { getTokenInfo } from './tokeninfo.js'
-
+import { getTokenInfo } from '../servers/tokeninfo.js'
+import {logger} from '../lib/utils/log.js'
 
 const { default: Queue } = pQueue
 
@@ -25,11 +24,6 @@ const queue = new Queue({
   concurrency: 1
 })
 
-globalThis.$logger = createLogger({
-  level: 'info',
-  name: 'dashboard'
-})
-
 let jsonOutput = DEFAULT_OUTPUT
 let lastBlockHeader
 let _status = null
@@ -38,7 +32,6 @@ let _status = null
 export const main = async () => {
   const provider = new WsProvider(node.WS_ENDPOINT)
   const api = await ApiPromise.create({ provider, types })
-  globalThis.api = api
 
   let roundStartAt = 0
   let currentRound = 0
@@ -48,7 +41,7 @@ export const main = async () => {
     api.rpc.system.name(),
     api.rpc.system.version()
   ])).map(i => i.toString())
-  $logger.info({ chain: phalaChain }, `Connected to chain ${phalaChain} using ${phalaNodeName} v${phalaNodeVersion}`)
+  logger.info({ chain: phalaChain }, `Connected to chain ${phalaChain} using ${phalaNodeName} v${phalaNodeVersion}`)
 
   return api.rpc.chain.subscribeNewHeads(async header => {
     const number = header.number.toNumber()
@@ -76,7 +69,7 @@ export const main = async () => {
       if (event.section === 'phalaModule' && event.method === 'NewMiningRound') {
         hasEvent = true
         currentRound = event.data[0].toNumber()
-        $logger.info(`Starting round #${currentRound} at block #${number + 1}...`)
+        logger.info(`Starting round #${currentRound} at block #${number + 1}...`)
       }
     })
 
@@ -87,7 +80,7 @@ export const main = async () => {
         roundStartAt = number + 1
         const roundInfo = await api.query.phalaModule.round.at(header.hash)
         currentRound = roundInfo.round.toNumber()
-        $logger.info(`Starting round #${currentRound} at block #${roundInfo.startBlock.toNumber()}...`)
+        logger.info(`Starting round #${currentRound} at block #${roundInfo.startBlock.toNumber()}...`)
       }
     }
   })
@@ -95,6 +88,7 @@ export const main = async () => {
 
 const processRoundAt = async (header, roundNumber, api) => {
   const blockHash = header.hash
+  const number = header.number.toNumber()
   const accumulatedFire2 = (await api.query.phalaModule.accumulatedFire2.at(blockHash)) || new BN('0')
   const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
   const onlineWorkers = await api.query.phalaModule.onlineWorkers.at(blockHash)
@@ -266,8 +260,9 @@ const processRoundAt = async (header, roundNumber, api) => {
     if (0 === available_supply) {
       return 0
     }
+    logger.warn("###stakeSumPHA", stakeSumPHA, available_supply)
     
-    return stakeSum.div(available_supply)
+    return stakeSumPHA.div(available_supply)
   }
 
   let workers = []
@@ -331,7 +326,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       online_worker_num: onlineWorkers,
       worker_num: stashCount,
       stake_sum: stakeSum, 
-      stake_supply_rate: await stakeSupplyRate(),
+      stake_supply_rate: await stakeSupplyRate(stakeSum),
       reward_last_round: await getLastRoundReward(roundNumber),
       blocktime: null,
       workers: workers
@@ -346,7 +341,7 @@ const processRoundAt = async (header, roundNumber, api) => {
       online_worker_num: onlineWorkers,
       worker_num: stashCount,
       stake_sum: stakeSum, 
-      stake_supply_rate: await stakeSupplyRate(),
+      stake_supply_rate: await stakeSupplyRate(stakeSum),
       reward_last_round: await getLastRoundReward(roundNumber),
       blocktime: null,
       workers: workers
@@ -355,11 +350,12 @@ const processRoundAt = async (header, roundNumber, api) => {
 
   await realtimeRoundInfo.save();
 
-  $logger.info(`@@@Updated output from round #${roundNumber}.`)
+  logger.info(`@@@Updated output from round #${roundNumber}. blocknum#${number}`)
 }
 
 
 export const init = async()=> {
+  return
 }
 
 export default {init, main};

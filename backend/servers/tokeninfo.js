@@ -1,25 +1,25 @@
 const url = 'https://fxhapi.feixiaohao.com/public/v1/ticker?code=phala';
 
 import rp  from 'request-promise';
+import {logger} from '../lib/utils/log.js'
 
 let cacheObject = null;
 let cacheTime = 0;
 
 export async function getTokenInfo() {
   if (!cacheObject) {
-    const r = await refreshCache();
+    cacheObject = await refreshCache();
   }
   const now = new Date().getTime();
   if ((now - cacheTime) >  60 * 60 * 1000) {
-      refreshCache().catch(console.log);
+      refreshCache().catch(logger.info);
   }
   const obj = cacheObject || {available_supply: 0};
   return obj;
 }
 
-
 async function refreshCache() {
-    console.log('refreshCache');
+    logger.info('refreshCache');
     const options = {
         uri: url,
         qs: {
@@ -36,7 +36,7 @@ async function refreshCache() {
         const obj = getObjectFromFeixiaohaoData(result);
         cacheObject = obj;
         cacheTime = new Date().getTime();
-        console.log("refrest cache:" + JSON.stringify(obj));
+        logger.info("refrest cache:" + JSON.stringify(obj));
         return true;
     }
     return false;

@@ -1,4 +1,3 @@
-import { createLogger } from 'bunyan'
 import Koa from 'koa'
 import { node }  from './config/index.js'
 import protobuf from './lib/protobuf/protobuf.js'
@@ -8,16 +7,12 @@ import {getApy} from './lib/api/apy.js'
 import {getCommission} from './lib/api/commission.js'
 import {getAvgStake, getStakeinfo} from './lib/api/stake.js'
 import {getAvgReward, getRewardPenalty} from './lib/api/rewardpenalty.js'
-
-globalThis.$logger = createLogger({
-  level: 'info',
-  name: 'dashboard'
-})
+import {logger} from './lib/utils/log.js'
 
 const app = new Koa()
 
 app.on('error', (err, ctx) => {
-  $logger.error(err, ctx)
+  logger.error(err, ctx)
 })
 
 const dispatchTable = {
@@ -49,7 +44,7 @@ function parsePostData( ctx ) {
       // 监听end事件
       ctx.req.addListener('end', function(error) {
           if (error) {
-              console.log("error:", error)
+              logger.warn("error:", error)
           } else {
               const resultBuff = Buffer.concat(buffers) // 合并接收到的buffer数据
               const result = protobuf.CommonRequest.decode(resultBuff); // 解码接受到的 buffer 数据
@@ -85,5 +80,5 @@ app.use(async ctx => {
   }
 });
 
-$logger.info(`Listening on port ${node.HTTP_PORT}...`)
+logger.info(`Listening on port ${node.HTTP_PORT}...`)
 app.listen(node.HTTP_PORT)
