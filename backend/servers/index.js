@@ -260,7 +260,7 @@ const processRoundAt = async (header, roundNumber, api) => {
     if (0 === available_supply) {
       return 0
     }
-    logger.warn("###stakeSumPHA", stakeSumPHA, available_supply)
+    logger.info("###stakeSumPHA", stakeSumPHA, available_supply)
     
     return stakeSumPHA.div(available_supply)
   }

@@ -49,8 +49,8 @@ class BlocksHistoryScan {
               iteratorBlocks();
           }, nextTimeout)
       }).catch((err) => {
-          logger.warn("iteratorBlocks error: " + new Date().toString());
-          logger.warn(err);
+          logger.info("iteratorBlocks error: " + new Date().toString());
+          logger.info(err);
           let nextTimeout = defaultLoopBlocksTime;
           setTimeout(() => {
               iteratorBlocks();
@@ -246,8 +246,7 @@ class BlocksHistoryScan {
         return 0
       }
 
-      //logger.warn("###stakeSumPHA", stakeSumPHA, available_supply)
-      console.log("###stakeSumPHA", stakeSumPHA, available_supply)
+      logger.info("###stakeSumPHA", stakeSumPHA, available_supply)
       
       return stakeSumPHA.div(available_supply)
     }
@@ -330,10 +329,10 @@ class BlocksHistoryScan {
         apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
       });
 
-      logger.warn("###new", JSON.stringify( workers))
+      logger.info("###new", JSON.stringify( workers))
     } else {
 
-      logger.warn("###old",  JSON.stringify( historyRoundInfo.workers))
+      logger.info("###old",  JSON.stringify( historyRoundInfo.workers))
 
       historyRoundInfo.set({
         round: roundNumber,
@@ -350,10 +349,10 @@ class BlocksHistoryScan {
         apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
       });
 
-      logger.warn("###save",  JSON.stringify( workers))
+      logger.info("###save",  JSON.stringify( workers))
     }
 
-    logger.warn("logger.warn(this.modifiedPaths());", historyRoundInfo.modifiedPaths());
+    logger.info("logger.info(this.modifiedPaths());", historyRoundInfo.modifiedPaths());
 
     await historyRoundInfo.save();
 
@@ -363,7 +362,7 @@ class BlocksHistoryScan {
     })
     await this.status.save();
 
-    logger.warn("### history insert `Updated output from round #${roundNumber}. in block number`", roundNumber, number)
+    logger.info("### history insert `Updated output from round #${roundNumber}. in block number`", roundNumber, number)
   }
 
 
