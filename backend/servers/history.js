@@ -17,12 +17,18 @@ const DEFAULT_OUTPUT = 'null'
 const BLOCK_FIRST_ROUND_START = 1000000
 const FIRST_SCAN_QUEUE_NUMBER = 1000000
 const ROUND_CYCLE_TIME = 3600
-const BATCH_MIN_SIZE = 5
+const BATCH_MIN_SIZE = 4
 
 const queue = new Queue({
   timeout: 90000,
   throwOnTimeout: false,
-  concurrency: 2
+  concurrency: BATCH_MIN_SIZE
+})
+
+const mongoWriteQueue = new Queue({
+  timeout: 90000,
+  throwOnTimeout: false,
+  concurrency: 1
 })
 
 class BlocksHistoryScan {
@@ -317,51 +323,48 @@ class BlocksHistoryScan {
 
     const stakeSumOfUserStake = workers.map(x => x.user_stake).reduce((a, b) => a + b, 0)
     //jsonOutput = JSON.stringify(output)
+    const historyData = {
+      round: roundNumber,
+      avg_stake: avgStake,
+      avg_reward: avgReward,
+      accumulated_fire2: accumulatedFire2PHA, //总奖励
+      round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
+      online_worker_num: onlineWorkers,
+      worker_num: stashCount,
+      stake_sum: stakeSum, 
+      stake_supply_rate: await stakeSupplyRate(stakeSum),
+      blocktime: null,
+      block_num: number,
+      workers: workers,
+      apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
+    };
+
+    mongoWriteQueue.add(() => this.writeDatebase(roundNumber, number, historyData))
+  }
+
+  writeDatebase = async(roundNumber, blockNumber, historyData) => {
     let historyRoundInfo = await HistoryRoundInfo.findOne({
       round: roundNumber
     });
+
     if (!historyRoundInfo) {
-      historyRoundInfo = new HistoryRoundInfo({
-        round: roundNumber,
-        avg_stake: avgStake,
-        avg_reward: avgReward,
-        accumulated_fire2: accumulatedFire2PHA, //总奖励
-        round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
-        online_worker_num: onlineWorkers,
-        worker_num: stashCount,
-        stake_sum: stakeSum, 
-        stake_supply_rate: await stakeSupplyRate(stakeSum),
-        blocktime: null,
-        workers: workers,
-        apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
-      });
+      historyRoundInfo = new HistoryRoundInfo(historyData);
+      await historyRoundInfo.save();
     } else {
-      historyRoundInfo.set({
-        round: roundNumber,
-        avg_stake: avgStake,
-        avg_reward: avgReward,
-        accumulated_fire2: accumulatedFire2PHA,
-        round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
-        online_worker_num: onlineWorkers,
-        worker_num: stashCount,
-        stake_sum: stakeSum, 
-        stake_supply_rate: await stakeSupplyRate(stakeSum),
-        blocktime: null,
-        workers: workers,
-        apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
-      });
+      if (historyData.block_num > historyRoundInfo.block_num) {
+        await HistoryRoundInfo.updateOne({
+          round: roundNumber
+        }, historyData);
+      }
     }
 
-    await historyRoundInfo.save();
-
     await Status.findOneAndUpdate({}, {
-      last_scan_number: number,
+      last_scan_number: blockNumber,
       last_scan_round: roundNumber
     })
 
-    logger.info(`### history insert Updated output from round #${roundNumber}. in blocknum #${number}`)
+    logger.info(`### history insert Updated output from round #${roundNumber}. in blocknum #${blockNumber}`)
   }
-
 
   init = async()=> {
     let _status = await Status.findOne({});
@@ -380,8 +383,9 @@ class BlocksHistoryScan {
     } else {
       if (_status.last_scan_queue_number > _status.last_scan_number) {
 
+        const new_last_scan_queue_number = _status.last_scan_number - BATCH_MIN_SIZE >= BLOCK_FIRST_ROUND_START? _status.last_scan_number - BATCH_MIN_SIZE : BLOCK_FIRST_ROUND_START 
         _status.set({
-          last_scan_queue_number: _status.last_scan_number,
+          last_scan_queue_number: new_last_scan_queue_number,
         })
 
         await _status.save();

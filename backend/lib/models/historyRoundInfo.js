@@ -29,6 +29,7 @@ export const HistoryRoundInfo = mongoose.model('history_round_info', {
   stake_sum: {type: Number},//PHA
   stake_supply_rate: {type: Number},
   blocktime: {type: Date},
+  block_num: {type: Number},
   workers: {type: [Worker]},
 });
 HistoryRoundInfo.collection.createIndex({ round: 1 }, { unique: true })
