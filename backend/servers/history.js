@@ -354,11 +354,10 @@ class BlocksHistoryScan {
 
     await historyRoundInfo.save();
 
-    this.status.set({
+    await Status.findOneAndUpdate({}, {
       last_scan_number: number,
       last_scan_round: roundNumber
     })
-    await this.status.save();
 
     logger.info(`### history insert Updated output from round #${roundNumber}. in blocknum #${number}`)
   }
