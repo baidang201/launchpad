@@ -14,19 +14,19 @@ const { default: Queue } = pQueue
 const ONE_THOUSAND = new BN('1000', 10)
 const ZERO = new BN('0')
 const DEFAULT_OUTPUT = 'null'
-const BLOCK_FIRST_ROUND_START = 1046196
-const defaultLoopBlocksTime = 1000
+const BLOCK_FIRST_ROUND_START = 1000000
+const FIRST_SCAN_QUEUE_NUMBER = 1000000
 const ROUND_CYCLE_TIME = 3600
+const BATCH_MIN_SIZE = 5
 
 const queue = new Queue({
   timeout: 90000,
   throwOnTimeout: false,
-  concurrency: 1
+  concurrency: 2
 })
 
 class BlocksHistoryScan {
   constructor(opts, wsRpc) {
-    this.defaultLoopBlocksTime = 1000;//默认区块扫描间隔时间，1000
     this.lastBlockHeader = null;
     this.status = null;
   }
@@ -41,26 +41,33 @@ class BlocksHistoryScan {
       api.rpc.system.version()
     ])).map(i => i.toString());
 
-    const that = this;
-    (function iteratorBlocks() {
-      that.processBlock(api).then((nextTimeout) => {
-          nextTimeout = nextTimeout || defaultLoopBlocksTime;
-          setTimeout(() => {
-              iteratorBlocks();
-          }, nextTimeout)
-      }).catch((err) => {
-          logger.info("iteratorBlocks error: " + new Date().toString());
-          logger.info(err);
-          let nextTimeout = defaultLoopBlocksTime;
-          setTimeout(() => {
-              iteratorBlocks();
-          }, nextTimeout)
+    return api.rpc.chain.subscribeFinalizedHeads(async header => {
+      const number = header.number.toNumber()
+
+      //批量处理5个，小于5个先返回
+      if (number <= this.status.last_scan_queue_number + BATCH_MIN_SIZE) {
+        return
+      }
+  
+      logger.info(`history batch to queue  from #${this.status.last_scan_queue_number}  to blocknum #${number}...`)
+      for (let n = this.status.last_scan_queue_number; n < number; n++) {
+        queue.add(() => this.processBlockAt(n, api))
+      }
+      this.status.set({
+        last_scan_queue_number: number,
       })
-    })();
+      await this.status.save();
+    })
+  }
+
+  processBlockAt = async (blockNumber, api) => {
+    const lastBlockHeaderHash = await api.rpc.chain.getBlockHash(blockNumber)
+    this.lastBlockHeader = await api.rpc.chain.getHeader(lastBlockHeaderHash)
+    
+    await this.processRoundAt(this.lastBlockHeader, api).catch(console.error)
   }
 
   processBlock = async (api) => {
-
     const blockNumber = this.status.last_scan_number + 1;
     const lastBlockHeaderHash = await api.rpc.chain.getBlockHash(blockNumber)
     this.lastBlockHeader = await api.rpc.chain.getHeader(lastBlockHeaderHash)
@@ -74,6 +81,8 @@ class BlocksHistoryScan {
     const roundInfo = (await api.query.phalaModule.round.at(blockHash)) || new BN('0')
     const roundNumber = roundInfo.round.toNumber()
     const number = header.number.toNumber()
+    logger.info(`history block round #${roundNumber} blocknum#${number}...`)
+
     const accumulatedFire2 = (await api.query.phalaModule.accumulatedFire2.at(blockHash)) || new BN('0')
     const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
     const onlineWorkers = await api.query.phalaModule.onlineWorkers.at(blockHash)
@@ -363,11 +372,21 @@ class BlocksHistoryScan {
             time: null,
             head_block_id: "",
 
+            last_scan_queue_number: FIRST_SCAN_QUEUE_NUMBER,
             last_scan_number: BLOCK_FIRST_ROUND_START,
             last_scan_round: 0,
             last_scan_time: null
         });
         await _status.save();
+    } else {
+      if (_status.last_scan_queue_number > _status.last_scan_number) {
+
+        _status.set({
+          last_scan_queue_number: _status.last_scan_number,
+        })
+
+        await _status.save();
+      }
     }
     this.status = _status;
   }
