@@ -40,7 +40,7 @@ export const main = async () => {
   ])).map(i => i.toString())
   logger.info({ chain: phalaChain }, `Connected to chain ${phalaChain} using ${phalaNodeName} v${phalaNodeVersion}`)
 
-  return api.rpc.chain.subscribeNewHeads(async header => {
+  return api.rpc.chain.subscribeFinalizedHeads(async header => {
     const number = header.number.toNumber()
     const roundInfo = (await api.query.phalaModule.round.at(header.hash)) || new BN('0')
     const roundNumber = roundInfo.round.toNumber()

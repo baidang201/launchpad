@@ -50,19 +50,20 @@ class BlocksHistoryScan {
     return api.rpc.chain.subscribeFinalizedHeads(async header => {
       const number = header.number.toNumber()
 
+      const status = await Status.findOne({});
       //批量处理5个，小于5个先返回
-      if (number <= this.status.last_scan_queue_number + BATCH_MIN_SIZE) {
+      if (number <= status.last_scan_queue_number + BATCH_MIN_SIZE) {
         return
       }
   
-      logger.info(`history batch to queue  from #${this.status.last_scan_queue_number}  to blocknum #${number}...`)
-      for (let n = this.status.last_scan_queue_number; n < number; n++) {
+      logger.info(`history batch to queue  from #${status.last_scan_queue_number}  to blocknum #${number}...`)
+      for (let n = status.last_scan_queue_number; n < number; n++) {
         queue.add(() => this.processBlockAt(n, api))
       }
-      this.status.set({
+
+      await Status.findOneAndUpdate({}, {
         last_scan_queue_number: number,
       })
-      await this.status.save();
     })
   }
 
@@ -268,6 +269,9 @@ class BlocksHistoryScan {
       if (0 === stakeSumOfUserStake) {
         return 0;
       }
+      if (0 === accumulatedFire2PHA) {
+        return 0;
+      }
 
       return accumulatedFire2PHA/stakeSumOfUserStake*24*365;
     }
@@ -308,7 +312,7 @@ class BlocksHistoryScan {
         payout: value.payout,
         accumulated_stake: accumulatedStake,
         worker_stake: workerStake,
-        user_stake: userStake,
+        user_stake: userStake.toNumber(),
         stake_account_num: value.stakeAccountNum,
         commission: value.commission,
         task_score: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
