@@ -4,6 +4,7 @@ import styles from '../styles/Home.module.css'
 import { Layout, Menu, Breadcrumb } from 'antd';
 import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons';
 import DashBoardPage from "./dashboard.js";
+import Worker from "./worker.js"
 
 const { Header, Content, Sider } = Layout;
 
@@ -51,7 +52,8 @@ export default function Home() {
             minHeight: 280,
           }}
         >
-          <DashBoardPage/>
+          {/* <DashBoardPage/> */}
+          <Worker/>
         </Content>
       </Layout>
     </Layout>
