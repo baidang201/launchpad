@@ -9,17 +9,6 @@ const { Header, Content, Sider } = Layout;
 
 export default function Home() {
   return (
-    <div>
-      {/* <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <main className={styles.main}>
-          heheh
-      
-      
-      </main> */}
-
 <Layout>
     <Header className="header">
       <div className="logo" />
@@ -61,12 +50,11 @@ export default function Home() {
             margin: 0,
             minHeight: 280,
           }}
-        >          
+        >
           <DashBoardPage/>
         </Content>
       </Layout>
     </Layout>
   </Layout>
-    </div>
   )
 }
