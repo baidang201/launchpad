@@ -1,23 +1,21 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
-
-import { Layout, Menu, Breadcrumb } from 'antd';
-import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons';
-import DashBoardPage from "./dashboard.js";
-import Worker from "./worker.js"
+import { Breadcrumb, Layout, Menu } from 'antd';
+import '../styles/Home.module.css';
+import Worker from "./worker.js";
+import { WalletButton } from '../components/wallet/WalletButton'
 
 const { Header, Content, Sider } = Layout;
 
 export default function Home() {
   return (
-<Layout>
+  <Layout>
     <Header className="header">
       <div className="logo" />
-      <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']} style={{float: 'right'}}>
+      <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']} style={{ float: 'right' }}>
         <Menu.Item key="1">我的抵押</Menu.Item>
         <Menu.Item key="2">浏览器</Menu.Item>
         <Menu.Item key="3">获取Pha</Menu.Item>
       </Menu>
+      <div><WalletButton /></div>
     </Header>
     <Layout>
       <Sider width={200} className="site-layout-background">
@@ -53,7 +51,7 @@ export default function Home() {
           }}
         >
           {/* <DashBoardPage/> */}
-          <Worker/>
+          <Worker />
         </Content>
       </Layout>
     </Layout>
