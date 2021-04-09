@@ -1,47 +1,52 @@
-import { default as ApiTypes } from '@phala/typedefs/src/phala-typedef'
+import * as phalaTypedef from '@phala/typedefs/src/phala-typedef'
 import Layout from 'antd/lib/layout'
 import Menu from 'antd/lib/menu'
-import { AppProps } from 'next/dist/next-server/lib/router/router'
+import { AppComponent, AppProps } from 'next/dist/next-server/lib/router/router'
+import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { WalletButton } from '../components/wallet/WalletButton'
 import { PolkadotProvider, usePolkadot } from '../libs/polkadot/context'
 import '../styles/antd.less'
 import '../styles/globals.css'
-import { endpoint as PhalaEndpoint } from '../utils/polkadot'
 import styles from '../styles/pages/_app.module.css'
-import { useRouter } from 'next/router'
+import { endpoint as PhalaEndpoint } from '../utils/polkadot'
 
 const ApiEnabler: React.FC = () => {
     const { enableApi } = usePolkadot()
-    useEffect(() => { enableApi() }, [])
+    useEffect(() => {
+        enableApi().catch(() => {
+            // TODO: maybe some telemetry?
+            // TODO: reflect API enable error on UI
+        })
+    }, [enableApi])
 
     return (<></>)
 }
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+const App: AppComponent = ({ Component, pageProps }: AppProps) => {
     const client = useMemo(() => new QueryClient(), [])
 
     const [selectedTab, setSelectedTab] = useState<string>('dashboard')
     const router = useRouter()
 
-    const onSelectTab = (tab: string) => {
+    const onSelectTab = (tab: string): void => {
         setSelectedTab(tab)
-        router.push(tab)
+        router.push(tab).catch(() => { /* TODO: maybe some telemetry? */ })
     }
 
     useEffect(() => {
         if (router.isFallback) {
-            router.push('/dashboard')
+            router.push('/dashboard').catch(() => { /* TODO: maybe some telemetry? */ })
         }
     })
 
     return (
-        <PolkadotProvider endpoint={PhalaEndpoint} originName="Phala Stakepad" registryTypes={ApiTypes}>
+        <PolkadotProvider endpoint={PhalaEndpoint} originName="Phala Stakepad" registryTypes={phalaTypedef.default}>
             <QueryClientProvider client={client}>
                 <Layout hasSider>
                     <Layout.Sider>
-                        <Menu selectable={false} selectedKeys={['stakepad']}                        >
+                        <Menu selectable={false} selectedKeys={['stakepad']}>
                             <Menu.Item key="1">Home</Menu.Item>
                             <Menu.Item key="2">pWallet</Menu.Item>
                             <Menu.Item key="3">Bridge</Menu.Item>
@@ -79,3 +84,5 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         </PolkadotProvider>
     )
 }
+
+export default App
