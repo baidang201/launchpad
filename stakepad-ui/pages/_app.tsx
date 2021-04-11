@@ -35,12 +35,6 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
         router.push(tab).catch(() => { /* TODO: maybe some telemetry? */ })
     }
 
-    useEffect(() => {
-        if (router.isFallback) {
-            router.push('/dashboard').catch(() => { /* TODO: maybe some telemetry? */ })
-        }
-    })
-
     return (
         <PolkadotProvider endpoint={PhalaEndpoint} originName="Phala Stakepad" registryTypes={phalaTypedef.default}>
             <QueryClientProvider client={client}>
