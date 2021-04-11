@@ -1,7 +1,9 @@
-import Table, { ColumnsType, TablePaginationConfig } from 'antd/lib/table'
+import { CopyOutlined, StarOutlined } from '@ant-design/icons'
+import { Button, Typography } from 'antd'
+import Table, { TablePaginationConfig } from 'antd/lib/table'
+import Column from 'antd/lib/table/Column'
 import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
-import { Worker } from '../../libs/apis'
 import { findWorkersByStash } from '../../libs/apis/findWorkersByStash'
 
 const defaultPageSize = 10
@@ -16,33 +18,6 @@ interface WorkerTableProps {
     filters: FindWorkerFilters
     stash?: string
 }
-
-type LocalColumnsType = Array<{ dataIndex: keyof Worker }> & ColumnsType
-
-const columns: LocalColumnsType = [
-    {
-        title: '账户',
-        dataIndex: 'stash'
-    }, {
-        title: '月收益',
-        dataIndex: 'monthlyPayout'
-    }, {
-        title: '年化',
-        dataIndex: 'annualizedReturnRate'
-    }, {
-        title: '抵押额',
-        dataIndex: 'totalStake'
-    }, {
-        title: '分润率',
-        dataIndex: 'commissionRate'
-    }, {
-        title: '任务分',
-        dataIndex: 'taskScore'
-    }, {
-        title: '机器分',
-        dataIndex: 'minerScore'
-    }
-]
 
 // eslint-disable-next-line react/prop-types
 export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
@@ -72,13 +47,32 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
 
     return (
         <Table
-            columns={columns}
             dataSource={keyedWorkers}
             loading={!isFetched}
             onChange={handleTableChange}
             pagination={{ current: currentPage, pageSize: pageSize, total: data?.total ?? 0 }}
             rowKey={(row: { index: string }) => row.index}
             rowSelection={{ type: 'checkbox' }}
-        />
+            size="middle"
+        >
+            <Column title="" key="fav" render={() => (
+                <Button icon={<StarOutlined />} size="small" type="text" />
+            )} />
+            <Column dataIndex="stash" key="stash" title="账户" render={(value) => (
+                <span>
+                    <Typography.Text>{value}</Typography.Text>
+                    <Button icon={<CopyOutlined />} size="small" type="text" />
+                </span>
+            )} />
+            <Column dataIndex="monthlyPayout" key="monthlyPayout" title="月收益" />
+            <Column dataIndex="annualizedReturnRate" key="annualizedReturnRate" title="年化收益率" />
+            <Column dataIndex="totalStake" key="totalStake" title="抵押额" />
+            <Column dataIndex="commissionRate" key="commissionRate" title="分润率" />
+            <Column dataIndex="taskScore" key="taskScore" title="任务分" />
+            <Column dataIndex="minerScore" key="minerScore" title="机器分" />
+            <Column title="" key="action" render={() => (
+                <Button size="small" type="dashed" >详情</Button>
+            )} />
+        </Table>
     )
 }
