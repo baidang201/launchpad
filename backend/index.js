@@ -7,6 +7,7 @@ import {getApy} from './lib/api/apy.js'
 import {getCommission} from './lib/api/commission.js'
 import {getAvgStake, getStakeinfo} from './lib/api/stake.js'
 import {getAvgReward, getRewardPenalty} from './lib/api/rewardpenalty.js'
+import {getNotice} from './lib/api/notice.js'
 import {logger} from './lib/utils/log.js'
 
 const app = new Koa()
@@ -24,6 +25,7 @@ const dispatchTable = {
   'reward_penalty_request'        : function(obj) {  const buffer = getRewardPenalty(obj.reward_penalty_request); return buffer},
   'apy_request'                  : function(obj) {  const buffer = getApy(obj.apy_request); return buffer},
   'commission_request'           : function(obj) {  const buffer = getCommission(obj.commission_request); return buffer},
+  'notice_request'               : function(obj) {  const buffer = getNotice(); return buffer},
 };
 
 function getUnknownRequestBuffer() {

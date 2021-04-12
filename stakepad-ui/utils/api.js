@@ -92,3 +92,10 @@ export async function getCommissionHistory(stash_account) {
 
   return fetchProtobuf(URL, buffer, protobuf.CommissionResponse)
 }
+
+export async function getNotice() {
+  const message = protobuf.CommonRequest.create({notice_request: {}});
+  const buffer = protobuf.CommonRequest.encode(message).finish();
+
+  return fetchProtobuf(URL, buffer, protobuf.NoticeResponse)
+}

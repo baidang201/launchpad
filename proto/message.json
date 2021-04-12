@@ -374,6 +374,34 @@
             }
           }
         },
+        "Notice": {
+          "fields": {
+            "notice": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "NoticeRequest": {
+          "fields": {
+            "stash_account": {
+              "type": "string",
+              "id": 1
+            }
+          }
+        },
+        "NoticeResponse": {
+          "fields": {
+            "status": {
+              "type": "Status",
+              "id": 1
+            },
+            "result": {
+              "type": "Notice",
+              "id": 2
+            }
+          }
+        },
         "CommonRequest": {
           "oneofs": {
             "request": {
@@ -385,7 +413,8 @@
                 "reward_penalty_request",
                 "avg_reward_request",
                 "apy_request",
-                "commission_request"
+                "commission_request",
+                "notice_request"
               ]
             }
           },
@@ -421,6 +450,10 @@
             "commission_request": {
               "type": "CommissionRequest",
               "id": 8
+            },
+            "notice_request": {
+              "type": "NoticeRequest",
+              "id": 9
             }
           }
         },
