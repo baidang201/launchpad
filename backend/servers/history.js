@@ -85,18 +85,18 @@ class BlocksHistoryScan {
   processRoundAt = async (header, api) => {
     const blockHash = header.hash
 
-    const roundInfo = (await api.query.phalaModule.round.at(blockHash)) || new BN('0')
+    const roundInfo = (await api.query.phala.round.at(blockHash)) || new BN('0')
     const roundNumber = roundInfo.round.toNumber()
     const number = header.number.toNumber()
     logger.info(`history block round #${roundNumber} blocknum#${number}...`)
 
-    const accumulatedFire2 = (await api.query.phalaModule.accumulatedFire2.at(blockHash)) || new BN('0')
+    const accumulatedFire2 = (await api.query.phala.accumulatedFire2.at(blockHash)) || new BN('0')
     const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
-    const onlineWorkers = await api.query.phalaModule.onlineWorkers.at(blockHash)
-    const totalPower = await api.query.phalaModule.totalPower.at(blockHash)
+    const onlineWorkers = await api.query.phala.onlineWorkers.at(blockHash)
+    const totalPower = await api.query.phala.totalPower.at(blockHash)
 
     const stashAccounts = {}
-    const stashKeys = await api.query.phalaModule.stashState.keysAt(blockHash)
+    const stashKeys = await api.query.phala.stashState.keysAt(blockHash)
     const stashCount = stashKeys.length
 
     await Promise.all(
@@ -106,19 +106,22 @@ class BlocksHistoryScan {
           const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
           stashAccounts[stash] = {
             controller: value.controller,
-          payout: value.payoutPrefs.target,
-          commission: value.payoutPrefs.commission,
-          stake: 0,
-          workerStake: 0,
-          userStake: 0,
-          stakeAccountNum: 0,
-          overallScore: 0
+            payout: value.payoutPrefs.target,
+            commission: value.payoutPrefs.commission,
+            stake: 0,
+            workerStake: 0,
+            userStake: 0,
+            stakeAccountNum: 0,
+            overallScore: 0,
+            online_reward: 0,
+            compute_reward: 0,
+            slash: 0,
           }
         }))
 
     const payoutAccounts = {}
     await Promise.all(
-      (await api.query.phalaModule.fire2.keysAt(blockHash))
+      (await api.query.phala.fire2.keysAt(blockHash))
         .map(async k => {
           const account = k.args[0].toString()
           const value = await api.rpc.state.getStorage(k, blockHash)
@@ -135,7 +138,7 @@ class BlocksHistoryScan {
         }))
 
     await Promise.all(
-      (await api.query.phalaModule.payoutComputeReward.keysAt(blockHash))
+      (await api.query.phala.payoutComputeReward.keysAt(blockHash))
         .map(async k => {
           const account = k.args[0].toString()
           const value = await api.rpc.state.getStorage(k, blockHash)
@@ -152,7 +155,7 @@ class BlocksHistoryScan {
     const validStashAccounts = {}
     let accumulatedScore = 0
     await Promise.all(
-      (await api.query.phalaModule.workerState.keysAt(blockHash))
+      (await api.query.phala.workerState.keysAt(blockHash))
         .map(async k => {
           const stash = k.args[0].toString()
           const payout = stashAccounts[stash].payout
@@ -172,6 +175,32 @@ class BlocksHistoryScan {
           }
         }))
 
+    await Promise.all(
+      (await api.query.phala.roundWorkerStats.keysAt(blockHash))
+        .map(async k => {
+          const stash = k.args[0].toString()
+          const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
+    
+          const slashDecimal = new Decimal(value.slash);
+          const computeReceivedDecimal = new Decimal(value.compute_received);
+          const onlineReceivedDecimal = new Decimal(value.online_received);
+          
+          stashAccounts[stash].slash = slashDecimal.div(1000)
+              .div(1000)
+              .div(1000)
+              .div(1000)
+        
+          stashAccounts[stash].compute_received = computeReceivedDecimal.div(1000)
+              .div(1000)
+              .div(1000)
+              .div(1000)
+        
+          stashAccounts[stash].online_received = onlineReceivedDecimal.div(1000)
+              .div(1000)
+              .div(1000)
+              .div(1000)
+        }))
+    
     let accumulatedStake = undefined
     await Promise.all(
       (await api.query.miningStaking.stakeReceived.keysAt(blockHash))
@@ -297,7 +326,7 @@ class BlocksHistoryScan {
         .div(1000)
         .div(1000)
 
-      const reward = new Decimal(125);//todo 等待后端合约完善
+      const reward = new Decimal(value.online_reward + value.compute_reward - value.slash);
 
       function getApy(reward, userStake) {
         if (userStake.isZero()) {
@@ -317,11 +346,11 @@ class BlocksHistoryScan {
         commission: value.commission,
         task_score: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
         machine_score: value.overallScore,
-        online_reward: 1021,   //todo 等待后端合约完善
-        compute_reward: 22,    //todo 等待后端合约完善
-        reward: reward,        //todo 等待后端合约完善
+        online_reward: value.online_reward,
+        compute_reward: value.compute_reward,
+        reward: reward,
         apy: getApy(reward, userStake),
-        penalty: 0 // todo 等待后端合约完善
+        slash: value.slash
       });
     });
 
