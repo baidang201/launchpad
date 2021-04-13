@@ -16,6 +16,30 @@ export interface WorkerHistoryPoint<T> {
     value: T
 }
 
+export interface GlobalStakeHistoryPoint {
+    round: number
+    stake: number
+    timestamp: number
+}
+
+export interface WorkerStakeHistoryPoint {
+    ownerStake: number
+    timestamp: number
+    totalStake: number
+}
+
+export interface GlobalRewardHistoryPoint {
+    reward: number
+    round: number
+    timestamp: number
+}
+
+export interface WorkerRewardHistoryPoint {
+    reward: number
+    penalty: number
+    timestamp: number
+}
+
 export interface WorkerDetails {
     controller: string
     stash: string
@@ -26,14 +50,13 @@ export interface WorkerDetails {
 
     favourited: boolean
 
-    averageTotalStake: Array<WorkerHistoryPoint<number>>
-    ownerStake: Array<WorkerHistoryPoint<number>>
-    totalStake: Array<WorkerHistoryPoint<number>>
+    globalStakeHistory: GlobalStakeHistoryPoint[]
+    workerStakeHistory: WorkerStakeHistoryPoint[]
+
+    globalRewardHistory: GlobalRewardHistoryPoint[]
+    workerRewardHistory: WorkerRewardHistoryPoint[]
 
     commissionRate: Array<WorkerHistoryPoint<number>>
-
-    penalty: Array<WorkerHistoryPoint<number>>
-    reward: Array<WorkerHistoryPoint<number>>
 
     annualizedReturnRate: Array<WorkerHistoryPoint<number>>
 }

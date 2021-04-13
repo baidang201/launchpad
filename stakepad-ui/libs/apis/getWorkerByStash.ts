@@ -1,16 +1,10 @@
-import { WorkerDetails, WorkerHistoryPoint } from '.'
+import { WorkerDetails } from '.'
 
-function makeRandomHistory(count: number, min: number, max: number, time: number): Array<WorkerHistoryPoint<number>> {
-    const result: Array<WorkerHistoryPoint<number>> = []
+function makeRandomHistory<T>(count: number, timeOffset: number, callback: (index: number, round: number, timestamp: number) => T): T[] {
+    const result: T[] = []
     let date = +new Date()
-    let round = count
     for (let i = 0; i < count; i++) {
-        result.unshift({
-            round: --round,
-            timestamp: date,
-            value: Math.random() * (max - min) + min
-        })
-        date -= time
+        result.unshift(callback(i, count - i, date -= timeOffset))
     }
     return result
 }
@@ -27,15 +21,30 @@ export const getWorkerByStash = async (): Promise<WorkerDetails> => {
 
         favourited: true,
 
-        averageTotalStake: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
-        totalStake: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
-        ownerStake: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
+        globalStakeHistory: makeRandomHistory(21, 4 * 60 * 60 * 1000, (i, round, timestamp) => ({
+            round,
+            stake: i * 10 + Math.random() * 70 + 300,
+            timestamp
+        })),
+        workerStakeHistory: makeRandomHistory(21, 4 * 60 * 60 * 1000, (i, _, timestamp) => ({
+            ownerStake: i * 10 + Math.random() * 70 + 300,
+            totalStake: i * 10 + Math.random() * 70 + 300,
+            timestamp
+        })),
 
-        commissionRate: makeRandomHistory(21, 0.1, 0.3, 4 * 60 * 60 * 1000),
+        globalRewardHistory: [],
+        workerRewardHistory: [],
 
-        penalty: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
-        reward: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
+        commissionRate: makeRandomHistory(21, 4 * 60 * 60 * 1000, (_, round, timestamp) => ({
+            round,
+            timestamp,
+            value: Math.random() * 0.2 + 0.1
+        })),
 
-        annualizedReturnRate: makeRandomHistory(21, 0.3, 0.8, 4 * 60 * 60 * 1000)
+        annualizedReturnRate: makeRandomHistory(21, 4 * 60 * 60 * 1000, (_, round, timestamp) => ({
+            round,
+            timestamp,
+            value: Math.random() * 0.2 + 0.1
+        }))
     })
 }

@@ -16,7 +16,7 @@ import ReactECharts from 'echarts-for-react'
 import { useRouter } from 'next/router'
 import React, { PropsWithChildren, useMemo } from 'react'
 import { useQuery } from 'react-query'
-import { WorkerDetails, WorkerHistoryPoint } from '../../libs/apis'
+import { GlobalStakeHistoryPoint, WorkerDetails, WorkerStakeHistoryPoint } from '../../libs/apis'
 import { getWorkerByStash } from '../../libs/apis/getWorkerByStash'
 
 type WorkerInformationItemProps = PropsWithChildren<{ title: string }>
@@ -75,11 +75,10 @@ const WorkerInformation: React.FC<WorkerInformationProps | undefined> = ({ worke
     )
 }
 
-function StakeChart({ worker }: { worker?: WorkerDetails }): JSX.Element {
-    const { averageTotalStake, ownerStake, totalStake } = worker ?? {
-        averageTotalStake: [] as Array<WorkerHistoryPoint<number>>,
-        ownerStake: [] as Array<WorkerHistoryPoint<number>>,
-        totalStake: [] as Array<WorkerHistoryPoint<number>>
+function StakeChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.Element {
+    const { globalStakeHistory: global, workerStakeHistory: worker } = workerDetails ?? {
+        globalStakeHistory: [] as GlobalStakeHistoryPoint[],
+        workerStakeHistory: [] as WorkerStakeHistoryPoint[]
     }
 
     const options: EChartsOption = useMemo(() => ({
@@ -87,44 +86,63 @@ function StakeChart({ worker }: { worker?: WorkerDetails }): JSX.Element {
 
         dataset: [
             {
-                source: averageTotalStake.map(r => [r.timestamp, r.value, r.round]),
-                id: 'averageTotalStake'
-            },
-            {
-                source: ownerStake.map(r => [r.timestamp, r.value, r.round]),
-                id: 'ownerStake'
-            },
-            {
-                source: totalStake.map(r => [r.timestamp, r.value, r.round]),
-                id: 'totalStake'
+                source: global.map(point => [point.timestamp, point.stake, point.round]),
+                id: 'global'
+            }, {
+                source: worker.map(point => [point.timestamp, point.totalStake, point.ownerStake]),
+                id: 'worker'
             }
         ],
 
         series: [
             {
                 color: '#64EEAC',
-                datasetId: 'averageTotalStake',
-                dimensions: ['时间戳', '平均总抵押量', '轮数'],
+                datasetId: 'global',
+                dimensions: ['时间戳', '全局平均总抵押量'],
                 encode: {
                     x: [0],
                     y: [1],
                     tooltip: [1]
                 },
-                name: '平均总抵押量',
-                smooth: 0.25,
-                type: 'line'
-            }, {
-                color: '#D1FF52',
-                datasetId: 'ownerStake',
-                name: '矿机自带抵押量',
+                name: '全局平均总抵押量',
                 smooth: 0.5,
                 type: 'line'
             }, {
                 color: '#EB5757',
-                datasetId: 'totalStake',
+                datasetId: 'worker',
+                dimensions: ['时间戳', '矿机总抵押量'],
+                encode: {
+                    x: [0],
+                    y: [1],
+                    tooltip: [1]
+                },
                 name: '矿机总抵押量',
                 smooth: 0.5,
                 type: 'line'
+            }, {
+                color: '#D1FF52',
+                datasetId: 'worker',
+                dimensions: ['时间戳', '', '矿机自带抵押量'],
+                encode: {
+                    x: [0],
+                    y: [2],
+                    tooltip: [2]
+                },
+                name: '矿机自带抵押量',
+                smooth: 0.5,
+                type: 'line'
+            }, {
+                color: '#FFFFFF',
+                datasetId: 'global',
+                dimensions: ['时间戳', '', '轮数'],
+                encode: {
+                    x: [0],
+                    y: [],
+                    tooltip: [2]
+                },
+                name: '轮数',
+                renderItem: () => ({ type: 'text' }),
+                type: 'custom'
             }
         ],
 
@@ -144,12 +162,6 @@ function StakeChart({ worker }: { worker?: WorkerDetails }): JSX.Element {
             name: '时间戳',
             position: 'bottom',
             type: 'time'
-        }, {
-            id: 'round',
-            name: '轮数',
-            position: 'bottom',
-            show: false,
-            type: 'value'
         }],
 
         yAxis: [{
@@ -162,7 +174,7 @@ function StakeChart({ worker }: { worker?: WorkerDetails }): JSX.Element {
             },
             type: 'value'
         }]
-    }), [averageTotalStake, ownerStake, totalStake])
+    }), [global, worker])
 
     return (
         <ReactECharts option={options} />
