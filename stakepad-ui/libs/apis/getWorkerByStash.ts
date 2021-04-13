@@ -1,10 +1,12 @@
-import { ValueWithTimestamp, WorkerDetails } from '.'
+import { WorkerDetails, WorkerHistoryPoint } from '.'
 
-function makeRandomHistory(count: number, min: number, max: number, time: number): Array<ValueWithTimestamp<number>> {
-    const result: Array<ValueWithTimestamp<number>> = []
+function makeRandomHistory(count: number, min: number, max: number, time: number): Array<WorkerHistoryPoint<number>> {
+    const result: Array<WorkerHistoryPoint<number>> = []
     let date = +new Date()
-    for (let i = 0; i < 99; i++) {
+    let round = count
+    for (let i = 0; i < count; i++) {
         result.unshift({
+            round: --round,
             timestamp: date,
             value: Math.random() * (max - min) + min
         })
@@ -25,15 +27,15 @@ export const getWorkerByStash = async (): Promise<WorkerDetails> => {
 
         favourited: true,
 
-        averageTotalStake: makeRandomHistory(42, 380, 1000, 4 * 60 * 60 * 1000),
-        totalStake: makeRandomHistory(42, 380, 1000, 4 * 60 * 60 * 1000),
-        ownerStake: makeRandomHistory(42, 380, 1000, 4 * 60 * 60 * 1000),
+        averageTotalStake: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
+        totalStake: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
+        ownerStake: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
 
-        commissionRate: makeRandomHistory(42, 0.1, 0.3, 4 * 60 * 60 * 1000),
+        commissionRate: makeRandomHistory(21, 0.1, 0.3, 4 * 60 * 60 * 1000),
 
-        penalty: makeRandomHistory(42, 380, 1000, 4 * 60 * 60 * 1000),
-        reward: makeRandomHistory(42, 380, 1000, 4 * 60 * 60 * 1000),
+        penalty: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
+        reward: makeRandomHistory(21, 380, 1000, 4 * 60 * 60 * 1000),
 
-        annualizedReturnRate: makeRandomHistory(42, 0.3, 0.8, 4 * 60 * 60 * 1000)
+        annualizedReturnRate: makeRandomHistory(21, 0.3, 0.8, 4 * 60 * 60 * 1000)
     })
 }

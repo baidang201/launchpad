@@ -11,15 +11,13 @@ import Row from 'antd/lib/row'
 import Space from 'antd/lib/space'
 import Tooltip from 'antd/lib/tooltip'
 import Typography from 'antd/lib/typography'
+import { EChartsOption } from 'echarts'
+import ReactECharts from 'echarts-for-react'
 import { useRouter } from 'next/router'
-import React, { PropsWithChildren } from 'react'
+import React, { PropsWithChildren, useMemo } from 'react'
 import { useQuery } from 'react-query'
-import { WorkerDetails } from '../../libs/apis'
+import { WorkerDetails, WorkerHistoryPoint } from '../../libs/apis'
 import { getWorkerByStash } from '../../libs/apis/getWorkerByStash'
-
-interface WorkerInformationProps {
-    worker: WorkerDetails
-}
 
 type WorkerInformationItemProps = PropsWithChildren<{ title: string }>
 
@@ -32,6 +30,10 @@ const WorkerInformationItem: React.FC<WorkerInformationItemProps> = ({
             <Typography.Text style={{ fontSize: '1.25em' }}>{children}</Typography.Text>
         </Space>
     )
+}
+
+interface WorkerInformationProps {
+    worker?: WorkerDetails
 }
 
 const WorkerInformation: React.FC<WorkerInformationProps | undefined> = ({ worker }: WorkerInformationProps) => {
@@ -73,6 +75,100 @@ const WorkerInformation: React.FC<WorkerInformationProps | undefined> = ({ worke
     )
 }
 
+function StakeChart({ worker }: { worker?: WorkerDetails }): JSX.Element {
+    const { averageTotalStake, ownerStake, totalStake } = worker ?? {
+        averageTotalStake: [] as Array<WorkerHistoryPoint<number>>,
+        ownerStake: [] as Array<WorkerHistoryPoint<number>>,
+        totalStake: [] as Array<WorkerHistoryPoint<number>>
+    }
+
+    const options: EChartsOption = useMemo(() => ({
+        backgroundColor: '#000000',
+
+        dataset: [
+            {
+                source: averageTotalStake.map(r => [r.timestamp, r.value, r.round]),
+                id: 'averageTotalStake'
+            },
+            {
+                source: ownerStake.map(r => [r.timestamp, r.value, r.round]),
+                id: 'ownerStake'
+            },
+            {
+                source: totalStake.map(r => [r.timestamp, r.value, r.round]),
+                id: 'totalStake'
+            }
+        ],
+
+        series: [
+            {
+                color: '#64EEAC',
+                datasetId: 'averageTotalStake',
+                dimensions: ['时间戳', '平均总抵押量', '轮数'],
+                encode: {
+                    x: [0],
+                    y: [1],
+                    tooltip: [1]
+                },
+                name: '平均总抵押量',
+                smooth: 0.25,
+                type: 'line'
+            }, {
+                color: '#D1FF52',
+                datasetId: 'ownerStake',
+                name: '矿机自带抵押量',
+                smooth: 0.5,
+                type: 'line'
+            }, {
+                color: '#EB5757',
+                datasetId: 'totalStake',
+                name: '矿机总抵押量',
+                smooth: 0.5,
+                type: 'line'
+            }
+        ],
+
+        tooltip: {
+            axisPointer: {
+                snap: true,
+                type: 'line'
+            },
+            textStyle: {
+                fontSize: 12
+            },
+            trigger: 'axis'
+        },
+
+        xAxis: [{
+            id: 'timestamp',
+            name: '时间戳',
+            position: 'bottom',
+            type: 'time'
+        }, {
+            id: 'round',
+            name: '轮数',
+            position: 'bottom',
+            show: false,
+            type: 'value'
+        }],
+
+        yAxis: [{
+            id: 'value',
+            scale: true,
+            splitLine: {
+                lineStyle: {
+                    opacity: 0.25
+                }
+            },
+            type: 'value'
+        }]
+    }), [averageTotalStake, ownerStake, totalStake])
+
+    return (
+        <ReactECharts option={options} />
+    )
+}
+
 const WorkerByStashPage: React.FC = () => {
     const router = useRouter()
     const { stash } = router.query
@@ -84,6 +180,7 @@ const WorkerByStashPage: React.FC = () => {
     return (
         <Space direction="vertical" size="large">
             <WorkerInformation worker={data} />
+            <StakeChart worker={data} />
         </Space>
     )
 }

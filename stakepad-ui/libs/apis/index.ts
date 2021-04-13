@@ -10,7 +10,8 @@ export interface Worker {
     stash: string
 }
 
-export interface ValueWithTimestamp<T> {
+export interface WorkerHistoryPoint<T> {
+    round: number
     timestamp: number
     value: T
 }
@@ -25,16 +26,16 @@ export interface WorkerDetails {
 
     favourited: boolean
 
-    averageTotalStake: Array<ValueWithTimestamp<number>>
-    ownerStake: Array<ValueWithTimestamp<number>>
-    totalStake: Array<ValueWithTimestamp<number>>
+    averageTotalStake: Array<WorkerHistoryPoint<number>>
+    ownerStake: Array<WorkerHistoryPoint<number>>
+    totalStake: Array<WorkerHistoryPoint<number>>
 
-    commissionRate: Array<ValueWithTimestamp<number>>
+    commissionRate: Array<WorkerHistoryPoint<number>>
 
-    penalty: Array<ValueWithTimestamp<number>>
-    reward: Array<ValueWithTimestamp<number>>
+    penalty: Array<WorkerHistoryPoint<number>>
+    reward: Array<WorkerHistoryPoint<number>>
 
-    annualizedReturnRate: Array<ValueWithTimestamp<number>>
+    annualizedReturnRate: Array<WorkerHistoryPoint<number>>
 }
 
 export interface GetWorkerResult {
