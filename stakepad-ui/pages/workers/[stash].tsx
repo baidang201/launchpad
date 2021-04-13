@@ -151,7 +151,7 @@ function StakeChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.
     )
 }
 
-function CommissionRateChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.Element {
+function AnnualizedReturnRateChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.Element {
     const { annualizedReturnRate } = workerDetails ?? {
         annualizedReturnRate: [] as Array<WorkerHistoryPoint<number>>
     }
@@ -223,7 +223,7 @@ const WorkerByStashPage: React.FC = () => {
                     <StakeChart worker={data} />
                 </Col>
                 <Col xs={24} lg={12}>
-                    <CommissionRateChart worker={data} />
+                    <AnnualizedReturnRateChart worker={data} />
                 </Col>
             </Row>
             <Row>
