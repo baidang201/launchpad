@@ -18,6 +18,7 @@ import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { GlobalStakeHistoryPoint, WorkerDetails, WorkerStakeHistoryPoint } from '../../libs/apis'
 import { getWorkerByStash } from '../../libs/apis/getWorkerByStash'
+import styles from '../../styles/pages/workers/[stash].module.css'
 
 type WorkerInformationItemProps = PropsWithChildren<{ title: string }>
 
@@ -220,9 +221,24 @@ const WorkerByStashPage: React.FC = () => {
     ))
 
     return (
-        <Space direction="vertical" size="large">
+        <Space className={styles.container} direction="vertical" size="large">
             <WorkerInformation worker={data} />
-            <StakeChart worker={data} />
+            <Row>
+                <Col xs={24} lg={12}>
+                    <StakeChart worker={data} />
+                </Col>
+                <Col xs={24} lg={12}>
+                    <StakeChart worker={data} />
+                </Col>
+            </Row>
+            <Row>
+                <Col xs={24} lg={12}>
+                    <StakeChart worker={data} />
+                </Col>
+                <Col xs={24} lg={12}>
+                    <StakeChart worker={data} />
+                </Col>
+            </Row>
         </Space>
     )
 }
