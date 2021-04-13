@@ -11,12 +11,12 @@ import Row from 'antd/lib/row'
 import Space from 'antd/lib/space'
 import Tooltip from 'antd/lib/tooltip'
 import Typography from 'antd/lib/typography'
-import * as ECharts from 'echarts'
 import { EChartsOption } from 'echarts'
 import { useRouter } from 'next/router'
-import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react'
+import React, { PropsWithChildren, useMemo } from 'react'
 import { useQuery } from 'react-query'
-import { GlobalStakeHistoryPoint, WorkerDetails, WorkerStakeHistoryPoint } from '../../libs/apis'
+import { ChartWithDefaults } from '../../components/workerByStash/chart'
+import { GlobalStakeHistoryPoint, WorkerDetails, WorkerHistoryPoint, WorkerStakeHistoryPoint } from '../../libs/apis'
 import { getWorkerByStash } from '../../libs/apis/getWorkerByStash'
 import styles from '../../styles/pages/workers/[stash].module.css'
 
@@ -83,8 +83,6 @@ function StakeChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.
     }
 
     const options: EChartsOption = useMemo(() => ({
-        backgroundColor: '#000000',
-
         dataset: [
             {
                 source: global.map(point => [point.timestamp, point.stake, point.round]),
@@ -145,28 +143,55 @@ function StakeChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.
                 renderItem: () => ({ type: 'text' }),
                 type: 'custom'
             }
-        ],
+        ]
+    }), [global, worker])
 
-        tooltip: {
-            axisPointer: {
-                snap: true,
-                type: 'line'
-            },
-            textStyle: {
-                fontSize: 12
-            },
-            trigger: 'axis'
-        },
+    return (
+        <ChartWithDefaults className={styles.chart} options={options} />
+    )
+}
 
-        xAxis: [{
-            id: 'timestamp',
-            name: '时间戳',
-            position: 'bottom',
-            type: 'time'
+function CommissionRateChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.Element {
+    const { annualizedReturnRate } = workerDetails ?? {
+        annualizedReturnRate: [] as Array<WorkerHistoryPoint<number>>
+    }
+
+    const options: EChartsOption = useMemo(() => ({
+        dataset: [{
+            source: annualizedReturnRate.map(point => [point.timestamp, point.value * 100, point.round]),
+            id: 'annualizedReturnRate'
+        }],
+
+        series: [{
+            color: '#D1FF52',
+            datasetId: 'annualizedReturnRate',
+            dimensions: ['时间戳', '年化', '轮数'],
+            encode: {
+                x: [0],
+                y: [1],
+                tooltip: [1]
+            },
+            name: '年化',
+            smooth: 0.5,
+            type: 'line'
+        }, {
+            color: '#FFFFFF',
+            datasetId: 'annualizedReturnRate',
+            dimensions: ['时间戳', '', '轮数'],
+            encode: {
+                x: [0],
+                y: [],
+                tooltip: [2]
+            },
+            name: '轮数',
+            renderItem: () => ({ type: 'text' }),
+            type: 'custom'
         }],
 
         yAxis: [{
-            id: 'value',
+            axisLabel: {
+                formatter: '{value}%'
+            },
             scale: true,
             splitLine: {
                 lineStyle: {
@@ -175,40 +200,10 @@ function StakeChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.
             },
             type: 'value'
         }]
-    }), [global, worker])
-
-    /* initialization & layouts */
-
-    const [echartsElement, setEchartsElement] = useState<HTMLDivElement | null>(null)
-    const echarts = useMemo(() => {
-        return echartsElement === null ? null : ECharts.init(echartsElement)
-    }, [echartsElement])
-
-    useEffect(() => {
-        // update EChart options
-
-        echarts?.setOption(options)
-    }, [echarts, options])
-
-    useEffect(() => {
-        // responsive resize
-
-        if (window === undefined) {
-            return
-        }
-
-        const resizeListener = (): void => echarts?.resize({
-            width: echartsElement?.clientWidth
-        })
-
-        window.addEventListener('resize', resizeListener)
-        resizeListener() // also call once on mounted
-
-        return () => { window.removeEventListener('resize', resizeListener) }
-    }, [echarts, echartsElement?.clientWidth])
+    }), [annualizedReturnRate])
 
     return (
-        <div className={styles.chart} ref={(div) => setEchartsElement(div)} />
+        <ChartWithDefaults className={styles.chart} options={options} />
     )
 }
 
@@ -228,7 +223,7 @@ const WorkerByStashPage: React.FC = () => {
                     <StakeChart worker={data} />
                 </Col>
                 <Col xs={24} lg={12}>
-                    <StakeChart worker={data} />
+                    <CommissionRateChart worker={data} />
                 </Col>
             </Row>
             <Row>
