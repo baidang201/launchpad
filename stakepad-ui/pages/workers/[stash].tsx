@@ -11,10 +11,10 @@ import Row from 'antd/lib/row'
 import Space from 'antd/lib/space'
 import Tooltip from 'antd/lib/tooltip'
 import Typography from 'antd/lib/typography'
+import * as ECharts from 'echarts'
 import { EChartsOption } from 'echarts'
-import ReactECharts from 'echarts-for-react'
 import { useRouter } from 'next/router'
-import React, { PropsWithChildren, useMemo } from 'react'
+import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { GlobalStakeHistoryPoint, WorkerDetails, WorkerStakeHistoryPoint } from '../../libs/apis'
 import { getWorkerByStash } from '../../libs/apis/getWorkerByStash'
@@ -176,8 +176,38 @@ function StakeChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.
         }]
     }), [global, worker])
 
+    /* initialization & layouts */
+
+    const [echartsElement, setEchartsElement] = useState<HTMLDivElement | null>(null)
+    const echarts = useMemo(() => {
+        return echartsElement === null ? null : ECharts.init(echartsElement)
+    }, [echartsElement])
+
+    useEffect(() => {
+        // update EChart options
+
+        echarts?.setOption(options)
+    }, [echarts, options])
+
+    useEffect(() => {
+        // responsive resize
+
+        if (window === undefined) {
+            return
+        }
+
+        const resizeListener = (): void => echarts?.resize({
+            width: echartsElement?.clientWidth
+        })
+
+        window.addEventListener('resize', resizeListener)
+        resizeListener() // also call once on mounted
+
+        return () => { window.removeEventListener('resize', resizeListener) }
+    }, [echarts, echartsElement?.clientWidth])
+
     return (
-        <ReactECharts option={options} />
+        <div className={styles.chart} ref={(div) => setEchartsElement(div)} />
     )
 }
 
