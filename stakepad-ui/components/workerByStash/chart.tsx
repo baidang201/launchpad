@@ -27,9 +27,7 @@ export function Chart({ options, ...props }: { options: EChartsOption } & React.
             return
         }
 
-        const resizeListener = (): void => echarts?.resize({
-            width: echartsElement?.clientWidth
-        })
+        const resizeListener = (): void => echarts?.resize()
 
         window.addEventListener('resize', resizeListener)
         resizeListener() // also call once on mounted
@@ -73,8 +71,6 @@ export const ChartWithDefaults = ({ options, ...props }: { options: EChartsOptio
             type: 'value'
         }]
     }, options)
-
-    console.log(optionWithDefaults.yAxis)
 
     return (
         <Chart options={optionWithDefaults} {...props} />
