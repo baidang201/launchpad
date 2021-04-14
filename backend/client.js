@@ -90,6 +90,14 @@ function testcommission() {
   jsFetch(buffer6, protobuf.CommissionResponse);
 }
 
+function testnoticeRequest() {
+  const message = protobuf.CommonRequest.create({notice_request: {}});
+  logger.info(`message = ${JSON.stringify(message)}`);
+  const buffer = protobuf.CommonRequest.encode(message).finish();
+  logger.info(buffer);
+  jsFetch(buffer, protobuf.NoticeResponse);
+}
+
 function testunknow() {
   const message6 = protobuf.CommonRequest.create({unknow_request: {stash_account: "42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q"}});
   logger.info(`message = ${JSON.stringify(message6)}`);
@@ -108,5 +116,7 @@ testreward()
 testapy()
 
 testcommission()
+
+testnoticeRequest()
 
 testunknow()
