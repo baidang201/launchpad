@@ -17,19 +17,19 @@ export async function getGlobalStatistics() {
     if (!historyRoundInfo) {
       return 0;
     }
-    return historyRoundInfo.apy_current_round;
+    return historyRoundInfo.apyCurrentRound;
   }
 
   const rt = { status: { success: 0 } , result: {
      apy: await getLastRoundApy(realtimeRoundInfo.round),
      round: realtimeRoundInfo.round,
-     round_cycle_time: realtimeRoundInfo.round_cycle_time, 
-     online_worker_num: realtimeRoundInfo.online_worker_num,
-     worker_num: realtimeRoundInfo.worker_num,
-     stake_sum: realtimeRoundInfo.stake_sum.toString(),  //bignum
-     stake_supply_rate: realtimeRoundInfo.stake_supply_rate,
-     avg_stake: realtimeRoundInfo.avg_stake.toString(),  //bignum
-     reward_last_round: realtimeRoundInfo.reward_last_round.toString(),
+     roundCycleTime: realtimeRoundInfo.roundCycleTime, 
+     onlineWorkerNum: realtimeRoundInfo.onlineWorkerNum,
+     workerNum: realtimeRoundInfo.workerNum,
+     stakeSum: realtimeRoundInfo.stakeSum.toString(),  //bignum
+     stakeSupplyRate: realtimeRoundInfo.stakeSupplyRate,
+     avgStake: realtimeRoundInfo.avgStake.toString(),  //bignum
+     rewardLastRound: realtimeRoundInfo.rewardLastRound.toString(),
   }};
 
   const message = protobuf.GlobalStatisticsResponse.create(rt);
