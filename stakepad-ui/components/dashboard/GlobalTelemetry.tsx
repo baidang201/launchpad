@@ -4,7 +4,7 @@ import Row from 'antd/lib/row'
 import Statistic from 'antd/lib/statistic'
 import Typography from 'antd/lib/typography'
 import { useQuery } from 'react-query'
-import { getGlobalTelemetry } from '../../libs/apis/globalTelemetry'
+import { getGlobalTelemetry } from '../../libs/apis/globalTelemetry/mock'
 
 export const GlobalTelemetry: React.FC = () => {
     const { data, isFetched } = useQuery(['api', 'getGlobalTelemetry'], async () => await getGlobalTelemetry())

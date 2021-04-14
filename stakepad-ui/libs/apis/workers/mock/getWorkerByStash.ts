@@ -1,4 +1,4 @@
-import { WorkerDetails } from '.'
+import { WorkerDetails } from '../..'
 
 function makeRandomHistory<T>(count: number, timeOffset: number, callback: (index: number, round: number, timestamp: number) => T): T[] {
     const result: T[] = []

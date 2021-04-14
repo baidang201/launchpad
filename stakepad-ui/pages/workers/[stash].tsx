@@ -8,7 +8,7 @@ import { CommissionRateChart } from '../../components/workerByStash/commissionRa
 import { WorkerInformation } from '../../components/workerByStash/information'
 import { RewardChart } from '../../components/workerByStash/rewardChart'
 import { StakeChart } from '../../components/workerByStash/stakeChart'
-import { getWorkerByStash } from '../../libs/apis/getWorkerByStash'
+import { getWorkerByStash } from '../../libs/apis/workers/mock/getWorkerByStash'
 import styles from '../../styles/pages/workers/[stash].module.css'
 
 const WorkerByStashPage: React.FC = () => {
