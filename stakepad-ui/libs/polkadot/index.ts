@@ -1,7 +1,7 @@
-import { ApiPromise } from '@polkadot/api';
-import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
+import { ApiPromise } from '@polkadot/api'
+import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 
-export { PolkadotProvider, usePolkadot } from './context';
+export { PolkadotProvider, usePolkadot } from './context'
 
 export const AppName = 'Phala Stakepad'
 
@@ -25,7 +25,7 @@ export interface IPolkadotContext {
 
     /**
      * Readystate of Polkadot web3 extension
-     * 
+     *
      * @see PolkadotReadystate
      */
     readonly readystate: PolkadotReadystate
