@@ -88,6 +88,7 @@ class BlocksHistoryScan {
     const roundInfo = (await api.query.phalaModule.round.at(blockHash)) || new BN('0')
     const roundNumber = roundInfo.round.toNumber()
     const number = header.number.toNumber()
+    const timestamp = await api.query.timestamp.now.at(blockHash);
     logger.info(`history block round #${roundNumber} blocknum#${number}...`)
 
     const accumulatedFire2 = (await api.query.phalaModule.accumulatedFire2.at(blockHash)) || new BN('0')
@@ -336,7 +337,7 @@ class BlocksHistoryScan {
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(stakeSum),
-      blocktime: null,
+      blocktime: new Date(timestamp.toNumber()),
       blockNum: number,
       workers: workers,
       apyCurrentRound: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),

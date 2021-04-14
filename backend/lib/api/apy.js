@@ -5,7 +5,7 @@ import {padArrayStart} from '../utils/index.js'
 export async function getApy(apyRequest) {
   const historyRoundInfo = await HistoryRoundInfo
     .find( {'workers.stashAccount':  apyRequest.stashAccount})
-    .select({round:1, 'workers.apy.$': 1})
+    .select({round:1, blocktime:1, 'workers.apy.$': 1})
     .sort({round: -1})
     .limit(30*24).lean();//30 days
 
@@ -15,14 +15,13 @@ export async function getApy(apyRequest) {
     return buffer;
   }
 
-  const filterWorkers = historyRoundInfo.map(roundInfo => roundInfo.workers)
-    .filter((element, index) => {return 0 === index % 4} )
-    .flat(1)
+  const filterWorkers = historyRoundInfo.filter((element, index) => {return 0 === index % 4} )
+    .map(roundInfo => ({apy: roundInfo.workers[0].apy, round: roundInfo.round, timestamp: roundInfo.blocktime.getTime()/1000}))
 
-  const apys = filterWorkers.map(x => x.apy).reverse();
+  const apys = filterWorkers.reverse();
 
   const rt = { status: { success: 0 } , result: {
-    apy: padArrayStart(apys, 180, 0)
+    apyInfos: apys
   }};
 
   const message = protobuf.ApyResponse.create(rt);
