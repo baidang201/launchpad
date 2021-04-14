@@ -148,6 +148,18 @@ message CommissionResponse {
   Commission result = 2;
 }
 
+//notice
+message Notice {
+  string notice = 1;
+}
+message NoticeRequest {
+  string stash_account = 1;
+}
+message NoticeResponse {
+  Status status = 1;
+  Notice result = 2;
+}
+
 //common
 message CommonRequest {
   oneof request {
@@ -159,6 +171,7 @@ message CommonRequest {
     AvgRewardRequest avg_reward_request = 6;
     ApyRequest apy_request = 7;
     CommissionRequest commission_request = 8;
+    NoticeRequest notice_request = 9;
   }
 }
 

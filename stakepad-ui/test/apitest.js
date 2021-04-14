@@ -2,7 +2,7 @@
 import {getWorkers,getGlobalStatistics,
   getAvgStakeHistory, getWorkerStakeHistory,
   getAvgRewardHistory, getWorkerRewardHistory,
-  getApyHistory,getCommissionHistory} from '../utils/api.js'
+  getApyHistory,getCommissionHistory, getNotice} from '../utils/api.js'
 import {logger} from '../utils/log.js'
 
 {
@@ -35,5 +35,9 @@ import {logger} from '../utils/log.js'
 }
 {
   const rt = await getCommissionHistory("42SrMJERV2P2aDcLbDdUdRNaPGzQZU8hNUuJDgMitUGqFp5q")
+  logger.info('resObj', rt)
+}
+{
+  const rt = await getNotice()
   logger.info('resObj', rt)
 }
