@@ -1,4 +1,5 @@
 import Koa from 'koa'
+import cors from '@koa/cors'
 import { node }  from './config/index.js'
 import protobuf from './lib/protobuf/protobuf.js'
 import {getWorkers} from './lib/api/workers.js'
@@ -79,6 +80,7 @@ app.use(async ctx => {
     ctx.status = 200;          
   }
 });
+app.use(cors());
 
 logger.info(`Listening on port ${node.HTTP_PORT}...`)
 app.listen(node.HTTP_PORT)
