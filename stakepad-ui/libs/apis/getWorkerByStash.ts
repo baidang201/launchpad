@@ -32,8 +32,16 @@ export const getWorkerByStash = async (): Promise<WorkerDetails> => {
             timestamp
         })),
 
-        globalRewardHistory: [],
-        workerRewardHistory: [],
+        globalRewardHistory: makeRandomHistory(21, 4 * 60 * 60 * 1000, (i, round, timestamp) => ({
+            reward: i * 10 + Math.random() * 800 + 200,
+            round,
+            timestamp
+        })),
+        workerRewardHistory: makeRandomHistory(21, 4 * 60 * 60 * 1000, (i, _, timestamp) => ({
+            penalty: i * 10 + Math.random() * 100,
+            reward: i * 10 + Math.random() * 800 + 200,
+            timestamp
+        })),
 
         commissionRate: makeRandomHistory(21, 4 * 60 * 60 * 1000, (_, round, timestamp) => ({
             round,

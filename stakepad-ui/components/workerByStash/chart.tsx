@@ -8,11 +8,10 @@ import { useEffect, useMemo, useState } from 'react'
     following setOption should update only datasets
 */
 
-export function Chart({ options, ...props }: { options: EChartsOption } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element {
+export function Chart({ options, ...props }: { options: EChartsOption } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement
+>): JSX.Element {
     const [echartsElement, setEchartsElement] = useState<HTMLDivElement | null>(null)
-    const echarts = useMemo(() => {
-        return echartsElement === null ? null : ECharts.init(echartsElement)
-    }, [echartsElement])
+    const echarts = useMemo(() => echartsElement === null ? null : ECharts.init(echartsElement), [echartsElement])
 
     useEffect(() => {
         // update EChart options
@@ -32,17 +31,25 @@ export function Chart({ options, ...props }: { options: EChartsOption } & React.
         window.addEventListener('resize', resizeListener)
         resizeListener() // also call once on mounted
 
-        return () => { window.removeEventListener('resize', resizeListener) }
+        return () => {
+            window.removeEventListener('resize', resizeListener)
+        }
     }, [echarts, echartsElement?.clientWidth])
 
-    return (
-        <div ref={(div) => setEchartsElement(div)} {...props} />
-    )
+    return <div ref={(div) => setEchartsElement(div)} {...props} />
 }
 
-export const ChartWithDefaults = ({ options, ...props }: { options: EChartsOption } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element => {
-    const optionWithDefaults = Object.assign({}, {
+export const ChartWithDefaults = ({
+    options,
+    ...props
+}: { options: EChartsOption } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element => {
+    const defaults: EChartsOption = {
         backgroundColor: '#000000',
+
+        grid: {
+            bottom: 32,
+            top: 16
+        },
 
         tooltip: {
             axisPointer: {
@@ -55,24 +62,28 @@ export const ChartWithDefaults = ({ options, ...props }: { options: EChartsOptio
             trigger: 'axis'
         },
 
-        xAxis: [{
-            name: '时间戳',
-            position: 'bottom',
-            type: 'time'
-        }],
+        xAxis: [
+            {
+                name: '时间戳',
+                position: 'bottom',
+                type: 'time'
+            }
+        ],
 
-        yAxis: [{
-            scale: true,
-            splitLine: {
-                lineStyle: {
-                    opacity: 0.25
-                }
-            },
-            type: 'value'
-        }]
-    }, options)
+        yAxis: [
+            {
+                scale: true,
+                splitLine: {
+                    lineStyle: {
+                        opacity: 0.25
+                    }
+                },
+                type: 'value'
+            }
+        ]
+    }
 
-    return (
-        <Chart options={optionWithDefaults} {...props} />
-    )
+    const optionWithDefaults = Object.assign({}, defaults, options)
+
+    return <Chart options={optionWithDefaults} {...props} />
 }
