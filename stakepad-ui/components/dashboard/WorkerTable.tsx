@@ -1,9 +1,12 @@
 import { CopyOutlined, StarOutlined } from '@ant-design/icons'
-import { Button, Typography } from 'antd'
+import Button from 'antd/lib/button'
 import Table, { TablePaginationConfig } from 'antd/lib/table'
 import Column from 'antd/lib/table/Column'
+import Typography from 'antd/lib/typography'
+import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
+import { Worker } from '../../libs/apis'
 import { findWorkersByStash } from '../../libs/apis/findWorkersByStash'
 
 const defaultPageSize = 10
@@ -33,7 +36,6 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
     const keyedWorkers = useMemo(() => data?.workers?.map((worker, index) => ({
         ...worker,
         index: `${currentPage}-${index}`
-        // TODO: use controller address as index for further selection implementation
     })), [data, currentPage])
 
     const handleTableChange = (pagination: TablePaginationConfig): void => {
@@ -43,6 +45,14 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
         if (pagination.pageSize !== pageSize) {
             setPageSize(pagination.pageSize ?? defaultPageSize)
         }
+    }
+
+    const router = useRouter()
+
+    const handleDetailClick = (stash: string): void => {
+        router.push(`/workers/${stash}`).catch(error => {
+            console.error(`WorkerTable: Failed to navigate to /workers/${stash}: ${(error as Error)?.message ?? error}`)
+        })
     }
 
     return (
@@ -70,8 +80,8 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
             <Column dataIndex="commissionRate" key="commissionRate" title="分润率" />
             <Column dataIndex="taskScore" key="taskScore" title="任务分" />
             <Column dataIndex="minerScore" key="minerScore" title="机器分" />
-            <Column title="" key="action" render={() => (
-                <Button size="small" type="dashed" >详情</Button>
+            <Column title="" key="action" render={(_, { stash }: Worker) => (
+                <Button onClick={() => handleDetailClick(stash)} size="small" type="dashed" >详情</Button>
             )} />
         </Table>
     )

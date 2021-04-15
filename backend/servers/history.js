@@ -52,17 +52,17 @@ class BlocksHistoryScan {
 
       const status = await Status.findOne({});
       //批量处理5个，小于5个先返回
-      if (number <= status.last_scan_queue_number + BATCH_MIN_SIZE) {
+      if (number <= status.lastScanQueueNumber + BATCH_MIN_SIZE) {
         return
       }
   
-      logger.info(`history batch to queue  from #${status.last_scan_queue_number}  to blocknum #${number}...`)
-      for (let n = status.last_scan_queue_number; n < number; n++) {
+      logger.info(`history batch to queue  from #${status.lastScanQueueNumber}  to blocknum #${number}...`)
+      for (let n = status.lastScanQueueNumber; n < number; n++) {
         queue.add(() => this.processBlockAt(n, api))
       }
 
       await Status.findOneAndUpdate({}, {
-        last_scan_queue_number: number,
+        lastScanQueueNumber: number,
       })
     })
   }
@@ -75,7 +75,7 @@ class BlocksHistoryScan {
   }
 
   processBlock = async (api) => {
-    const blockNumber = this.status.last_scan_number + 1;
+    const blockNumber = this.status.lastScanNumber + 1;
     const lastBlockHeaderHash = await api.rpc.chain.getBlockHash(blockNumber)
     this.lastBlockHeader = await api.rpc.chain.getHeader(lastBlockHeaderHash)
     
@@ -85,18 +85,19 @@ class BlocksHistoryScan {
   processRoundAt = async (header, api) => {
     const blockHash = header.hash
 
-    const roundInfo = (await api.query.phalaModule.round.at(blockHash)) || new BN('0')
+    const roundInfo = (await api.query.phala.round.at(blockHash)) || new BN('0')
     const roundNumber = roundInfo.round.toNumber()
     const number = header.number.toNumber()
+    const timestamp = await api.query.timestamp.now.at(blockHash);
     logger.info(`history block round #${roundNumber} blocknum#${number}...`)
 
-    const accumulatedFire2 = (await api.query.phalaModule.accumulatedFire2.at(blockHash)) || new BN('0')
+    const accumulatedFire2 = (await api.query.phala.accumulatedFire2.at(blockHash)) || new BN('0')
     const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
-    const onlineWorkers = await api.query.phalaModule.onlineWorkers.at(blockHash)
-    const totalPower = await api.query.phalaModule.totalPower.at(blockHash)
+    const onlineWorkers = await api.query.phala.onlineWorkers.at(blockHash)
+    const totalPower = await api.query.phala.totalPower.at(blockHash)
 
     const stashAccounts = {}
-    const stashKeys = await api.query.phalaModule.stashState.keysAt(blockHash)
+    const stashKeys = await api.query.phala.stashState.keysAt(blockHash)
     const stashCount = stashKeys.length
 
     await Promise.all(
@@ -106,19 +107,22 @@ class BlocksHistoryScan {
           const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
           stashAccounts[stash] = {
             controller: value.controller,
-          payout: value.payoutPrefs.target,
-          commission: value.payoutPrefs.commission,
-          stake: 0,
-          workerStake: 0,
-          userStake: 0,
-          stakeAccountNum: 0,
-          overallScore: 0
+            payout: value.payoutPrefs.target,
+            commission: value.payoutPrefs.commission,
+            stake: 0,
+            workerStake: 0,
+            userStake: 0,
+            stakeAccountNum: 0,
+            overallScore: 0,
+            online_reward: 0,
+            compute_reward: 0,
+            slash: 0,
           }
         }))
 
     const payoutAccounts = {}
     await Promise.all(
-      (await api.query.phalaModule.fire2.keysAt(blockHash))
+      (await api.query.phala.fire2.keysAt(blockHash))
         .map(async k => {
           const account = k.args[0].toString()
           const value = await api.rpc.state.getStorage(k, blockHash)
@@ -135,7 +139,7 @@ class BlocksHistoryScan {
         }))
 
     await Promise.all(
-      (await api.query.phalaModule.payoutComputeReward.keysAt(blockHash))
+      (await api.query.phala.payoutComputeReward.keysAt(blockHash))
         .map(async k => {
           const account = k.args[0].toString()
           const value = await api.rpc.state.getStorage(k, blockHash)
@@ -152,7 +156,7 @@ class BlocksHistoryScan {
     const validStashAccounts = {}
     let accumulatedScore = 0
     await Promise.all(
-      (await api.query.phalaModule.workerState.keysAt(blockHash))
+      (await api.query.phala.workerState.keysAt(blockHash))
         .map(async k => {
           const stash = k.args[0].toString()
           const payout = stashAccounts[stash].payout
@@ -172,6 +176,32 @@ class BlocksHistoryScan {
           }
         }))
 
+    await Promise.all(
+      (await api.query.phala.roundWorkerStats.keysAt(blockHash))
+        .map(async k => {
+          const stash = k.args[0].toString()
+          const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
+    
+          const slashDecimal = new Decimal(value.slash);
+          const computeReceivedDecimal = new Decimal(value.compute_received);
+          const onlineReceivedDecimal = new Decimal(value.online_received);
+          
+          stashAccounts[stash].slash = slashDecimal.div(1000)
+              .div(1000)
+              .div(1000)
+              .div(1000)
+        
+          stashAccounts[stash].compute_received = computeReceivedDecimal.div(1000)
+              .div(1000)
+              .div(1000)
+              .div(1000)
+        
+          stashAccounts[stash].online_received = onlineReceivedDecimal.div(1000)
+              .div(1000)
+              .div(1000)
+              .div(1000)
+        }))
+    
     let accumulatedStake = undefined
     await Promise.all(
       (await api.query.miningStaking.stakeReceived.keysAt(blockHash))
@@ -181,7 +211,6 @@ class BlocksHistoryScan {
 
           if (!stashAccount) { return }
 
-          // const value = (await api.rpc.state.getStorage(k, blockHash)).div(ONE_THOUSAND)
           const value = (await api.rpc.state.getStorage(k, blockHash))
           accumulatedStake = typeof accumulatedStake === 'undefined'
             ? value : accumulatedStake.add(value)
@@ -257,12 +286,12 @@ class BlocksHistoryScan {
 
     const stakeSupplyRate = async function(stakeSumPHA) {
       const tokeninfo = await getTokenInfo()
-      const available_supply = tokeninfo.available_supply
-      if (0 === available_supply) {
+      const availableSupply = tokeninfo.availableSupply
+      if (0 === availableSupply) {
         return 0
       }
       
-      return stakeSumPHA.div(available_supply)
+      return stakeSumPHA.div(availableSupply)
     }
 
     const getApyCurrentRound = function(accumulatedFire2PHA, stakeSumOfUserStake) {
@@ -297,7 +326,7 @@ class BlocksHistoryScan {
         .div(1000)
         .div(1000)
 
-      const reward = new Decimal(125);//todo 等待后端合约完善
+      const reward = new Decimal(value.online_reward + value.compute_reward - value.slash);
 
       function getApy(reward, userStake) {
         if (userStake.isZero()) {
@@ -307,40 +336,40 @@ class BlocksHistoryScan {
       }
 
       workers.push({
-        stash_account: key,
-        controller_account: value.controller,
+        stashAccount: key,
+        controllerAccount: value.controller,
         payout: value.payout,
-        accumulated_stake: accumulatedStake,
-        worker_stake: workerStake,
-        user_stake: userStake.toNumber(),
-        stake_account_num: value.stakeAccountNum,
+        accumulatedStake: accumulatedStake,
+        workerStake: workerStake,
+        userStake: userStake.toNumber(),
+        stakeAccountNum: value.stakeAccountNum,
         commission: value.commission,
-        task_score: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
-        machine_score: value.overallScore,
-        online_reward: 1021,   //todo 等待后端合约完善
-        compute_reward: 22,    //todo 等待后端合约完善
-        reward: reward,        //todo 等待后端合约完善
+        taskScore: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
+        machineScore: value.overallScore,
+        onlineReward: value.online_reward,
+        computeReward: value.compute_reward,
+        reward: reward,
         apy: getApy(reward, userStake),
-        penalty: 0 // todo 等待后端合约完善
+        slash: value.slash
       });
     });
 
-    const stakeSumOfUserStake = workers.map(x => x.user_stake).reduce((a, b) => a + b, 0)
+    const stakeSumOfUserStake = workers.map(x => x.userStake).reduce((a, b) => a + b, 0)
     //jsonOutput = JSON.stringify(output)
     const historyData = {
       round: roundNumber,
-      avg_stake: avgStake,
-      avg_reward: avgReward,
-      accumulated_fire2: accumulatedFire2PHA, //总奖励
-      round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
-      online_worker_num: onlineWorkers,
-      worker_num: stashCount,
-      stake_sum: stakeSum, 
-      stake_supply_rate: await stakeSupplyRate(stakeSum),
-      blocktime: null,
-      block_num: number,
+      avgStake: avgStake,
+      avgReward: avgReward,
+      accumulatedFire2: accumulatedFire2PHA, //总奖励
+      cycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+      onlineWorkerNum: onlineWorkers,
+      workerNum: stashCount,
+      stakeSum: stakeSum, 
+      stakeSupplyRate: await stakeSupplyRate(stakeSum),
+      startedAt: new Date(timestamp.toNumber()),
+      blockNum: number,
       workers: workers,
-      apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
+      apyCurrentRound: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
     };
 
     mongoWriteQueue.add(() => this.writeDatebase(roundNumber, number, historyData))
@@ -355,16 +384,24 @@ class BlocksHistoryScan {
       historyRoundInfo = new HistoryRoundInfo(historyData);
       await historyRoundInfo.save();
     } else {
-      if (historyData.block_num > historyRoundInfo.block_num) {
+      if (historyData.blockNum > historyRoundInfo.blockNum) {
+        const prop = 'startedAt'
+        const newHistoryData = Object.keys(historyData).reduce((object, key) => {
+          if (key !== prop) {
+            object[key] = historyData[key]
+          }
+          return object
+        }, {})
+
         await HistoryRoundInfo.updateOne({
           round: roundNumber
-        }, historyData);
+        }, newHistoryData);
       }
     }
 
     await Status.findOneAndUpdate({}, {
-      last_scan_number: blockNumber,
-      last_scan_round: roundNumber
+      lastScanNumber: blockNumber,
+      lastScanRound: roundNumber
     })
 
     logger.info(`### history insert Updated output from round #${roundNumber}. in blocknum #${blockNumber}`)
@@ -374,22 +411,22 @@ class BlocksHistoryScan {
     let _status = await Status.findOne({});
     if (!_status) {
         _status = new Status({
-            head_block_number: 0,
+            headBlockNumber: 0,
             time: null,
-            head_block_id: "",
+            headBlockId: "",
 
-            last_scan_queue_number: FIRST_SCAN_QUEUE_NUMBER,
-            last_scan_number: BLOCK_FIRST_ROUND_START,
-            last_scan_round: 0,
-            last_scan_time: null
+            lastScanQueueNumber: FIRST_SCAN_QUEUE_NUMBER,
+            lastScanNumber: BLOCK_FIRST_ROUND_START,
+            lastScanRound: 0,
+            lastScanTime: null
         });
         await _status.save();
     } else {
-      if (_status.last_scan_queue_number > _status.last_scan_number) {
+      if (_status.lastScanQueueNumber > _status.lastScanNumber) {
 
-        const new_last_scan_queue_number = _status.last_scan_number - BATCH_MIN_SIZE >= BLOCK_FIRST_ROUND_START? _status.last_scan_number - BATCH_MIN_SIZE : BLOCK_FIRST_ROUND_START 
+        const newLastScanQueueNumber = _status.lastScanNumber - BATCH_MIN_SIZE >= BLOCK_FIRST_ROUND_START? _status.lastScanNumber - BATCH_MIN_SIZE : BLOCK_FIRST_ROUND_START 
         _status.set({
-          last_scan_queue_number: new_last_scan_queue_number,
+          lastScanQueueNumber: newLastScanQueueNumber,
         })
 
         await _status.save();

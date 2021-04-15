@@ -4,8 +4,8 @@ import {padArrayStart, sumEvery, averageEvery} from '../utils/index.js'
 
 export async function getRewardPenalty(rewardPenaltyRequest) {
   const historyRoundInfo = await HistoryRoundInfo
-  .find( {'workers.stash_account':  rewardPenaltyRequest.stash_account})
-  .select({'workers.$': 1})
+  .find( {'workers.stashAccount':  rewardPenaltyRequest.stashAccount})
+  .select({round:1, startedAt:1,'workers.$': 1})
   .sort({round: -1})
   .limit(30*24)
   .lean();//30 days
@@ -20,10 +20,18 @@ export async function getRewardPenalty(rewardPenaltyRequest) {
 
   const rewards = sumEvery(filterWorkers.map(x => x.reward), 4).reverse();
   const penaltys = sumEvery(filterWorkers.map(x => x.penalty), 4).reverse();
+  const filterRoundInfos = historyRoundInfo.filter((element, index) => {return 0 === index % 4} ).reverse();
+
+  const mergeRoundInfos = []
+  for (let index = 0; index < filterRoundInfos.length; index++) {
+    mergeRoundInfos[index] = filterRoundInfos[index];
+    mergeRoundInfos[index].timestamp = filterRoundInfos[index].startedAt.getTime()/1000;
+    mergeRoundInfos[index].reward = rewards[index].toString();
+    mergeRoundInfos[index].penalty = penaltys[index].toString();
+  }
 
   const rt = { status: { success: 0 } , result: {
-    reward: padArrayStart(rewards.map(x => x.toString()), 180, '0'),
-    penalty: padArrayStart(penaltys.map(x => x.toString()), 180, '0')
+    rewardPenaltyInfos: mergeRoundInfos
   }};
 
   const message = protobuf.RewardPenaltyResponse.create(rt);
@@ -34,7 +42,7 @@ export async function getRewardPenalty(rewardPenaltyRequest) {
 export async function getAvgReward() {
   const historyRoundInfo = await HistoryRoundInfo
   .find({})
-  .select({avg_reward: 1})
+  .select({round:1, startedAt:1, avgReward: 1})
   .sort({round: -1})
   .limit(30*24)
   .lean();//30 days
@@ -45,10 +53,18 @@ export async function getAvgReward() {
     return buffer;
   }
 
-  const avgrewards = sumEvery(historyRoundInfo.map(x => x.avg_reward), 4).reverse();
+  const avgrewards = sumEvery(historyRoundInfo.map(x => x.avgReward), 4).reverse();
+  const filterRoundInfos = historyRoundInfo.filter((element, index) => {return 0 === index % 4} ).reverse();
+  const mergeRoundInfos = []
+
+  for (let index = 0; index < filterRoundInfos.length; index++) {
+    mergeRoundInfos[index] = filterRoundInfos[index];
+    mergeRoundInfos[index].timestamp = filterRoundInfos[index].startedAt.getTime()/1000;
+    mergeRoundInfos[index].avgReward = avgrewards[index].toString();
+  }
 
   const rt = { status: { success: 0 } , result: {
-    avg_reward: padArrayStart(avgrewards.map(x => x.toString()), 180, '0')
+    avgRewardInfos: mergeRoundInfos
   }};
 
   const message = protobuf.AvgRewardResponse.create(rt);

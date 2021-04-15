@@ -8,6 +8,7 @@ import {getApy} from './lib/api/apy.js'
 import {getCommission} from './lib/api/commission.js'
 import {getAvgStake, getStakeinfo} from './lib/api/stake.js'
 import {getAvgReward, getRewardPenalty} from './lib/api/rewardpenalty.js'
+import {getNotice} from './lib/api/notice.js'
 import {logger} from './lib/utils/log.js'
 
 const app = new Koa()
@@ -17,14 +18,15 @@ app.on('error', (err, ctx) => {
 })
 
 const dispatchTable = {
-  'worker_request'               : function(obj) {  const buffer = getWorkers(obj.worker_request);  return buffer},
-  'global_statistics_request'     : function(obj) {  const buffer = getGlobalStatistics();  return buffer },
-  'avg_stake_request'             : function(obj) {  const buffer = getAvgStake();  return buffer},
-  'stake_info_request'            : function(obj) {  const buffer = getStakeinfo(obj.stake_info_request); return buffer},
-  'avg_reward_request'            : function(obj) {  const buffer = getAvgReward(); return buffer},
-  'reward_penalty_request'        : function(obj) {  const buffer = getRewardPenalty(obj.reward_penalty_request); return buffer},
-  'apy_request'                  : function(obj) {  const buffer = getApy(obj.apy_request); return buffer},
-  'commission_request'           : function(obj) {  const buffer = getCommission(obj.commission_request); return buffer},
+  'workerRequest'               : function(obj) {  const buffer = getWorkers(obj.workerRequest);  return buffer},
+  'globalStatisticsRequest'     : function(obj) {  const buffer = getGlobalStatistics();  return buffer },
+  'avgStakeRequest'             : function(obj) {  const buffer = getAvgStake();  return buffer},
+  'stakeInfoRequest'            : function(obj) {  const buffer = getStakeinfo(obj.stakeInfoRequest); return buffer},
+  'avgRewardRequest'            : function(obj) {  const buffer = getAvgReward(); return buffer},
+  'rewardPenaltyRequest'        : function(obj) {  const buffer = getRewardPenalty(obj.rewardPenaltyRequest); return buffer},
+  'apyRequest'                  : function(obj) {  const buffer = getApy(obj.apyRequest); return buffer},
+  'commissionRequest'           : function(obj) {  const buffer = getCommission(obj.commissionRequest); return buffer},
+  'noticeRequest'               : function(obj) {  const buffer = getNotice(); return buffer},
 };
 
 function getUnknownRequestBuffer() {

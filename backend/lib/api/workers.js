@@ -6,46 +6,51 @@ import protobuf from '../protobuf/protobuf.js'
 const BASE_STAKE_PHA = 1620
 const COMMISSION_LIMIT = 20
 
-function paginate(array, page_size, page_number) {
+function paginate(array, pageSize, pageNumber) {
   // human-readable page numbers usually start with 1, so we reduce 1 in the first argument
-  return array.slice((page_number - 1) * page_size, page_number * page_size);
+  return array.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
 }
 
 export async function getWorkers(workerRequest) {
-  const realtimeRoundInfo = await RealtimeRoundInfo.findOne({}).lean();
-  if (!realtimeRoundInfo) {
+  const offset = (workerRequest.page - 1) * workerRequest.pageSize
+
+  const filterList = []
+  filterList.push({ $unwind: '$workers'});
+  if (workerRequest.filterRuning) {
+    filterList.push({ $match: {'workers.onlineStatus':true}} )
+  }
+  if (workerRequest.filterStakeEnough) {
+    filterList.push({ $match: {'workers.workerStake': {$gte: BASE_STAKE_PHA}}} )
+  }
+  if (workerRequest.filterCommissionLessThen) {
+    filterList.push({ $match: {'workers.commission': {$lte: COMMISSION_LIMIT}}} )
+  }
+  if (workerRequest.filterStashAccounts) {
+    filterList.push( {$match: {'workers.stashAccount': {$in: workerRequest.filterStashAccounts}} } )
+  }
+
+  const total = (await RealtimeRoundInfo.aggregate(filterList)).length;
+
+  if (workerRequest.sortFieldName) {
+    const key = "workers." + workerRequest.sortFieldName
+    const orderNum = workerRequest.sortAsc ? 1 : -1
+
+    filterList.push({ $sort: {[key]: orderNum}})
+  } else {
+    filterList.push({ $sort: { 'workers.apy': -1 }})
+  }
+
+  filterList.push({"$skip": offset});
+  filterList.push({"$limit": workerRequest.pageSize});
+
+  const filterWorkers = await RealtimeRoundInfo.aggregate(filterList);
+
+  if (!filterWorkers) {
     const message = protobuf.WorkerResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.WorkerResponse.encode(message).finish();
     return buffer;
   }
   const workers = [];
-
-  const filterWorkers = realtimeRoundInfo.workers.filter((element, index) => {
-    const checkfilterRuning = workerRequest.filter_runing? true === element.online_status: true;
-    const checkfilterStakeEnough = workerRequest.filter_stake_enough?  element.worker_stake >= BASE_STAKE_PHA : true;
-    const checkfilterCommissionLessThen = workerRequest.filter_commission_less_then ? element.commission <= COMMISSION_LIMIT: true
-    const checkfilterStashAccounts = (workerRequest.filter_stash_accounts &&  workerRequest.filter_stash_accounts.length > 0) ?
-      workerRequest.filter_stash_accounts.indexOf(element.stash_account) >= 0 : true
-
-    return checkfilterRuning && checkfilterStakeEnough && checkfilterCommissionLessThen && checkfilterStashAccounts
-  })
-  .sort((a, b) => {
-    if ( 'profit_last_month' === workerRequest.sort_field_name) {
-      return b.profit_last_month - a.profit_last_month
-    } else if ( 'accumulated_stake' === workerRequest.sort_field_name) {
-      return b.accumulated_stake - a.accumulated_stake
-    } else if ( 'commission' === workerRequest.sort_field_name) {
-      return b.commission - a.commission
-    } else if ( 'task_score' === workerRequest.sort_field_name) {
-      return b.task_score - a.task_score
-    } else if ( 'machine_score' === workerRequest.sort_field_name) {
-      return b.machine_score - a.machine_score
-    } else {
-      return a.apy -  b.apy
-    }
-  })
-
-  const total = filterWorkers.length;
 
   const historyRoundInfo = await HistoryRoundInfo
   .find({})
@@ -60,7 +65,7 @@ export async function getWorkers(workerRequest) {
       return 0
     }
 
-    const filterWorkersRule = x => x.stash_account === stashAccount;
+    const filterWorkersRule = x => x.stashAccount === stashAccount;
     const filterReward = historyRoundInfo.map(roundInfo => roundInfo.workers)
       .flat(1)
       .filter(filterWorkersRule)
@@ -70,24 +75,26 @@ export async function getWorkers(workerRequest) {
     return profitLastMonth
   }
 
-  for (const worker of paginate(filterWorkers, workerRequest.page_size, workerRequest.page)) {
+  for (const item of filterWorkers) {
+    const worker = item.workers
+
     workers.push({
-      stash_account: worker.stash_account,
-      controller_account: worker.controller_account,
+      stashAccount: worker.stashAccount,
+      controllerAccount: worker.controllerAccount,
       payout: worker.payout,
-      online_status: worker.online_status,
-      stake_enough: worker.worker_stake >= BASE_STAKE_PHA? true : false,
-      accumulated_stake:  worker.accumulated_stake.toString(),
-      profit_last_month:  getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),
-      worker_stake: worker.worker_stake.toString(),
-      user_stake: worker.user_stake.toString(),
-      stake_account_num: worker.stake_account_num,
+      onlineStatus: worker.onlineStatus,
+      stakeEnough: worker.workerStake >= BASE_STAKE_PHA? true : false,
+      accumulatedStake:  worker.accumulatedStake.toString(),
+      profitLastMonth:  getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),
+      workerStake: worker.workerStake.toString(),
+      userStake: worker.userStake.toString(),
+      stakeAccountNum: worker.stakeAccountNum,
       commission: worker.commission,
-      task_score: worker.task_score,
-      machine_score: worker.machine_score,
+      taskScore: worker.taskScore,
+      machineScore: worker.machineScore,
       apy: worker.apy,
-      diff_to_min_stake: worker.worker_stake >= BASE_STAKE_PHA? 0 : BASE_STAKE_PHA - worker.worker_stake,
-      stake_to_min_apy: 1//todo@@ 基础抵押年化 实时计算 看看产品更新公式
+      diffToMinStake: worker.workerStake >= BASE_STAKE_PHA? 0 : BASE_STAKE_PHA - worker.workerStake,
+      stakeToMinApy: 1//todo@@ 基础抵押年化 实时计算 看看产品更新公式
     });
   }
 
