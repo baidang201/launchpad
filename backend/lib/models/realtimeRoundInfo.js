@@ -5,19 +5,19 @@ export const Worker = new mongoose.Schema({
   controllerAccount: {type: String},
   payout: {type: String},
   onlineStatus: {type: Boolean},
-  accumulatedStake: {type: Number},//PHA
+  accumulatedStake: {type: Number, index: true},//PHA
   workerStake: {type: Number},//PHA
   userStake: {type: Number},//PHA
   stakeAccountNum:{type: Number},
-  commission: {type: Number},
-  taskScore: {type: Number},
-  machineScore: {type: Number},
+  commission: {type: Number, index: true},
+  taskScore: {type: Number, index: true},
+  machineScore: {type: Number, index: true},
   onlineReward:{type: Number},
   computeReward: {type: Number},
   reward: {type: Number},
-  apy: {type: Number},
+  apy: {type: Number, index: true},
   penalty: {type: Number}, 
-  profitLastMonth: {type: Number},
+  profitLastMonth: {type: Number, index: true},
 });
 
 export const RealtimeRoundInfo = mongoose.model('realtime_round_info', {

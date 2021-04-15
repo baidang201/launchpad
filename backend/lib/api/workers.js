@@ -12,40 +12,45 @@ function paginate(array, pageSize, pageNumber) {
 }
 
 export async function getWorkers(workerRequest) {
-  const realtimeRoundInfo = await RealtimeRoundInfo.findOne({}).lean();
-  if (!realtimeRoundInfo) {
+  const offset = (workerRequest.page - 1) * workerRequest.pageSize
+
+  const filterList = []
+  filterList.push({ $unwind: '$workers'});
+  if (workerRequest.filterRuning) {
+    filterList.push({ $match: {'workers.onlineStatus':true}} )
+  }
+  if (workerRequest.filterStakeEnough) {
+    filterList.push({ $match: {'workers.workerStake': {$gte: BASE_STAKE_PHA}}} )
+  }
+  if (workerRequest.filterCommissionLessThen) {
+    filterList.push({ $match: {'workers.commission': {$lte: COMMISSION_LIMIT}}} )
+  }
+  if (workerRequest.filterStashAccounts) {
+    filterList.push( {$match: {'workers.stashAccount': {$in: workerRequest.filterStashAccounts}} } )
+  }
+
+  const total = (await RealtimeRoundInfo.aggregate(filterList)).length;
+
+  if (workerRequest.sortFieldName) {
+    const key = "workers." + workerRequest.sortFieldName
+    const orderNum = workerRequest.sortAsc ? 1 : -1
+
+    filterList.push({ $sort: {[key]: orderNum}})
+  } else {
+    filterList.push({ $sort: { 'workers.apy': -1 }})
+  }
+
+  filterList.push({"$skip": offset});
+  filterList.push({"$limit": workerRequest.pageSize});
+
+  const filterWorkers = await RealtimeRoundInfo.aggregate(filterList);
+
+  if (!filterWorkers) {
     const message = protobuf.WorkerResponse.create({ status: { success: -1, msg: 'can not find data in database' } });
     const buffer = protobuf.WorkerResponse.encode(message).finish();
     return buffer;
   }
   const workers = [];
-
-  const filterWorkers = realtimeRoundInfo.workers.filter((element, index) => {
-    const checkfilterRuning = workerRequest.filterRuning? true === element.onlineStatus: true;
-    const checkfilterStakeEnough = workerRequest.filterStakeEnough?  element.workerStake >= BASE_STAKE_PHA : true;
-    const checkfilterCommissionLessThen = workerRequest.filterCommissionLessThen ? element.commission <= COMMISSION_LIMIT: true
-    const checkfilterStashAccounts = (workerRequest.filterStashAccounts &&  workerRequest.filterStashAccounts.length > 0) ?
-      workerRequest.filterStashAccounts.indexOf(element.stashAccount) >= 0 : true
-
-    return checkfilterRuning && checkfilterStakeEnough && checkfilterCommissionLessThen && checkfilterStashAccounts
-  })
-  .sort((a, b) => {
-    if ( 'profitLastMonth' === workerRequest.sortFieldName) {
-      return b.profitLastMonth - a.profitLastMonth
-    } else if ( 'accumulatedStake' === workerRequest.sortFieldName) {
-      return b.accumulatedStake - a.accumulatedStake
-    } else if ( 'commission' === workerRequest.sortFieldName) {
-      return b.commission - a.commission
-    } else if ( 'taskScore' === workerRequest.sortFieldName) {
-      return b.taskScore - a.taskScore
-    } else if ( 'machineScore' === workerRequest.sortFieldName) {
-      return b.machineScore - a.machineScore
-    } else {
-      return a.apy -  b.apy
-    }
-  })
-
-  const total = filterWorkers.length;
 
   const historyRoundInfo = await HistoryRoundInfo
   .find({})
@@ -70,7 +75,9 @@ export async function getWorkers(workerRequest) {
     return profitLastMonth
   }
 
-  for (const worker of paginate(filterWorkers, workerRequest.pageSize, workerRequest.page)) {
+  for (const item of filterWorkers) {
+    const worker = item.workers
+
     workers.push({
       stashAccount: worker.stashAccount,
       controllerAccount: worker.controllerAccount,
