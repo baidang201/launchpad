@@ -5,7 +5,7 @@ import {padArrayStart} from '../utils/index.js'
 export async function getCommission(commissionRequest) {
   const historyRoundInfo = await HistoryRoundInfo
     .find( {'workers.stashAccount':  commissionRequest.stashAccount})
-    .select({round:1, blocktime:1, 'workers.commission.$': 1})
+    .select({round:1, startedAt:1, 'workers.commission.$': 1})
     .sort({round: -1})
     .limit(30*24).lean();//30 days
 
@@ -16,7 +16,7 @@ export async function getCommission(commissionRequest) {
   }
 
   const filterWorkers = historyRoundInfo.filter((element, index) => {return 0 === index % 4} )
-    .map(roundInfo => ({commission: roundInfo.workers[0].commission, round: roundInfo.round, timestamp: roundInfo.blocktime.getTime()/1000}))
+    .map(roundInfo => ({commission: roundInfo.workers[0].commission, round: roundInfo.round, timestamp: roundInfo.startedAt.getTime()/1000}))
 
   const commissions = filterWorkers.reverse();
 

@@ -26,13 +26,13 @@ export const RealtimeRoundInfo = mongoose.model('realtime_round_info', {
   avgReward: { type: Number },//PHA
   accumulatedFire2: { type: Number },//PHA
   apy: {type: Number},
-  roundCycleTime: {type: Number}, //seconds
+  cycleTime: {type: Number}, //seconds
   onlineWorkerNum: {type: Number}, 
   workerNum: {type: Number},
   stakeSum: {type: Number},//PHA
   stakeSupplyRate: {type: Number},
   rewardLastRound: {type: Number},
-  blocktime: {type: Date},
+  startedAt: {type: Date},
   workers: {type: [Worker]},
 });
 RealtimeRoundInfo.collection.createIndex({ round: 1 }, { unique: true })

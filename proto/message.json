@@ -93,7 +93,7 @@
               "type": "int32",
               "id": 2
             },
-            "roundCycleTime": {
+            "cycleTime": {
               "type": "int32",
               "id": 3
             },

@@ -28,7 +28,7 @@ message RoundInfo {
 message Globalstatistics {
   float apy = 1;
   int32 round = 2;
-  int32 round_cycle_time = 3;
+  int32 cycle_time = 3;
   int32 online_worker_num = 4;
   int32 worker_num = 5;
   string stake_sum = 6;  //bignum

@@ -6,7 +6,7 @@ import {padArrayStart, sumEvery, averageEvery} from '../utils/index.js'
 export async function getStakeinfo(stakeInfoRequest) {
   const historyRoundInfo = await HistoryRoundInfo
   .find( {'workers.stashAccount':  stakeInfoRequest.stashAccount})
-  .select({round:1, blocktime:1,'workers.$': 1})
+  .select({round:1, startedAt:1,'workers.$': 1})
   .sort({round: -1})
   .limit(30*24)
   .lean();//30 days
@@ -27,7 +27,7 @@ export async function getStakeinfo(stakeInfoRequest) {
   const mergeRoundInfos = []
   for (let index = 0; index < filterRoundInfos.length; index++) {
     mergeRoundInfos[index] = filterRoundInfos[index];
-    mergeRoundInfos[index].timestamp = filterRoundInfos[index].blocktime.getTime()/1000;
+    mergeRoundInfos[index].timestamp = filterRoundInfos[index].startedAt.getTime()/1000;
     mergeRoundInfos[index].accumulatedStake = accumulatedStakes[index].toString();
     mergeRoundInfos[index].workerStake = workerStakes[index].toString();
   }
@@ -45,7 +45,7 @@ export async function getStakeinfo(stakeInfoRequest) {
 export async function getAvgStake() {
   const historyRoundInfo = await HistoryRoundInfo
   .find({})
-  .select({round:1, blocktime:1, avgStake: 1})
+  .select({round:1, startedAt:1, avgStake: 1})
   .sort({round: -1})
   .limit(30*24)
   .lean();//30 days
@@ -62,7 +62,7 @@ export async function getAvgStake() {
 
   for (let index = 0; index < filterRoundInfos.length; index++) {
     mergeRoundInfos[index] = filterRoundInfos[index];
-    mergeRoundInfos[index].timestamp = filterRoundInfos[index].blocktime.getTime()/1000;
+    mergeRoundInfos[index].timestamp = filterRoundInfos[index].startedAt.getTime()/1000;
     mergeRoundInfos[index].avgStake = avgStakes[index].toString();
   }
 

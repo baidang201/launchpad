@@ -282,13 +282,13 @@ const processRoundAt = async (header, roundNumber, api) => {
       avgStake: avgStake,
       avgReward: avgReward,
       accumulatedFire2: accumulatedFire2PHA,
-      roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+      cycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
       onlineWorkerNum: onlineWorkers,
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(stakeSum),
       rewardLastRound: await getLastRoundReward(roundNumber),
-      blocktime: null,
+      startedAt: null,
       workers: workers
     });
   } else {
@@ -297,13 +297,13 @@ const processRoundAt = async (header, roundNumber, api) => {
       avgStake: avgStake,
       avgReward: avgReward,
       accumulatedFire2: accumulatedFire2PHA,
-      roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+      cycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
       onlineWorkerNum: onlineWorkers,
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(stakeSum),
       rewardLastRound: await getLastRoundReward(roundNumber),
-      blocktime: null,
+      startedAt: null,
       workers: workers
     });
   }

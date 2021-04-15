@@ -23,7 +23,7 @@ export async function getGlobalStatistics() {
   const rt = { status: { success: 0 } , result: {
      apy: await getLastRoundApy(realtimeRoundInfo.round),
      round: realtimeRoundInfo.round,
-     roundCycleTime: realtimeRoundInfo.roundCycleTime, 
+     cycleTime: realtimeRoundInfo.cycleTime, 
      onlineWorkerNum: realtimeRoundInfo.onlineWorkerNum,
      workerNum: realtimeRoundInfo.workerNum,
      stakeSum: realtimeRoundInfo.stakeSum.toString(),  //bignum
