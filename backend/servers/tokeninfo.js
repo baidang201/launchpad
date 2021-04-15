@@ -15,7 +15,7 @@ export async function getTokenInfo() {
   if ((now - cacheTime) >  60 * 60 * 1000) {
       refreshCache().catch(logger.info);
   }
-  const obj = cacheObject || {available_supply: 0};
+  const obj = cacheObject || {availableSupply: 0};
   return obj;
 }
 
@@ -45,7 +45,7 @@ async function refreshCache() {
 
 function getObjectFromFeixiaohaoData(result) {
     const obj = {
-        available_supply: result.available_supply,
+        availableSupply: result.available_supply,
     }
     return obj;
 }

@@ -52,17 +52,17 @@ class BlocksHistoryScan {
 
       const status = await Status.findOne({});
       //批量处理5个，小于5个先返回
-      if (number <= status.last_scan_queue_number + BATCH_MIN_SIZE) {
+      if (number <= status.lastScanQueueNumber + BATCH_MIN_SIZE) {
         return
       }
   
-      logger.info(`history batch to queue  from #${status.last_scan_queue_number}  to blocknum #${number}...`)
-      for (let n = status.last_scan_queue_number; n < number; n++) {
+      logger.info(`history batch to queue  from #${status.lastScanQueueNumber}  to blocknum #${number}...`)
+      for (let n = status.lastScanQueueNumber; n < number; n++) {
         queue.add(() => this.processBlockAt(n, api))
       }
 
       await Status.findOneAndUpdate({}, {
-        last_scan_queue_number: number,
+        lastScanQueueNumber: number,
       })
     })
   }
@@ -75,7 +75,7 @@ class BlocksHistoryScan {
   }
 
   processBlock = async (api) => {
-    const blockNumber = this.status.last_scan_number + 1;
+    const blockNumber = this.status.lastScanNumber + 1;
     const lastBlockHeaderHash = await api.rpc.chain.getBlockHash(blockNumber)
     this.lastBlockHeader = await api.rpc.chain.getHeader(lastBlockHeaderHash)
     
@@ -181,7 +181,6 @@ class BlocksHistoryScan {
 
           if (!stashAccount) { return }
 
-          // const value = (await api.rpc.state.getStorage(k, blockHash)).div(ONE_THOUSAND)
           const value = (await api.rpc.state.getStorage(k, blockHash))
           accumulatedStake = typeof accumulatedStake === 'undefined'
             ? value : accumulatedStake.add(value)
@@ -257,12 +256,12 @@ class BlocksHistoryScan {
 
     const stakeSupplyRate = async function(stakeSumPHA) {
       const tokeninfo = await getTokenInfo()
-      const available_supply = tokeninfo.available_supply
-      if (0 === available_supply) {
+      const availableSupply = tokeninfo.availableSupply
+      if (0 === availableSupply) {
         return 0
       }
       
-      return stakeSumPHA.div(available_supply)
+      return stakeSumPHA.div(availableSupply)
     }
 
     const getApyCurrentRound = function(accumulatedFire2PHA, stakeSumOfUserStake) {
@@ -307,40 +306,40 @@ class BlocksHistoryScan {
       }
 
       workers.push({
-        stash_account: key,
-        controller_account: value.controller,
+        stashAccount: key,
+        controllerAccount: value.controller,
         payout: value.payout,
-        accumulated_stake: accumulatedStake,
-        worker_stake: workerStake,
-        user_stake: userStake.toNumber(),
-        stake_account_num: value.stakeAccountNum,
+        accumulatedStake: accumulatedStake,
+        workerStake: workerStake,
+        userStake: userStake.toNumber(),
+        stakeAccountNum: value.stakeAccountNum,
         commission: value.commission,
-        task_score: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
-        machine_score: value.overallScore,
-        online_reward: 1021,   //todo 等待后端合约完善
-        compute_reward: 22,    //todo 等待后端合约完善
+        taskScore: value.overallScore  + 5 * Math.sqrt(value.overallScore) ,
+        machineScore: value.overallScore,
+        onlineReward: 1021,   //todo 等待后端合约完善
+        computeReward: 22,    //todo 等待后端合约完善
         reward: reward,        //todo 等待后端合约完善
         apy: getApy(reward, userStake),
         penalty: 0 // todo 等待后端合约完善
       });
     });
 
-    const stakeSumOfUserStake = workers.map(x => x.user_stake).reduce((a, b) => a + b, 0)
+    const stakeSumOfUserStake = workers.map(x => x.userStake).reduce((a, b) => a + b, 0)
     //jsonOutput = JSON.stringify(output)
     const historyData = {
       round: roundNumber,
-      avg_stake: avgStake,
-      avg_reward: avgReward,
-      accumulated_fire2: accumulatedFire2PHA, //总奖励
-      round_cycle_time: ROUND_CYCLE_TIME, //use 1 hour this time
-      online_worker_num: onlineWorkers,
-      worker_num: stashCount,
-      stake_sum: stakeSum, 
-      stake_supply_rate: await stakeSupplyRate(stakeSum),
+      avgStake: avgStake,
+      avgReward: avgReward,
+      accumulatedFire2: accumulatedFire2PHA, //总奖励
+      roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+      onlineWorkerNum: onlineWorkers,
+      workerNum: stashCount,
+      stakeSum: stakeSum, 
+      stakeSupplyRate: await stakeSupplyRate(stakeSum),
       blocktime: null,
-      block_num: number,
+      blockNum: number,
       workers: workers,
-      apy_current_round: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
+      apyCurrentRound: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
     };
 
     mongoWriteQueue.add(() => this.writeDatebase(roundNumber, number, historyData))
@@ -355,7 +354,7 @@ class BlocksHistoryScan {
       historyRoundInfo = new HistoryRoundInfo(historyData);
       await historyRoundInfo.save();
     } else {
-      if (historyData.block_num > historyRoundInfo.block_num) {
+      if (historyData.blockNum > historyRoundInfo.blockNum) {
         await HistoryRoundInfo.updateOne({
           round: roundNumber
         }, historyData);
@@ -363,8 +362,8 @@ class BlocksHistoryScan {
     }
 
     await Status.findOneAndUpdate({}, {
-      last_scan_number: blockNumber,
-      last_scan_round: roundNumber
+      lastScanNumber: blockNumber,
+      lastScanRound: roundNumber
     })
 
     logger.info(`### history insert Updated output from round #${roundNumber}. in blocknum #${blockNumber}`)
@@ -374,22 +373,22 @@ class BlocksHistoryScan {
     let _status = await Status.findOne({});
     if (!_status) {
         _status = new Status({
-            head_block_number: 0,
+            headBlockNumber: 0,
             time: null,
-            head_block_id: "",
+            headBlockId: "",
 
-            last_scan_queue_number: FIRST_SCAN_QUEUE_NUMBER,
-            last_scan_number: BLOCK_FIRST_ROUND_START,
-            last_scan_round: 0,
-            last_scan_time: null
+            lastScanQueueNumber: FIRST_SCAN_QUEUE_NUMBER,
+            lastScanNumber: BLOCK_FIRST_ROUND_START,
+            lastScanRound: 0,
+            lastScanTime: null
         });
         await _status.save();
     } else {
-      if (_status.last_scan_queue_number > _status.last_scan_number) {
+      if (_status.lastScanQueueNumber > _status.lastScanNumber) {
 
-        const new_last_scan_queue_number = _status.last_scan_number - BATCH_MIN_SIZE >= BLOCK_FIRST_ROUND_START? _status.last_scan_number - BATCH_MIN_SIZE : BLOCK_FIRST_ROUND_START 
+        const newLastScanQueueNumber = _status.lastScanNumber - BATCH_MIN_SIZE >= BLOCK_FIRST_ROUND_START? _status.lastScanNumber - BATCH_MIN_SIZE : BLOCK_FIRST_ROUND_START 
         _status.set({
-          last_scan_queue_number: new_last_scan_queue_number,
+          lastScanQueueNumber: newLastScanQueueNumber,
         })
 
         await _status.save();
