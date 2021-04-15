@@ -119,7 +119,7 @@ const processRoundAt = async (header, roundNumber, api) => {
         const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
         stashAccounts[stash].overallScore = value.score.overallScore
 
-        if (typeof value.state.stakepending === 'undefined' &&  typeof value.state.mingingpending === 'undefined' && typeof value.state.mining === 'undefined') { return }
+        if (value.state.stakePending === undefined && value.state.miningPending === undefined && value.state.mining === undefined) { return }
         stashAccounts[stash].onlineStatus = true
         accumulatedScore += value.score.overallScore
 
