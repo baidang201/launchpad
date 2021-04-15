@@ -1,0 +1,12 @@
+.innerLayout {
+    min-height: 100vh;
+}
+
+.floatRight {
+    float: right;
+}
+
+.walletButtonContainer {
+    float: right;
+    padding: 0 1em;
+}
