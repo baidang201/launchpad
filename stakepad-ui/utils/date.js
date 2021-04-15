@@ -3,8 +3,8 @@ export function getDay(day) {
   const today = new Date();
   const dayBefore30Days = new Date()
   dayBefore30Days.setDate(today.getDate() - 30)
-  const targetday_milliseconds = dayBefore30Days.getTime() + 1000 * 60 * 60 * 24 * day;
-  const newDate = new Date(targetday_milliseconds);
+  const targetDayMilliseconds = dayBefore30Days.getTime() + 1000 * 60 * 60 * 24 * day;
+  const newDate = new Date(targetDayMilliseconds);
   // const tYear = newDate.getFullYear();
   const tMonth = newDate.getMonth();
   const tDate = newDate.getDate();

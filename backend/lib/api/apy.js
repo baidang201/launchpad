@@ -4,7 +4,7 @@ import {padArrayStart} from '../utils/index.js'
 
 export async function getApy(apyRequest) {
   const historyRoundInfo = await HistoryRoundInfo
-    .find( {'workers.stash_account':  apyRequest.stash_account})
+    .find( {'workers.stashAccount':  apyRequest.stashAccount})
     .select({round:1, 'workers.apy.$': 1})
     .sort({round: -1})
     .limit(30*24).lean();//30 days
