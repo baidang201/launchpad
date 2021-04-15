@@ -50,7 +50,8 @@ message WorkerRequest {
   bool   filter_stake_enough = 4;
   bool   filter_commission_less_then = 5;
   string sort_field_name = 6;
-  repeated string filter_stash_accounts = 7;
+  bool   sort_asc = 7; // true:ase   false:desc
+  repeated string filter_stash_accounts = 8;
 }
 
 message WorkerResponse {
