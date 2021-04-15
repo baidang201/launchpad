@@ -4,7 +4,7 @@ import {padArrayStart, sumEvery, averageEvery} from '../utils/index.js'
 
 export async function getRewardPenalty(rewardPenaltyRequest) {
   const historyRoundInfo = await HistoryRoundInfo
-  .find( {'workers.stash_account':  rewardPenaltyRequest.stash_account})
+  .find( {'workers.stashAccount':  rewardPenaltyRequest.stashAccount})
   .select({'workers.$': 1})
   .sort({round: -1})
   .limit(30*24)
@@ -34,7 +34,7 @@ export async function getRewardPenalty(rewardPenaltyRequest) {
 export async function getAvgReward() {
   const historyRoundInfo = await HistoryRoundInfo
   .find({})
-  .select({avg_reward: 1})
+  .select({avgReward: 1})
   .sort({round: -1})
   .limit(30*24)
   .lean();//30 days
@@ -45,10 +45,10 @@ export async function getAvgReward() {
     return buffer;
   }
 
-  const avgrewards = sumEvery(historyRoundInfo.map(x => x.avg_reward), 4).reverse();
+  const avgrewards = sumEvery(historyRoundInfo.map(x => x.avgReward), 4).reverse();
 
   const rt = { status: { success: 0 } , result: {
-    avg_reward: padArrayStart(avgrewards.map(x => x.toString()), 180, '0')
+    avgReward: padArrayStart(avgrewards.map(x => x.toString()), 180, '0')
   }};
 
   const message = protobuf.AvgRewardResponse.create(rt);
