@@ -3,7 +3,7 @@ export const db = {
 }
 
 export const node = {
-  WS_ENDPOINT: process.env.WS_ENDPOINT || 'wss://poc3a.phala.network/ws',
+  WS_ENDPOINT: process.env.WS_ENDPOINT || 'wss://poc4.phala.network/ws',
   HTTP_PORT: process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 3000
 }
 
