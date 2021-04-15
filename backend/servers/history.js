@@ -88,6 +88,7 @@ class BlocksHistoryScan {
     const roundInfo = (await api.query.phala.round.at(blockHash)) || new BN('0')
     const roundNumber = roundInfo.round.toNumber()
     const number = header.number.toNumber()
+    const timestamp = await api.query.timestamp.now.at(blockHash);
     logger.info(`history block round #${roundNumber} blocknum#${number}...`)
 
     const accumulatedFire2 = (await api.query.phala.accumulatedFire2.at(blockHash)) || new BN('0')
@@ -360,12 +361,12 @@ class BlocksHistoryScan {
       avgStake: avgStake,
       avgReward: avgReward,
       accumulatedFire2: accumulatedFire2PHA, //总奖励
-      roundCycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
+      cycleTime: ROUND_CYCLE_TIME, //use 1 hour this time
       onlineWorkerNum: onlineWorkers,
       workerNum: stashCount,
       stakeSum: stakeSum, 
       stakeSupplyRate: await stakeSupplyRate(stakeSum),
-      blocktime: null,
+      startedAt: new Date(timestamp.toNumber()),
       blockNum: number,
       workers: workers,
       apyCurrentRound: getApyCurrentRound(accumulatedFire2PHA, stakeSumOfUserStake),
@@ -384,9 +385,17 @@ class BlocksHistoryScan {
       await historyRoundInfo.save();
     } else {
       if (historyData.blockNum > historyRoundInfo.blockNum) {
+        const prop = 'startedAt'
+        const newHistoryData = Object.keys(historyData).reduce((object, key) => {
+          if (key !== prop) {
+            object[key] = historyData[key]
+          }
+          return object
+        }, {})
+
         await HistoryRoundInfo.updateOne({
           round: roundNumber
-        }, historyData);
+        }, newHistoryData);
       }
     }
 
