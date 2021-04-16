@@ -1,5 +1,5 @@
 import * as phalaTypedef from '@phala/typedefs/src/phala-typedef'
-import 'antd/dist/antd.dark.min.css'
+import 'antd/dist/antd.less'
 import Layout from 'antd/lib/layout'
 import Menu from 'antd/lib/menu'
 import { AppComponent, AppProps } from 'next/dist/next-server/lib/router/router'
@@ -55,7 +55,7 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
                         <Layout.Header>
                             <div className={styles.walletButtonContainer}><WalletButton /></div>
                             <Menu
-                                className={styles.floatRight}
+                                // className={styles.floatRight}
                                 mode="horizontal"
                                 onSelect={({ key }) => { onSelectTab(key as string) }}
                                 selectedKeys={[selectedTab]}
