@@ -1,5 +1,5 @@
 import * as phalaTypedef from '@phala/typedefs/src/phala-typedef'
-import 'antd/dist/antd.less'
+import 'antd/dist/antd.min.css'
 import Layout from 'antd/lib/layout'
 import Menu from 'antd/lib/menu'
 import { AppComponent, AppProps } from 'next/dist/next-server/lib/router/router'
