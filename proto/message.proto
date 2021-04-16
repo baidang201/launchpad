@@ -18,6 +18,7 @@ message Worker {
   double apy = 14;
   int32  diff_to_min_stake = 15;
   double stake_to_min_apy = 16;
+  string status = 17;
 }
 
 message RoundInfo {
