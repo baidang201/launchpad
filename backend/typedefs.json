@@ -59,5 +59,10 @@
 	  "OnlineReward": null,
 	  "ComputeReward": null
 	}
+  },
+  "StashWorkerStats": {
+    "slash": "Balance",
+    "compute_received": "Balance",
+    "online_received": "Balance"
   }
 }

@@ -28,7 +28,7 @@ message RoundInfo {
 message Globalstatistics {
   float apy = 1;
   int32 round = 2;
-  int32 round_cycle_time = 3;
+  int32 cycle_time = 3;
   int32 online_worker_num = 4;
   int32 worker_num = 5;
   string stake_sum = 6;  //bignum
@@ -50,7 +50,8 @@ message WorkerRequest {
   bool   filter_stake_enough = 4;
   bool   filter_commission_less_then = 5;
   string sort_field_name = 6;
-  repeated string filter_stash_accounts = 7;
+  bool   sort_asc = 7; // true:ase   false:desc
+  repeated string filter_stash_accounts = 8;
 }
 
 message WorkerResponse {
@@ -69,7 +70,12 @@ message GlobalStatisticsResponse {
 
 //stakes
 message AvgStake {
-  repeated string avg_stake = 1;  //bignum
+  message SubMsg {
+    string avg_stake = 1;//bignum
+    int32  round = 2;
+    int32  timestamp = 3;
+  }
+  repeated SubMsg avg_stake_infos = 1;
 }
 
 message AvgStakeRequest {
@@ -82,8 +88,13 @@ message AvgStakeResponse {
 
 //stakeinfo
 message StakeInfo {
-  repeated string accumulated_stake = 1;
-  repeated string worker_stake = 2;
+  message SubMsg {
+    string accumulated_stake = 1;
+    string worker_stake = 2;
+    int32  round = 3;
+    int32  timestamp = 4;
+  }
+  repeated SubMsg stake_infos = 1;
 }
 
 message StakeInfoRequest {
@@ -97,8 +108,13 @@ message StakeInfoResponse {
 
 //rewardpenalty
 message RewardPenalty {
-  repeated string reward = 1;  
-  repeated string penalty = 2;  
+  message SubMsg {
+    string reward = 1;  
+    string penalty = 2;  
+    int32  round = 3;
+    int32  timestamp = 4;
+  }
+  repeated SubMsg reward_penalty_infos = 1;
 }
 
 message RewardPenaltyRequest {
@@ -112,7 +128,13 @@ message RewardPenaltyResponse {
 
 //avgreward
 message AvgReward {
-  repeated string avg_reward = 1;  
+  message SubMsg {
+    string avg_reward = 1;  
+    int32  round = 2;
+    int32  timestamp = 3;
+  }
+  repeated SubMsg avg_reward_infos = 1;
+
 }
 
 message AvgRewardRequest {
@@ -126,7 +148,12 @@ message AvgRewardResponse {
 
 //apy
 message Apy {
-  repeated float apy = 1;
+  message SubMsg {
+    float  apy = 1;
+    int32  round = 2;
+    int32  timestamp = 3;
+  }
+  repeated SubMsg apy_infos = 1;
 }
 message ApyRequest {
   string stash_account = 1;
@@ -138,7 +165,12 @@ message ApyResponse {
 
 //commission
 message Commission {
-  repeated float commission = 1;
+  message SubMsg {
+    float  commission = 1;
+    int32  round = 2;
+    int32  timestamp = 3;
+  }
+  repeated SubMsg commission_infos = 1;
 }
 message CommissionRequest {
   string stash_account = 1;
