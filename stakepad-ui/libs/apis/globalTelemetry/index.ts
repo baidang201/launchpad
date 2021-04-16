@@ -28,7 +28,7 @@ export async function getGlobalTelemetry(): Promise<GlobalTelemetry> {
         annualizedReturnRate: result.apy ?? 0,
         averageStake: parseInt(result.avgStake ?? '0'), // TODO: parse using BN
         currentRound: result.round ?? 0,
-        currentRoundClock: (result.roundCycleTime ?? 0) / 60,
+        currentRoundClock: (result.cycleTime ?? 0) / 60,
         lastRoundReturn: parseInt(result.rewardLastRound ?? '0'), // TODO: parse using BN
         onlineWorkers: result.onlineWorkerNum ?? 0,
         totalStake: parseInt(result.stakeSum ?? '0'), // TODO: parse using BN
