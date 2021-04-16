@@ -1,33 +1,63 @@
 {
-    "extends": [
-      "eslint:recommended",
+  "env": {
+      "browser": true
+  },
+  "extends": [
       "plugin:react/recommended",
-      "plugin:@typescript-eslint/recommended",
-      // Uncomment the following lines to enable eslint-config-prettier
-      // Is not enabled right now to avoid issues with the Next.js repo
-      "prettier"
-    ],
-    "env": {
-      "es6": true,
-      "browser": true,
-      "jest": true,
-      "node": true
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
-    },
-    "rules": {
-      "react/react-in-jsx-scope": 0,
-      "react/display-name": 0,
-      "react/prop-types": 0,
-      "no-console": [
-        2,
-        {
-          "allow": ["warn", "error"]
-        }
+      "plugin:react-hooks/recommended",
+      "standard-with-typescript"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+      "ecmaFeatures": {
+          "jsx": true
+      },
+      "ecmaVersion": 2021,
+      "project": "./tsconfig.json",
+      "sourceType": "module"
+  },
+  "plugins": [
+      "@typescript-eslint",
+      "react",
+      "react-hooks"
+  ],
+  "rules": {
+      "@typescript-eslint/indent": [
+          "error",
+          4
       ],
-      "@typescript-eslint/no-this-alias": ["off"]
-    }
+      "@typescript-eslint/space-before-function-paren": [
+          "error",
+          {
+              "asyncArrow": "always",
+              "anonymous": "always",
+              "named": "never"
+          }
+      ],
+      "indent": [
+          "error",
+          4,
+          {
+              "SwitchCase": 1
+          }
+      ],
+      "no-unused-vars": "off",
+      "quotes": [
+          "error",
+          "single"
+      ],
+      "react/react-in-jsx-scope": "off",
+      "react-hooks/exhaustive-deps": [
+          "error"
+      ],
+      "react-hooks/rules-of-hooks": "error",
+      "space-before-function-paren": [
+          "error",
+          {
+              "anonymous": "always",
+              "named": "never",
+              "asyncArrow": "always"
+          }
+      ]
   }
+}
