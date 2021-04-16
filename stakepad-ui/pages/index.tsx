@@ -5,7 +5,7 @@ import { StakeInitInput } from '../components/dashboard/ManualStake/ManualStakeI
 import NotificationBar from '../components/dashboard/NotificationBar'
 import { RecommendationStakeInit } from '../components/dashboard/RecommendationInitInput'
 import { WorkerTable } from '../components/dashboard/WorkerTable'
-import { FindWorkerFilters } from '../libs/apis/workers/mock/findWorkersByStash'
+import { FindWorkerFilters } from '../libs/apis/workers'
 import styles from '../styles/pages/dashboard.module.css'
 
 const DashboardPage: React.FC = () => {

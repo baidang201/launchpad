@@ -1,10 +1,5 @@
+import { FindWorkerFilters } from '..'
 import { GetWorkerResult, Worker } from '../..'
-
-export interface FindWorkerFilters {
-    commissionRateLessThan20: boolean
-    mining: boolean
-    stakePending: boolean
-}
 
 const total = 1498
 

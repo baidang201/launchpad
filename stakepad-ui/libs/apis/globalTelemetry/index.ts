@@ -32,8 +32,6 @@ export async function getGlobalTelemetry(): Promise<GlobalTelemetry> {
         throw new APIError('Result is null or undefined')
     }
 
-    console.log(result)
-
     return {
         allWorkers: result.workerNum ?? -1,
         annualizedReturnRate: result.apy ?? 0,
