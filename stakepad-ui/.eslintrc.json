@@ -1,8 +1,12 @@
 {
+    "$schema": "https://json.schemastore.org/eslintrc",
     "env": {
         "browser": true
     },
     "extends": [
+        "plugin:import/errors",
+        "plugin:import/typescript",
+        "plugin:jsx-a11y/recommended",
         "plugin:react/recommended",
         "plugin:react-hooks/recommended",
         "standard-with-typescript"
@@ -16,11 +20,6 @@
         "project": "./tsconfig.json",
         "sourceType": "module"
     },
-    "plugins": [
-        "@typescript-eslint",
-        "react",
-        "react-hooks"
-    ],
     "rules": {
         "@typescript-eslint/indent": [
             "error",
@@ -47,10 +46,7 @@
             "single"
         ],
         "react/react-in-jsx-scope": "off",
-        "react-hooks/exhaustive-deps": [
-            "error"
-        ],
-        "react-hooks/rules-of-hooks": "error",
+        "react/jsx-wrap-multilines": "error",
         "space-before-function-paren": [
             "error",
             {
