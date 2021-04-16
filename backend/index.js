@@ -72,15 +72,23 @@ function parsePostData(ctx) {
 
 // routes
 // 接受 post 请求处理
-app.use(async ctx => {
-    if (ctx.url === '/' && ctx.method === 'POST') {
+app.use(async (ctx, next)=>  {
+  ctx.set('Access-Control-Allow-Origin', '*');
+  ctx.set('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With, yourHeaderFeild');
+  ctx.set('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
+  if (ctx.method == 'OPTIONS') {
+    ctx.body = 200; 
+  }
+  else if ( ctx.url === '/' && ctx.method === 'POST' ) {
     // 当POST请求的时候，解析POST表单里的数据，并显示出来
-        const postData = await parsePostData(ctx)
-        ctx.body = postData
-        ctx.set('content-type', 'application/octet-stream')
-        ctx.status = 200
-    }
-})
+    const postData = await parsePostData( ctx )
+    ctx.body = postData
+    ctx.set('content-type', 'application/octet-stream');  
+    ctx.status = 200;          
+  } else {
+    await next();
+  }
+});
 
 logger.info(`Listening on port ${node.HTTP_PORT}...`)
 app.listen(node.HTTP_PORT)

@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:pbjs": "pbjs -t static-module -o ./libs/apis/proto/api.js ../proto/message.proto",
+    "build:pbjs-json": "pbjs -t json -o ./libs/apis/proto/api.json ../proto/message.proto",
+    "build:pbts": "pbjs -t static-module ../proto/message.proto | pbts -o ./libs/apis/proto/api.d.ts -",
     "start": "next start"
   },
   "dependencies": {
@@ -36,6 +39,7 @@
     "eslint-config-standard": "^16.0.2",
     "eslint-config-standard-with-typescript": "^20.0.0",
     "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.3.1",
     "eslint-plugin-react": "^7.23.2",
