@@ -1,4 +1,4 @@
-import { GetWorkerResult, Worker } from '.'
+import { GetWorkerResult, Worker } from '../..'
 
 export const findRecommendedWorkers: (
     stashAmount: number
