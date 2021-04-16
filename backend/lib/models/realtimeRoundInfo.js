@@ -5,19 +5,19 @@ export const Worker = new mongoose.Schema({
   controllerAccount: {type: String},
   payout: {type: String},
   onlineStatus: {type: Boolean},
-  accumulatedStake: {type: Number},//PHA
+  accumulatedStake: {type: Number, index: true},//PHA
   workerStake: {type: Number},//PHA
   userStake: {type: Number},//PHA
   stakeAccountNum:{type: Number},
-  commission: {type: Number},
-  taskScore: {type: Number},
-  machineScore: {type: Number},
+  commission: {type: Number, index: true},
+  taskScore: {type: Number, index: true},
+  machineScore: {type: Number, index: true},
   onlineReward:{type: Number},
   computeReward: {type: Number},
   reward: {type: Number},
-  apy: {type: Number},
+  apy: {type: Number, index: true},
   penalty: {type: Number}, 
-  profitLastMonth: {type: Number},
+  profitLastMonth: {type: Number, index: true},
 });
 
 export const RealtimeRoundInfo = mongoose.model('realtime_round_info', {
@@ -26,13 +26,13 @@ export const RealtimeRoundInfo = mongoose.model('realtime_round_info', {
   avgReward: { type: Number },//PHA
   accumulatedFire2: { type: Number },//PHA
   apy: {type: Number},
-  roundCycleTime: {type: Number}, //seconds
+  cycleTime: {type: Number}, //seconds
   onlineWorkerNum: {type: Number}, 
   workerNum: {type: Number},
   stakeSum: {type: Number},//PHA
   stakeSupplyRate: {type: Number},
   rewardLastRound: {type: Number},
-  blocktime: {type: Date},
+  startedAt: {type: Date},
   workers: {type: [Worker]},
 });
 RealtimeRoundInfo.collection.createIndex({ round: 1 }, { unique: true })
