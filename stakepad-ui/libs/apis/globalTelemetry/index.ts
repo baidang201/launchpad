@@ -1,5 +1,4 @@
-import { APIError } from '../errors'
-import { Api, requestDecoded } from '../proto'
+import { Api, requestSuccess } from '../proto'
 
 export interface GlobalTelemetry {
     annualizedReturnRate: number
@@ -22,15 +21,7 @@ export async function getGlobalTelemetry(): Promise<GlobalTelemetry> {
         })
     ).finish()
 
-    const { result, status } = await requestDecoded(payload, Api.GlobalStatisticsResponse.decode)
-
-    if (status?.success !== 0) {
-        throw new APIError(status?.msg ?? 'Unknown error', status?.success ?? undefined)
-    }
-
-    if (result === undefined || result === null) {
-        throw new APIError('Result is null or undefined')
-    }
+    const result = await requestSuccess(payload, Api.GlobalStatisticsResponse.decode)
 
     return {
         allWorkers: result.workerNum ?? -1,

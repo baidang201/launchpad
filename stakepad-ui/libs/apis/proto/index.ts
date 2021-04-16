@@ -1,4 +1,5 @@
 import { Reader } from 'protobufjs'
+import { APIError } from '../errors'
 
 export { launchpadpackage as Api } from './api'
 
@@ -22,4 +23,27 @@ export async function requestRaw(payload: Uint8Array, endpoint?: string): Promis
 export async function requestDecoded<T>(payload: Uint8Array, decoder: Decoder<T>, endpoint?: string): Promise<T> {
     const buffer = await requestRaw(payload, endpoint)
     return decoder(new Uint8Array(buffer))
+}
+
+interface Response<R> {
+    result?: R | null
+    status?: { msg?: string | null, success?: number | null } | null
+}
+
+export async function requestSuccess<T extends Response<R>, R = T['result']>(payload: Uint8Array, decoder: Decoder<Response<R>>, endpoint?: string): Promise<NonNullable<R>> {
+    const { result, status } = await requestDecoded(payload, decoder, endpoint)
+
+    if (status === null || status === undefined) {
+        throw new APIError('Status is undefined in the response')
+    }
+
+    if (status.success !== 0) {
+        throw new APIError(status.msg ?? 'Unknown error', status.success ?? undefined)
+    }
+
+    if (result === null || result === undefined) {
+        throw new APIError('Result is null or undefined')
+    }
+
+    return result as NonNullable<R>
 }
