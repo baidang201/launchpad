@@ -1,9 +1,13 @@
-import Search from 'antd/lib/input/Search'
-import styles from './SearchByStashInput.module.css'
+import { Search as SearchIcon } from 'baseui/icon'
+import { Input } from 'baseui/input'
 
 export const SearchByStashInput: React.FC = () => {
     return (
-        <Search allowClear className={styles.search} enterButton placeholder="按 Stash 精确搜索" />
+        <Input
+            clearable
+            placeholder="按 Stash 精确搜索"
+            startEnhancer={<SearchIcon size="1.5rem" />}
+        />
     )
 }
 

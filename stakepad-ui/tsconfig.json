@@ -26,11 +26,13 @@
     "target": "esnext"
   },
   "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx"
+    "libs/**/*.ts",
+    "next-env.d.ts"
   ],
   "exclude": [
     "node_modules"
+  ],
+  "files": [
+    "pages/_app.tsx"
   ]
 }

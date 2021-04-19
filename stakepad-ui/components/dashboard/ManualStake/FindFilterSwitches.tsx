@@ -1,9 +1,6 @@
-import { Typography } from 'antd'
-import Space from 'antd/lib/space'
-import Switch from 'antd/lib/switch'
-import React, { ReactElement, useRef } from 'react'
+import { Checkbox, STYLE_TYPE } from 'baseui/checkbox'
+import React, { ReactElement } from 'react'
 import { FindWorkerFilters } from '../../../libs/apis/workers'
-import styles from './FindFilterSwitches.module.css'
 
 const SwitchWithLabel = ({ checked, disabled, setChecked, title }: {
     checked: boolean
@@ -11,25 +8,24 @@ const SwitchWithLabel = ({ checked, disabled, setChecked, title }: {
     setChecked: (value: boolean) => void
     title: string
 }): ReactElement => {
-    const element = useRef<HTMLElement>(null)
-
     return (
-        <Space className={styles.switchContainer}>
-            <Switch
-                className={styles.switch}
-                checked={checked}
-                disabled={disabled}
-                onChange={a => setChecked(a)}
-                ref={element}
-                title={title}
-            />
-            <Typography.Text
-                // className={colors.StandardWh01}
-                onClick={() => element.current?.click()}
-            >
-                {title}
-            </Typography.Text>
-        </Space>
+        <Checkbox
+            checked={checked}
+            checkmarkType={STYLE_TYPE.toggle_round}
+            labelPlacement="right"
+            disabled={disabled}
+            onChange={e => setChecked((e.target as HTMLInputElement).checked)}
+            overrides={{
+                Root: {
+                    style: () => ({ padding: '0.75em 0.25em' })
+                },
+                Label: {
+                    style: () => ({ paddingLeft: '0em' })
+                }
+            }}
+        >
+            {title}
+        </Checkbox>
     )
 }
 
@@ -44,7 +40,7 @@ export const FindFilterSwitches = ({ currentFilters, onFilterChanged }: {
     }
 
     return (
-        <Space size="small">
+        <>
             <SwitchWithLabel
                 checked={commissionRateLessThan20}
                 setChecked={value => update({ commissionRateLessThan20: value })}
@@ -66,7 +62,7 @@ export const FindFilterSwitches = ({ currentFilters, onFilterChanged }: {
                 setChecked={() => { }}
                 title="标记"
             />
-        </Space >
+        </>
     )
 }
 

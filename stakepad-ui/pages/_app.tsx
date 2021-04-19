@@ -1,13 +1,11 @@
 import * as phalaTypedef from '@phala/typedefs/src/phala-typedef'
-import 'antd/dist/antd.min.css'
-import Layout from 'antd/lib/layout'
-import Menu from 'antd/lib/menu'
+import { AppNavBar, NavItemT, setItemActive } from 'baseui/app-nav-bar'
 import { AppComponent, AppProps } from 'next/dist/next-server/lib/router/router'
-import { useRouter } from 'next/router'
 import { useEffect, useMemo, useState } from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
-import { WalletButton } from '../components/wallet/WalletButton'
+import { Provider as StyletronProvider } from 'styletron-react'
 import { PolkadotProvider, usePolkadot } from '../libs/polkadot/context'
+import { createStyletron } from '../libs/styletron'
 import styles from '../styles/pages/_app.module.css'
 import { endpoint as PhalaEndpoint } from '../utils/polkadot'
 
@@ -25,19 +23,35 @@ const ApiEnabler: React.FC = () => {
 
 const App: AppComponent = ({ Component, pageProps }: AppProps) => {
     const client = useMemo(() => new QueryClient(), [])
+    const styletron = useMemo(() => createStyletron(), [])
 
-    const [selectedTab, setSelectedTab] = useState<string>('dashboard')
-    const router = useRouter()
+    // const [selectedTab, setSelectedTab] = useState<string>('dashboard')
+    // const router = useRouter()
 
-    const onSelectTab = (tab: string): void => {
-        setSelectedTab(tab)
-        router.push(tab).catch(() => { /* TODO: maybe some telemetry? */ })
-    }
+    // const onSelectTab = (tab: string): void => {
+    //     setSelectedTab(tab)
+    //     router.push(tab).catch(() => { /* TODO: maybe some telemetry? */ })
+    // }
+
+    const [mainItems, setMainItems] = useState<NavItemT[]>([
+        { label: '主页' }
+    ])
 
     return (
         <PolkadotProvider endpoint={PhalaEndpoint} originName="Phala Stakepad" registryTypes={phalaTypedef.default}>
             <QueryClientProvider client={client}>
-                <Layout hasSider>
+                <StyletronProvider value={styletron}>
+                    <AppNavBar
+                        mainItems={mainItems}
+                        onMainItemSelect={item => setMainItems(prev => setItemActive(prev, item))}
+                        title="Stakepad"
+                    />
+
+                    <div className={styles.container}>
+                        <Component {...pageProps} />
+                    </div>
+
+                    {/* <Layout hasSider>
                     <Layout.Sider>
                         <Menu selectable={false} selectedKeys={['stakepad']}>
                             <Menu.Item key="1">Home</Menu.Item>
@@ -68,10 +82,11 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
                             </Menu>
                         </Layout.Header>
                         <Layout.Content>
-                            <Component {...pageProps} />
+
                         </Layout.Content>
                     </Layout>
-                </Layout>
+                </Layout> */}
+                </StyletronProvider>
             </QueryClientProvider>
             <ApiEnabler />
         </PolkadotProvider>

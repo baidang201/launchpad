@@ -1,34 +1,47 @@
-import { Button, Col, Divider, Row } from 'antd'
+import { BlockProps } from 'baseui/block'
+import { Button } from 'baseui/button'
+import { FlexGrid, FlexGridItem } from 'baseui/flex-grid'
 import React from 'react'
 import { FindWorkerFilters } from '../../libs/apis/workers'
-import colors from '../../styles/colors.module.css'
-import FindFilterSwitches from './ManualStake/FindFilterSwitches'
+import { FindFilterSwitches } from './ManualStake/FindFilterSwitches'
 import { SearchByStashInput } from './ManualStake/SearchByStashInput'
 import { RecommendationStakeInit } from './RecommendationInitInput'
+
+const itemProps: BlockProps = {
+    display: 'flex',
+    overrides: {
+        Block: { style: () => ({ flexGrow: 1 }) }
+    }
+}
+
+const narrowItemProps = (width?: string): BlockProps => ({
+    ...itemProps,
+    overrides: {
+        Block: { style: () => ({ flexGrow: 0, width }) }
+    }
+})
 
 export const StakeInit = ({ currentFilters, onFilterChanged }: {
     currentFilters: FindWorkerFilters
     onFilterChanged: (filters: FindWorkerFilters) => void
 }): JSX.Element => {
     return (
-        <>
-            <Row gutter={8}>
-                <Col flex="auto">
-                    <SearchByStashInput />
-                </Col>
-                <Col flex="auto">
-                    <FindFilterSwitches currentFilters={currentFilters} onFilterChanged={onFilterChanged} />
-                </Col>
-                <Col flex="none">
-                    <Button type="primary">自选抵押</Button>
-                </Col>
-                <Col flex="none">
-                    <Divider className={colors.standardWh03} style={{ height: '2.4em' }} type="vertical" />
-                </Col>
-                <Col flex="16em">
-                    <RecommendationStakeInit />
-                </Col>
-            </Row>
-        </>
+        <FlexGrid flexGridColumnCount={4} flexGridColumnGap="scale200">
+            <FlexGridItem {...itemProps}>
+                <SearchByStashInput />
+            </FlexGridItem>
+
+            <FlexGridItem {...narrowItemProps(undefined)}>
+                <FindFilterSwitches currentFilters={currentFilters} onFilterChanged={onFilterChanged} />
+            </FlexGridItem>
+
+            <FlexGridItem {...narrowItemProps(undefined)}>
+                <Button>自选抵押</Button>
+            </FlexGridItem>
+
+            <FlexGridItem {...narrowItemProps('20em')}>
+                <RecommendationStakeInit />
+            </FlexGridItem>
+        </FlexGrid >
     )
 }
