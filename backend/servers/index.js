@@ -97,21 +97,6 @@ const processRoundAt = async (header, roundNumber, api) => {
                 }
             }))
 
-    await Promise.all(
-        (await api.query.phala.payoutComputeReward.keysAt(blockHash))
-            .map(async k => {
-                const account = k.args[0].toString()
-                const value = await api.rpc.state.getStorage(k, blockHash)
-                const payoutComputeReward = value.toNumber() || 0
-
-                if (!payoutAccounts[account]) { return }
-                payoutAccounts[account] = {
-                    ...payoutAccounts[account],
-                    payoutComputeReward
-                }
-            })
-    )
-
     const validStashAccounts = {}
     let accumulatedScore = 0
     await Promise.all(

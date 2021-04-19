@@ -138,21 +138,6 @@ class BlocksHistoryScan {
                     }
                 }))
 
-        await Promise.all(
-            (await api.query.phala.payoutComputeReward.keysAt(blockHash))
-                .map(async k => {
-                    const account = k.args[0].toString()
-                    const value = await api.rpc.state.getStorage(k, blockHash)
-                    const payoutComputeReward = value.toNumber() || 0
-
-                    if (!payoutAccounts[account]) { return }
-                    payoutAccounts[account] = {
-                        ...payoutAccounts[account],
-                        payoutComputeReward
-                    }
-                })
-        )
-
         const validStashAccounts = {}
         let accumulatedScore = 0
         await Promise.all(
@@ -196,7 +181,7 @@ class BlocksHistoryScan {
                         .div(1000)
                         .div(1000)
 
-                    stashAccounts[stash].computeReward = onlineReceivedDecimal.div(1000)
+                    stashAccounts[stash].onlineReward = onlineReceivedDecimal.div(1000)
                         .div(1000)
                         .div(1000)
                         .div(1000)
