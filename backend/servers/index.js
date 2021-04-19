@@ -54,7 +54,6 @@ const processRoundAt = async (header, roundNumber, api) => {
     const accumulatedFire2 = (await api.query.phala.accumulatedFire2.at(blockHash)) || new BN('0')
     const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
     const onlineWorkers = await api.query.phala.onlineWorkers.at(blockHash)
-    const totalPower = await api.query.phala.totalPower.at(blockHash)
 
     const stashAccounts = {}
     const stashKeys = await api.query.phala.stashState.keysAt(blockHash)
