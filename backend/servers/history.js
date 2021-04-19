@@ -14,8 +14,8 @@ const { default: Queue } = pQueue
 const ONE_THOUSAND = new BN('1000', 10)
 const ZERO = new BN('0')
 const DEFAULT_OUTPUT = 'null'
-const BLOCK_FIRST_ROUND_START = 1000000
-const FIRST_SCAN_QUEUE_NUMBER = 1000000
+const BLOCK_FIRST_ROUND_START = 60000
+const FIRST_SCAN_QUEUE_NUMBER = 60000
 const ROUND_CYCLE_TIME = 3600
 const BATCH_MIN_SIZE = 4
 
@@ -114,8 +114,8 @@ class BlocksHistoryScan {
                         userStake: 0,
                         stakeAccountNum: 0,
                         overallScore: 0,
-                        online_reward: 0,
-                        compute_reward: 0,
+                        onlineReward: 0,
+                        computeReward: 0,
                         slash: 0
                     }
                 }))
@@ -191,12 +191,12 @@ class BlocksHistoryScan {
                         .div(1000)
                         .div(1000)
 
-                    stashAccounts[stash].compute_received = computeReceivedDecimal.div(1000)
+                    stashAccounts[stash].computeReward = computeReceivedDecimal.div(1000)
                         .div(1000)
                         .div(1000)
                         .div(1000)
 
-                    stashAccounts[stash].online_received = onlineReceivedDecimal.div(1000)
+                    stashAccounts[stash].computeReward = onlineReceivedDecimal.div(1000)
                         .div(1000)
                         .div(1000)
                         .div(1000)
@@ -327,7 +327,7 @@ class BlocksHistoryScan {
                 .div(1000)
                 .div(1000)
 
-            const reward = new Decimal(value.online_reward + value.compute_reward - value.slash)
+            const reward = new Decimal(value.onlineReward + value.computeReward - value.slash)
 
             function getApy(reward, userStake) {
                 if (userStake.isZero()) {
@@ -347,8 +347,8 @@ class BlocksHistoryScan {
                 commission: value.commission,
                 taskScore: value.overallScore + 5 * Math.sqrt(value.overallScore),
                 machineScore: value.overallScore,
-                onlineReward: value.online_reward,
-                computeReward: value.compute_reward,
+                onlineReward: value.onlineReward,
+                computeReward: value.computeReward,
                 reward: reward,
                 apy: getApy(reward, userStake),
                 slash: value.slash

@@ -74,8 +74,8 @@ const processRoundAt = async (header, roundNumber, api) => {
                     stakeAccountNum: 0,
                     overallScore: 0,
                     onlineStatus: false,
-                    online_reward: 0,
-                    compute_reward: 0,
+                    onlineReward: 0,
+                    computeReward: 0,
                     slash: 0
                 }
             }))
@@ -151,12 +151,12 @@ const processRoundAt = async (header, roundNumber, api) => {
                     .div(1000)
                     .div(1000)
 
-                stashAccounts[stash].compute_received = computeReceivedDecimal.div(1000)
+                stashAccounts[stash].computeReward = computeReceivedDecimal.div(1000)
                     .div(1000)
                     .div(1000)
                     .div(1000)
 
-                stashAccounts[stash].online_received = onlineReceivedDecimal.div(1000)
+                stashAccounts[stash].onlineReward = onlineReceivedDecimal.div(1000)
                     .div(1000)
                     .div(1000)
                     .div(1000)
@@ -276,7 +276,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             .div(1000)
             .div(1000)
 
-        const reward = new Decimal(value.online_reward + value.online_reward - value.slash)
+        const reward = new Decimal(value.onlineReward + value.computeReward - value.slash)
 
         workers.push({
             stashAccount: key,
@@ -290,8 +290,8 @@ const processRoundAt = async (header, roundNumber, api) => {
             commission: value.commission,
             taskScore: value.overallScore + 5 * Math.sqrt(value.overallScore),
             machineScore: value.overallScore,
-            onlineReward: value.online_reward,
-            computeReward: value.compute_reward,
+            onlineReward: value.onlineReward,
+            computeReward: value.computeReward,
             reward: reward,
             apy: 1, // todo@@ 根据mongodb历史数据完善 看看产品更新公式
             slash: value.slash
