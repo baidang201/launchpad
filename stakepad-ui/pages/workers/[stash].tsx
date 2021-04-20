@@ -1,15 +1,13 @@
-// import Col from 'antd/lib/col'
-// import Row from 'antd/lib/row'
-// import Space from 'antd/lib/space'
+import { FlexGrid, FlexGridItem } from 'baseui/flex-grid'
 import { useRouter } from 'next/router'
+import React from 'react'
 import { useQuery } from 'react-query'
 import { AnnualizedReturnRateChart } from '../../components/workerByStash/annualizedReturnRateChart'
 import { CommissionRateChart } from '../../components/workerByStash/commissionRateChart'
-import { WorkerInformation } from '../../components/workerByStash/information'
 import { RewardChart } from '../../components/workerByStash/rewardChart'
 import { StakeChart } from '../../components/workerByStash/stakeChart'
-import { getWorkerByStash } from '../../libs/apis/workers/mock/getWorkerByStash'
-// import styles from '../../styles/pages/workers/[stash].module.css'
+import { getWorkerByStash } from '../../libs/apis/workers'
+import { WorkerInformation } from '../../components/workerByStash/information'
 
 const WorkerByStashPage: React.FC = () => {
     const router = useRouter()
@@ -17,30 +15,27 @@ const WorkerByStashPage: React.FC = () => {
 
     const { data } = useQuery(
         ['api', 'getWorkerByStash', stash],
-        async () => await getWorkerByStash()
+        async () => await getWorkerByStash(stash instanceof Array ? stash[0] : stash)
     )
 
     return (
-        // <Space className={styles.container} direction="vertical" size="large">
-        //     <WorkerInformation worker={data} />
-        //     <Row>
-        //         <Col xs={24} lg={12}>
-        //             <StakeChart worker={data} />
-        //         </Col>
-        //         <Col xs={24} lg={12}>
-        //             <CommissionRateChart worker={data} />
-        //         </Col>
-        //     </Row>
-        //     <Row>
-        //         <Col xs={24} lg={12}>
-        //             <RewardChart worker={data} />
-        //         </Col>
-        //         <Col xs={24} lg={12}>
-        //             <AnnualizedReturnRateChart worker={data} />
-        //         </Col>
-        //     </Row>
-        // </Space>
-        <></>
+        <>
+            <WorkerInformation worker={data} />
+            <FlexGrid flexGridColumnCount={2}>
+                <FlexGridItem>
+                    <StakeChart worker={data} />
+                </FlexGridItem>
+                <FlexGridItem>
+                    <CommissionRateChart worker={data} />
+                </FlexGridItem>
+                <FlexGridItem>
+                    <RewardChart worker={data} />
+                </FlexGridItem>
+                <FlexGridItem>
+                    <AnnualizedReturnRateChart worker={data} />
+                </FlexGridItem>
+            </FlexGrid>
+        </>
     )
 }
 

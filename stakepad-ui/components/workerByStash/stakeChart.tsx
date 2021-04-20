@@ -1,25 +1,19 @@
 import { EChartsOption } from 'echarts'
 import React, { useMemo } from 'react'
-import {
-    GlobalStakeHistoryPoint,
-    WorkerDetails,
-    WorkerStakeHistoryPoint
-} from '../../libs/apis'
+import { useQuery } from 'react-query'
+import { WorkerStakeHistoryPoint } from '../../libs/apis'
+import { getStakeHistoryByStash } from '../../libs/apis/workers'
 import { ChartWithDefaults } from './chart'
 import styles from './chart.module.css'
 
-export function StakeChart({
-    worker: workerDetails
-}: {
-    worker?: WorkerDetails
-}): JSX.Element {
-    const {
-        globalStakeHistory: global,
-        workerStakeHistory: worker
-    } = workerDetails ?? {
-        globalStakeHistory: [] as GlobalStakeHistoryPoint[],
-        workerStakeHistory: [] as WorkerStakeHistoryPoint[]
-    }
+export function StakeChart({ stash }: { stash?: string }): JSX.Element {
+    const { data, isFetched } = useQuery<WorkerStakeHistoryPoint[]>(
+        ['api', 'getStakeHistoryByStash', stash],
+        async () => typeof stash === 'string' ? getStakeHistoryByStash(stash) : []
+    )
+
+    const global = []
+    const worker = data ?? []
 
     const options: EChartsOption = useMemo(
         () => ({

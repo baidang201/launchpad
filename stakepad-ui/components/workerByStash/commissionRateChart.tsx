@@ -1,24 +1,25 @@
 import { EChartsOption } from 'echarts'
-import { WorkerDetails, WorkerHistoryPoint } from '../../libs/apis'
+import { useQuery } from 'react-query'
+import { WorkerHistoryPoint } from '../../libs/apis'
+import { getCommissionRateHistoryByStash } from '../../libs/apis/workers'
 import { ChartWithDefaults } from './chart'
 import styles from './chart.module.css'
 
-export function CommissionRateChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.Element {
-    const {
-        commissionRate
-    } = workerDetails ?? {
-        commissionRate: [] as Array<WorkerHistoryPoint<number>>
-    }
+export function CommissionRateChart({ stash }: { stash?: string }): JSX.Element {
+    const { data, isFetched } = useQuery<WorkerHistoryPoint<number>[]>(
+        ['api', 'getCommissionRateHistoryByStash', stash],
+        async () => typeof stash === 'string' ? getCommissionRateHistoryByStash(stash) : []
+    )
 
     const options: EChartsOption = {
         dataset: [
             {
                 id: 'commissionRate',
-                source: commissionRate.map(point => [point.timestamp, point.value * 100])
+                source: data.map(point => [point.timestamp, point.value * 100])
             },
             {
                 id: 'round',
-                source: commissionRate.map(point => [point.timestamp, point.round])
+                source: data.map(point => [point.timestamp, point.round])
             }
         ],
 

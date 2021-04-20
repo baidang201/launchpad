@@ -1,17 +1,19 @@
 import { EChartsOption } from 'echarts'
 import React from 'react'
-import { GlobalRewardHistoryPoint, WorkerDetails, WorkerRewardHistoryPoint } from '../../libs/apis'
+import { useQuery } from 'react-query'
+import { WorkerRewardHistoryPoint } from '../../libs/apis'
+import { getRewardHistoryByStash } from '../../libs/apis/workers'
 import { ChartWithDefaults } from './chart'
 import styles from './chart.module.css'
 
-export function RewardChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.Element {
-    const {
-        globalRewardHistory: global,
-        workerRewardHistory: worker
-    } = workerDetails ?? {
-        globalRewardHistory: [] as GlobalRewardHistoryPoint[],
-        workerRewardHistory: [] as WorkerRewardHistoryPoint[]
-    }
+export function RewardChart({ stash }: { stash?: string }): JSX.Element {
+    const { data, isFetched } = useQuery<WorkerRewardHistoryPoint[]>(
+        ['api', 'getRewardHistoryByStash', stash],
+        async () => typeof stash === 'string' ? getRewardHistoryByStash(stash) : []
+    )
+
+    const global = [] // TODO: fetch global history
+    const worker = data ?? []
 
     const options: EChartsOption = {
         dataset: [

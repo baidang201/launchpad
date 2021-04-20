@@ -8,16 +8,17 @@ export const findWorkersByStash: (
     const workerRequest: Api.IWorkerRequest = {
         filterCommissionLessThen: filters.commissionRateLessThan20,
         filterRuning: filters.mining,
-        filterStakeEnough: !filters.stakePending,
+        filterStakeEnough: filters.stakePending,
         filterStashAccounts: stash === undefined ? [] : [stash],
         page,
         pageSize
     }
+
     const payload = Api.CommonRequest.encode(
         Api.CommonRequest.create({ workerRequest })
     ).finish()
 
-    const result = await requestSuccess(payload, Api.WorkerResponse.decode)
+    const result = await requestSuccess(payload, Api.WorkerResponse.decode.bind(undefined))
 
     return ({
         total: result.total ?? 0,

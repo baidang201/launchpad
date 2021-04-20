@@ -5,3 +5,10 @@ export interface FindWorkerFilters {
 }
 
 export { findWorkersByStash } from './findWorkersByStash'
+export {
+    getAnnualizedReturnRateHistoryByStash,
+    getCommissionRateHistoryByStash,
+    getRewardHistoryByStash,
+    getStakeHistoryByStash,
+    getWorkerByStash
+} from './getWorkerByStash'

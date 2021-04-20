@@ -1,17 +1,20 @@
 import { EChartsOption } from 'echarts'
 import React, { useMemo } from 'react'
-import { WorkerDetails, WorkerHistoryPoint } from '../../libs/apis'
+import { useQuery } from 'react-query'
+import { WorkerHistoryPoint } from '../../libs/apis'
+import { getAnnualizedReturnRateHistoryByStash } from '../../libs/apis/workers'
 import { ChartWithDefaults } from './chart'
 import styles from './chart.module.css'
 
-export function AnnualizedReturnRateChart({ worker: workerDetails }: { worker?: WorkerDetails }): JSX.Element {
-    const { annualizedReturnRate } = workerDetails ?? {
-        annualizedReturnRate: [] as Array<WorkerHistoryPoint<number>>
-    }
+export function AnnualizedReturnRateChart({ stash }: { stash?: string }): JSX.Element {
+    const { data, isFetched } = useQuery<WorkerHistoryPoint<number>[]>(
+        ['api', 'getAnnualizedReturnRateHistoryByStash', stash],
+        async () => typeof stash === 'string' ? getAnnualizedReturnRateHistoryByStash(stash) : []
+    )
 
     const options: EChartsOption = useMemo(() => ({
         dataset: [{
-            source: annualizedReturnRate.map(point => [point.timestamp, point.value * 100, point.round]),
+            source: data.map(point => [point.timestamp, point.value * 100, point.round]),
             id: 'annualizedReturnRate'
         }],
 
@@ -53,7 +56,7 @@ export function AnnualizedReturnRateChart({ worker: workerDetails }: { worker?: 
             },
             type: 'value'
         }]
-    }), [annualizedReturnRate])
+    }), [data])
 
     return (
         <ChartWithDefaults className={styles.chart} options={options} />

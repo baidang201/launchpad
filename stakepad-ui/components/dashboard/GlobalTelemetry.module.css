@@ -1,0 +1,7 @@
+.statData, .statLabel {
+    display: block;
+}
+
+.flexContainer {
+    display: flex;
+}
