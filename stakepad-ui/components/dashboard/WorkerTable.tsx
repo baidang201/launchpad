@@ -1,7 +1,7 @@
-import { Button, KIND as BUTTON_KIND, SIZE as BUTTON_SIZE } from 'baseui/button'
+import { StyledLink } from 'baseui/link'
+import { Pagination } from 'baseui/pagination'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
-import { useRouter } from 'next/router'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { Worker } from '../../libs/apis'
 import { findWorkersByStash } from '../../libs/apis/workers'
@@ -21,21 +21,14 @@ interface WorkerTableProps {
 
 export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageSize, setPageSize] = useState(defaultPageSize)
 
     const { data, isFetched } = useQuery([
-        'api', 'findWorkersByStash', filters, currentPage, pageSize, stash
+        'api', 'findWorkersByStash', filters, currentPage, defaultPageSize, stash
     ], async () => {
-        return await findWorkersByStash(filters, currentPage, pageSize, stash)
+        return await findWorkersByStash(filters, currentPage, defaultPageSize, stash)
     })
 
-    const router = useRouter()
-
-    const handleDetailClick = (stash: string): void => {
-        router.push(`/workers/${stash}`).catch(error => {
-            console.error(`WorkerTable: Failed to navigate to /workers/${stash}: ${(error as Error)?.message ?? error}`)
-        })
-    }
+    const totalPages = useMemo(() => Math.ceil((data?.total ?? 0) / defaultPageSize), [data])
 
     return (
         <>
@@ -45,7 +38,9 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
                 isLoading={!isFetched}
                 loadingMessage="读取中"
             >
-                <TableBuilderColumn header="账户">{(worker: Worker) => worker.stash}</TableBuilderColumn>
+                <TableBuilderColumn header="账户">
+                    {(worker: Worker) => <StyledLink href={`workers/${worker.stash}`}>{worker.stash}</StyledLink>}
+                </TableBuilderColumn>
                 <TableBuilderColumn header="月收益">{(worker: Worker) => worker.monthlyPayout}</TableBuilderColumn>
                 <TableBuilderColumn header="年化收益率">{(worker: Worker) => worker.annualizedReturnRate}</TableBuilderColumn>
                 <TableBuilderColumn header="抵押额">{(worker: Worker) => worker.totalStake}</TableBuilderColumn>
@@ -53,17 +48,15 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
                 <TableBuilderColumn header="任务分">{(worker: Worker) => worker.taskScore}</TableBuilderColumn>
                 <TableBuilderColumn header="机器分">{(worker: Worker) => worker.minerScore}</TableBuilderColumn>
                 <TableBuilderColumn>
-                    {(worker: Worker) =>
-                        <Button
-                            onClick={() => handleDetailClick(worker.stash)}
-                            kind={BUTTON_KIND.minimal}
-                            size={BUTTON_SIZE.mini}
-                        >
-                            详情
-                        </Button>
-                    }
+                    {(worker: Worker) => <StyledLink href={`workers/${worker.stash}`}>详情</StyledLink>}
                 </TableBuilderColumn>
-            </TableBuilder >
+            </TableBuilder>
+
+            <Pagination
+                currentPage={currentPage}
+                numPages={totalPages}
+                onPageChange={({ nextPage }) => setCurrentPage(Math.min(Math.max(nextPage, 1), totalPages))}
+            />
         </>
     )
 }
