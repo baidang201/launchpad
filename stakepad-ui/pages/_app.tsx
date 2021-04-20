@@ -50,42 +50,6 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
                     <div className={styles.container}>
                         <Component {...pageProps} />
                     </div>
-
-                    {/* <Layout hasSider>
-                    <Layout.Sider>
-                        <Menu selectable={false} selectedKeys={['stakepad']}>
-                            <Menu.Item key="1">Home</Menu.Item>
-                            <Menu.Item key="2">pWallet</Menu.Item>
-                            <Menu.Item key="3">Bridge</Menu.Item>
-                            <Menu.Item key="4">Swap</Menu.Item>
-                            <Menu.Item key="5">Tokens</Menu.Item>
-                            <Menu.Item key="6">Pairs</Menu.Item>
-                            <Menu.Item key="7">Transactions</Menu.Item>
-                            <Menu.Item key="stakepad">Stakepad</Menu.Item>
-                            <Menu.Item key="9">KSM Crowdioan</Menu.Item>
-                        </Menu>
-                    </Layout.Sider>
-                    <Layout className={styles.innerLayout}>
-                        <Layout.Header>
-                            <div className={styles.walletButtonContainer}><WalletButton /></div>
-                            <Menu
-                                // className={styles.floatRight}
-                                mode="horizontal"
-                                onSelect={({ key }) => { onSelectTab(key as string) }}
-                                selectedKeys={[selectedTab]}
-                                theme="dark"
-                            >
-                                <Menu.Item key="dashboard">主页</Menu.Item>
-                                <Menu.Item key="user">我的抵押</Menu.Item>
-                                <Menu.Item key="browser">浏览器</Menu.Item>
-                                <Menu.Item key="retrievePha">获取Pha</Menu.Item>
-                            </Menu>
-                        </Layout.Header>
-                        <Layout.Content>
-
-                        </Layout.Content>
-                    </Layout>
-                </Layout> */}
                 </StyletronProvider>
             </QueryClientProvider>
             <ApiEnabler />

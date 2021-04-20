@@ -21,14 +21,15 @@ const narrowItemProps = (width?: string): BlockProps => ({
     }
 })
 
-export const StakeInit = ({ currentFilters, onFilterChanged }: {
+export const StakeInit = ({ currentFilters, onFilterChanged, onStashChanged }: {
     currentFilters: FindWorkerFilters
     onFilterChanged: (filters: FindWorkerFilters) => void
+    onStashChanged: (stash: string) => void
 }): JSX.Element => {
     return (
         <FlexGrid flexGridColumnCount={4} flexGridColumnGap="scale200">
             <FlexGridItem {...itemProps}>
-                <SearchByStashInput />
+                <SearchByStashInput onStashChanged={onStashChanged} />
             </FlexGridItem>
 
             <FlexGridItem {...narrowItemProps(undefined)}>

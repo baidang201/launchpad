@@ -1,10 +1,7 @@
-import { CopyOutlined, StarOutlined } from '@ant-design/icons'
-import Button from 'antd/lib/button'
-import Table, { TablePaginationConfig } from 'antd/lib/table'
-import Column from 'antd/lib/table/Column'
-import Typography from 'antd/lib/typography'
+import { Button, KIND as BUTTON_KIND, SIZE as BUTTON_SIZE } from 'baseui/button'
+import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useQuery } from 'react-query'
 import { Worker } from '../../libs/apis'
 import { findWorkersByStash } from '../../libs/apis/workers'
@@ -22,7 +19,6 @@ interface WorkerTableProps {
     stash?: string
 }
 
-// eslint-disable-next-line react/prop-types
 export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(defaultPageSize)
@@ -33,20 +29,6 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
         return await findWorkersByStash(filters, currentPage, pageSize, stash)
     })
 
-    const keyedWorkers = useMemo(() => data?.workers?.map((worker, index) => ({
-        ...worker,
-        index: `${currentPage}-${index}`
-    })), [data, currentPage])
-
-    const handleTableChange = (pagination: TablePaginationConfig): void => {
-        if (pagination.current !== currentPage) {
-            setCurrentPage(pagination.current ?? 1)
-        }
-        if (pagination.pageSize !== pageSize) {
-            setPageSize(pagination.pageSize ?? defaultPageSize)
-        }
-    }
-
     const router = useRouter()
 
     const handleDetailClick = (stash: string): void => {
@@ -56,33 +38,32 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
     }
 
     return (
-        <Table
-            dataSource={keyedWorkers}
-            loading={!isFetched}
-            onChange={handleTableChange}
-            pagination={{ current: currentPage, pageSize: pageSize, total: data?.total ?? 0 }}
-            rowKey={(row: { index: string }) => row.index}
-            rowSelection={{ type: 'checkbox' }}
-            size="middle"
-        >
-            <Column title="" key="fav" render={() => (
-                <Button icon={<StarOutlined />} size="small" type="text" />
-            )} />
-            <Column dataIndex="stash" key="stash" title="账户" render={(value) => (
-                <span>
-                    <Typography.Text>{value}</Typography.Text>
-                    <Button icon={<CopyOutlined />} size="small" type="text" />
-                </span>
-            )} />
-            <Column dataIndex="monthlyPayout" key="monthlyPayout" title="月收益" />
-            <Column dataIndex="annualizedReturnRate" key="annualizedReturnRate" title="年化收益率" />
-            <Column dataIndex="totalStake" key="totalStake" title="抵押额" />
-            <Column dataIndex="commissionRate" key="commissionRate" title="分润率" />
-            <Column dataIndex="taskScore" key="taskScore" title="任务分" />
-            <Column dataIndex="minerScore" key="minerScore" title="机器分" />
-            <Column title="" key="action" render={(_, { stash }: Worker) => (
-                <Button onClick={() => handleDetailClick(stash)} size="small" type="dashed" >详情</Button>
-            )} />
-        </Table>
+        <>
+            <TableBuilder
+                data={data?.workers?.length > 0 ? data.workers : undefined}
+                emptyMessage="没有数据"
+                isLoading={!isFetched}
+                loadingMessage="读取中"
+            >
+                <TableBuilderColumn header="账户">{(worker: Worker) => worker.stash}</TableBuilderColumn>
+                <TableBuilderColumn header="月收益">{(worker: Worker) => worker.monthlyPayout}</TableBuilderColumn>
+                <TableBuilderColumn header="年化收益率">{(worker: Worker) => worker.annualizedReturnRate}</TableBuilderColumn>
+                <TableBuilderColumn header="抵押额">{(worker: Worker) => worker.totalStake}</TableBuilderColumn>
+                <TableBuilderColumn header="分润率">{(worker: Worker) => worker.commissionRate}</TableBuilderColumn>
+                <TableBuilderColumn header="任务分">{(worker: Worker) => worker.taskScore}</TableBuilderColumn>
+                <TableBuilderColumn header="机器分">{(worker: Worker) => worker.minerScore}</TableBuilderColumn>
+                <TableBuilderColumn>
+                    {(worker: Worker) =>
+                        <Button
+                            onClick={() => handleDetailClick(worker.stash)}
+                            kind={BUTTON_KIND.minimal}
+                            size={BUTTON_SIZE.mini}
+                        >
+                            详情
+                        </Button>
+                    }
+                </TableBuilderColumn>
+            </TableBuilder >
+        </>
     )
 }

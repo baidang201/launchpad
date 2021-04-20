@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { StakeInit } from '../components/dashboard/StakeInit'
+import { WorkerTable } from '../components/dashboard/WorkerTable'
 import { FindWorkerFilters } from '../libs/apis/workers'
 
 const DashboardPage: React.FC = () => {
@@ -8,13 +9,17 @@ const DashboardPage: React.FC = () => {
         mining: false,
         stakePending: false
     })
-    // const [stashFilter] = useState<string | undefined>(undefined)
+    const [stashFilter, setStashFilter] = useState<string | undefined>(undefined)
 
     return (
         <>
             {/* <GlobalTelemetry /> */}
-            <StakeInit currentFilters={filters} onFilterChanged={filters => setFilters(filters)} />
-            {/* <WorkerTable filters={filters} stash={stashFilter} /> */}
+            <StakeInit
+                currentFilters={filters}
+                onFilterChanged={setFilters}
+                onStashChanged={stash => setStashFilter(typeof stash === 'string' && stash.length > 0 ? stash : undefined)}
+            />
+            <WorkerTable filters={filters} stash={stashFilter} />
         </>
     )
 }
