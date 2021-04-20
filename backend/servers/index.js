@@ -320,7 +320,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             avgReward: avgReward,
             accumulatedFire2: accumulatedFire2PHA,
             cycleTime: ROUND_CYCLE_TIME, // use 1 hour this time
-            onlineWorkerNum: onlineWorkers,
+            onlineWorkerNum: onlineWorkers.toNumber(),
             workerNum: stashCount,
             stakeSum: stakeSum,
             stakeSupplyRate: await stakeSupplyRate(stakeSum),
@@ -335,7 +335,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             avgReward: avgReward,
             accumulatedFire2: accumulatedFire2PHA,
             cycleTime: ROUND_CYCLE_TIME, // use 1 hour this time
-            onlineWorkerNum: onlineWorkers,
+            onlineWorkerNum: onlineWorkers.toNumber(),
             workerNum: stashCount,
             stakeSum: stakeSum,
             stakeSupplyRate: await stakeSupplyRate(stakeSum),

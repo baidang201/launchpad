@@ -365,7 +365,7 @@ class BlocksHistoryScan {
             avgReward: avgReward,
             accumulatedFire2: accumulatedFire2PHA, // 总奖励
             cycleTime: ROUND_CYCLE_TIME, // use 1 hour this time
-            onlineWorkerNum: onlineWorkers,
+            onlineWorkerNum: onlineWorkers.toNumber(),
             workerNum: stashCount,
             stakeSum: stakeSum,
             stakeSupplyRate: await stakeSupplyRate(stakeSum),
