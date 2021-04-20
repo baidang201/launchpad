@@ -73,6 +73,7 @@ const processRoundAt = async (header, roundNumber, api) => {
                     stakeAccountNum: 0,
                     overallScore: 0,
                     onlineStatus: false,
+                    status: '',
                     onlineReward: 0,
                     computeReward: 0,
                     slash: 0
@@ -106,6 +107,7 @@ const processRoundAt = async (header, roundNumber, api) => {
                 const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
                 stashAccounts[stash].overallScore = value.score.overallScore
 
+                stashAccounts[stash].status = Object.keys(value.state)[0]
                 if (value.state.stakePending === undefined && value.state.miningPending === undefined && value.state.mining === undefined) { return }
                 stashAccounts[stash].onlineStatus = true
                 accumulatedScore += value.score.overallScore
@@ -267,6 +269,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             controllerAccount: value.controller,
             payout: value.payout,
             onlineStatus: value.onlineStatus,
+            status: value.status,
             accumulatedStake: accumulatedStake,
             workerStake: workerStake,
             userStake: userStake,
