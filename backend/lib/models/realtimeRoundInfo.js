@@ -5,6 +5,7 @@ export const Worker = new mongoose.Schema({
     controllerAccount: { type: String },
     payout: { type: String },
     onlineStatus: { type: Boolean },
+    status: {type: String},
     accumulatedStake: { type: Number, index: true }, // PHA
     workerStake: { type: Number }, // PHA
     userStake: { type: Number }, // PHA
