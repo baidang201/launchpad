@@ -83,6 +83,7 @@ export async function getWorkers(workerRequest) {
             controllerAccount: worker.controllerAccount,
             payout: worker.payout,
             onlineStatus: worker.onlineStatus,
+            status: worker.status,
             stakeEnough: worker.workerStake >= BASE_STAKE_PHA,
             accumulatedStake: worker.accumulatedStake.toString(),
             profitLastMonth: getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),

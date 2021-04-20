@@ -67,6 +67,10 @@
             "stakeToMinApy": {
               "type": "double",
               "id": 16
+            },
+            "status": {
+              "type": "string",
+              "id": 17
             }
           }
         },
@@ -161,10 +165,14 @@
               "type": "string",
               "id": 6
             },
+            "sortAsc": {
+              "type": "bool",
+              "id": 7
+            },
             "filterStashAccounts": {
               "rule": "repeated",
               "type": "string",
-              "id": 7
+              "id": 8
             }
           }
         },
