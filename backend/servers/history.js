@@ -211,7 +211,7 @@ class BlocksHistoryScan {
 
                     if (!stashAccount) { return }
 
-                    const value = (await api.rpc.state.getStorage(k, blockHash))
+                    const value = (await api.rpc.state.getStorage(k, blockHash)).unwrapOrDefault()
                     accumulatedStake = typeof accumulatedStake === 'undefined'
                         ? value
                         : accumulatedStake.add(value)
@@ -232,7 +232,7 @@ class BlocksHistoryScan {
                 .map(async k => {
                     const from = k.args[0].toString()
                     const to = k.args[1].toString()
-                    const value = (await api.rpc.state.getStorage(k, blockHash))
+                    const value = (await api.rpc.state.getStorage(k, blockHash)).unwrapOrDefault()
 
                     const stash = to.toString()
                     const stashAccount = stashAccounts[stash]
