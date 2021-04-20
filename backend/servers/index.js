@@ -54,7 +54,6 @@ const processRoundAt = async (header, roundNumber, api) => {
     const accumulatedFire2 = (await api.query.phala.accumulatedFire2.at(blockHash)) || new BN('0')
     const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
     const onlineWorkers = await api.query.phala.onlineWorkers.at(blockHash)
-    const totalPower = await api.query.phala.totalPower.at(blockHash)
 
     const stashAccounts = {}
     const stashKeys = await api.query.phala.stashState.keysAt(blockHash)
@@ -75,8 +74,8 @@ const processRoundAt = async (header, roundNumber, api) => {
                     overallScore: 0,
                     onlineStatus: false,
                     status: '',
-                    online_reward: 0,
-                    compute_reward: 0,
+                    onlineReward: 0,
+                    computeReward: 0,
                     slash: 0
                 }
             }))
@@ -97,21 +96,6 @@ const processRoundAt = async (header, roundNumber, api) => {
                     payoutComputeReward: 0
                 }
             }))
-
-    await Promise.all(
-        (await api.query.phala.payoutComputeReward.keysAt(blockHash))
-            .map(async k => {
-                const account = k.args[0].toString()
-                const value = await api.rpc.state.getStorage(k, blockHash)
-                const payoutComputeReward = value.toNumber() || 0
-
-                if (!payoutAccounts[account]) { return }
-                payoutAccounts[account] = {
-                    ...payoutAccounts[account],
-                    payoutComputeReward
-                }
-            })
-    )
 
     const validStashAccounts = {}
     let accumulatedScore = 0
@@ -153,12 +137,12 @@ const processRoundAt = async (header, roundNumber, api) => {
                     .div(1000)
                     .div(1000)
 
-                stashAccounts[stash].compute_received = computeReceivedDecimal.div(1000)
+                stashAccounts[stash].computeReward = computeReceivedDecimal.div(1000)
                     .div(1000)
                     .div(1000)
                     .div(1000)
 
-                stashAccounts[stash].online_received = onlineReceivedDecimal.div(1000)
+                stashAccounts[stash].onlineReward = onlineReceivedDecimal.div(1000)
                     .div(1000)
                     .div(1000)
                     .div(1000)
@@ -173,7 +157,7 @@ const processRoundAt = async (header, roundNumber, api) => {
 
                 if (!stashAccount) { return }
 
-                const value = (await api.rpc.state.getStorage(k, blockHash))
+                const value = (await api.rpc.state.getStorage(k, blockHash)).unwrapOrDefault()
                 accumulatedStake = typeof accumulatedStake === 'undefined'
                     ? value
                     : accumulatedStake.add(value)
@@ -194,7 +178,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             .map(async k => {
                 const from = k.args[0].toString()
                 const to = k.args[1].toString()
-                const value = (await api.rpc.state.getStorage(k, blockHash))
+                const value = (await api.rpc.state.getStorage(k, blockHash)).unwrapOrDefault()
 
                 const stash = to.toString()
                 const stashAccount = stashAccounts[stash]
@@ -278,7 +262,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             .div(1000)
             .div(1000)
 
-        const reward = new Decimal(value.online_reward + value.online_reward - value.slash)
+        const reward = new Decimal(value.onlineReward + value.computeReward - value.slash)
 
         workers.push({
             stashAccount: key,
@@ -293,8 +277,8 @@ const processRoundAt = async (header, roundNumber, api) => {
             commission: value.commission,
             taskScore: value.overallScore + 5 * Math.sqrt(value.overallScore),
             machineScore: value.overallScore,
-            onlineReward: value.online_reward,
-            computeReward: value.compute_reward,
+            onlineReward: value.onlineReward,
+            computeReward: value.computeReward,
             reward: reward,
             apy: 1, // todo@@ 根据mongodb历史数据完善 看看产品更新公式
             slash: value.slash
@@ -320,7 +304,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             avgReward: avgReward,
             accumulatedFire2: accumulatedFire2PHA,
             cycleTime: ROUND_CYCLE_TIME, // use 1 hour this time
-            onlineWorkerNum: onlineWorkers,
+            onlineWorkerNum: onlineWorkers.toNumber(),
             workerNum: stashCount,
             stakeSum: stakeSum,
             stakeSupplyRate: await stakeSupplyRate(stakeSum),
@@ -335,7 +319,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             avgReward: avgReward,
             accumulatedFire2: accumulatedFire2PHA,
             cycleTime: ROUND_CYCLE_TIME, // use 1 hour this time
-            onlineWorkerNum: onlineWorkers,
+            onlineWorkerNum: onlineWorkers.toNumber(),
             workerNum: stashCount,
             stakeSum: stakeSum,
             stakeSupplyRate: await stakeSupplyRate(stakeSum),
