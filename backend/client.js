@@ -31,7 +31,7 @@ function testWorkerRequest() {
         page: 1,
         pageSize: 5,
         filterRuning: false,
-        filterStakeEnough: false,
+        filterStakeLessThen: true,
         filterCommissionLessThen: true,
         sortFieldName: 'commission',
         sortAsc: false,
