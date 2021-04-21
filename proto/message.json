@@ -149,7 +149,7 @@
               "type": "int32",
               "id": 2
             },
-            "filterRuning": {
+            "filterRunning": {
               "type": "bool",
               "id": 3
             },
