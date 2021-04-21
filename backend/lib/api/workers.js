@@ -16,13 +16,13 @@ export async function getWorkers(workerRequest) {
 
     const filterList = []
     filterList.push({ $unwind: '$workers' })
-    if (workerRequest.filterRuning) {
+    if (workerRequest.filterRunning) {
         filterList.push({ $match: { 'workers.onlineStatus': true } })
     }
-    if (workerRequest.filterStakeEnough) {
-        filterList.push({ $match: { 'workers.workerStake': { $gte: BASE_STAKE_PHA } } })
+    if (workerRequest.filterStakeLessThanMinimum) {
+        filterList.push({ $match: { 'workers.workerStake': { $lt: BASE_STAKE_PHA } } })
     }
-    if (workerRequest.filterCommissionLessThen) {
+    if (workerRequest.filterCommissionLessThanLimit) {
         filterList.push({ $match: { 'workers.commission': { $lte: COMMISSION_LIMIT } } })
     }
     if (workerRequest.filterStashAccounts) {

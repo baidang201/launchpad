@@ -149,15 +149,15 @@
               "type": "int32",
               "id": 2
             },
-            "filterRuning": {
+            "filterRunning": {
               "type": "bool",
               "id": 3
             },
-            "filterStakeEnough": {
+            "filterStakeLessThanMinimum": {
               "type": "bool",
               "id": 4
             },
-            "filterCommissionLessThen": {
+            "filterCommissionLessThanLimit": {
               "type": "bool",
               "id": 5
             },
