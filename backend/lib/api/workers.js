@@ -19,10 +19,10 @@ export async function getWorkers(workerRequest) {
     if (workerRequest.filterRuning) {
         filterList.push({ $match: { 'workers.onlineStatus': true } })
     }
-    if (workerRequest.filterStakeLessThen) {
-        filterList.push({ $match: { 'workers.workerStake': { $lte: BASE_STAKE_PHA } } })
+    if (workerRequest.filterStakeLessThan) {
+        filterList.push({ $match: { 'workers.workerStake': { $lt: BASE_STAKE_PHA } } })
     }
-    if (workerRequest.filterCommissionLessThen) {
+    if (workerRequest.filterCommissionLessThan) {
         filterList.push({ $match: { 'workers.commission': { $lte: COMMISSION_LIMIT } } })
     }
     if (workerRequest.filterStashAccounts) {

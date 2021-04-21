@@ -174,7 +174,7 @@ const processRoundAt = async (header, roundNumber, api) => {
     )
 
     await Promise.all(
-        (await api.query.miningStaking.staked.keysAt(blockHash))
+        (await api.query.miningStaking.pendingStaking.keysAt(blockHash))
             .map(async k => {
                 const from = k.args[0].toString()
                 const to = k.args[1].toString()

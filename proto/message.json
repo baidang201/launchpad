@@ -153,11 +153,11 @@
               "type": "bool",
               "id": 3
             },
-            "filterStakeLessThen": {
+            "filterStakeLessThan": {
               "type": "bool",
               "id": 4
             },
-            "filterCommissionLessThen": {
+            "filterCommissionLessThan": {
               "type": "bool",
               "id": 5
             },
