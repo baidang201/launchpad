@@ -18,6 +18,7 @@ message Worker {
   double apy = 14;
   int32  diff_to_min_stake = 15;
   double stake_to_min_apy = 16;
+  string status = 17;
 }
 
 message RoundInfo {
@@ -46,9 +47,9 @@ message Status {
 message WorkerRequest {
   int32  page = 1;
   int32  page_size = 2;
-  bool   filter_runing = 3;
-  bool   filter_stake_enough = 4;
-  bool   filter_commission_less_then = 5;
+  bool   filter_runing_only = 3;
+  bool   filter_stake_less_than_only = 4;
+  bool   filter_commission_less_than_only = 5;
   string sort_field_name = 6;
   bool   sort_asc = 7; // true:ase   false:desc
   repeated string filter_stash_accounts = 8;

@@ -6,9 +6,9 @@ export const findWorkersByStash: (
     filters: FindWorkerFilters, page: number, pageSize: number, stash?: string
 ) => Promise<GetWorkerResult> = async (filters, page, pageSize, stash) => {
     const workerRequest: Api.IWorkerRequest = {
-        filterCommissionLessThen: filters.commissionRateLessThan20,
-        filterRuning: filters.mining,
-        filterStakeEnough: filters.stakePending,
+        filterCommissionLessThanOnly: filters.commissionRateLessThan20,
+        filterRuningOnly: filters.mining,
+        filterStakeLessThanOnly: !filters.stakePending,
         filterStashAccounts: stash === undefined ? [] : [stash],
         page,
         pageSize

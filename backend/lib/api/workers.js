@@ -16,13 +16,13 @@ export async function getWorkers(workerRequest) {
 
     const filterList = []
     filterList.push({ $unwind: '$workers' })
-    if (workerRequest.filterRuning) {
+    if (workerRequest.filterRuningOnly) {
         filterList.push({ $match: { 'workers.onlineStatus': true } })
     }
-    if (workerRequest.filterStakeEnough) {
-        filterList.push({ $match: { 'workers.workerStake': { $gte: BASE_STAKE_PHA } } })
+    if (workerRequest.filterStakeLessThanOnly) {
+        filterList.push({ $match: { 'workers.workerStake': { $lt: BASE_STAKE_PHA } } })
     }
-    if (workerRequest.filterCommissionLessThen) {
+    if (workerRequest.filterCommissionLessThanOnly) {
         filterList.push({ $match: { 'workers.commission': { $lte: COMMISSION_LIMIT } } })
     }
     if (workerRequest.filterStashAccounts) {
@@ -83,6 +83,7 @@ export async function getWorkers(workerRequest) {
             controllerAccount: worker.controllerAccount,
             payout: worker.payout,
             onlineStatus: worker.onlineStatus,
+            status: worker.status,
             stakeEnough: worker.workerStake >= BASE_STAKE_PHA,
             accumulatedStake: worker.accumulatedStake.toString(),
             profitLastMonth: getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),

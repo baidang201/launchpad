@@ -67,6 +67,10 @@
             "stakeToMinApy": {
               "type": "double",
               "id": 16
+            },
+            "status": {
+              "type": "string",
+              "id": 17
             }
           }
         },
@@ -145,15 +149,15 @@
               "type": "int32",
               "id": 2
             },
-            "filterRuning": {
+            "filterRuningOnly": {
               "type": "bool",
               "id": 3
             },
-            "filterStakeEnough": {
+            "filterStakeLessThanOnly": {
               "type": "bool",
               "id": 4
             },
-            "filterCommissionLessThen": {
+            "filterCommissionLessThanOnly": {
               "type": "bool",
               "id": 5
             },
@@ -161,10 +165,14 @@
               "type": "string",
               "id": 6
             },
+            "sortAsc": {
+              "type": "bool",
+              "id": 7
+            },
             "filterStashAccounts": {
               "rule": "repeated",
               "type": "string",
-              "id": 7
+              "id": 8
             }
           }
         },
