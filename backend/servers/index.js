@@ -262,7 +262,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             .div(1000)
             .div(1000)
 
-        const reward = new Decimal(value.onlineReward + value.computeReward - value.slash)
+        const reward = (new Decimal(value.onlineReward)).plus(new Decimal(value.computeReward)).minus(new Decimal(value.slash))
 
         workers.push({
             stashAccount: key,
