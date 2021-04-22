@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import { RegistryTypes } from '@polkadot/types/types'
-import React, { useContext, useRef, useState } from 'react'
+import React, { PropsWithChildren, ReactElement, useContext, useRef, useState } from 'react'
 import { IPolkadotContext, PolkadotReadystate } from '.'
 
 const PolkadotContext = React.createContext<IPolkadotContext>({
@@ -19,7 +19,7 @@ const PolkadotContext = React.createContext<IPolkadotContext>({
 const log = console.log.bind(console, '[usePolkadot] ')
 const logError = console.error.bind(console, '[usePolkadot] ')
 
-const enableApi = async (endpoint: string, types: RegistryTypes) => {
+const enableApi = async (endpoint: string, types: RegistryTypes): Promise<ApiPromise> => {
     const { cryptoWaitReady } = await import('@polkadot/util-crypto')
     await cryptoWaitReady()
     log('Polkadot crypto ready')
@@ -33,11 +33,11 @@ const enableApi = async (endpoint: string, types: RegistryTypes) => {
     return api
 }
 
-const enableWeb3 = async (originName: string) => {
-    /*  
+const enableWeb3 = async (originName: string): Promise<InjectedAccountWithMeta[]> => {
+    /*
         polkadot web3 is dynamically imported here, instead of importing globally
         in order to prevent "window is not defined" during server side rendering
-        due to hardcoded reference to `window` in @polkadot/extension-dapp 
+        due to hardcoded reference to `window` in @polkadot/extension-dapp
     */
     const { web3Accounts, web3Enable } = await import('@polkadot/extension-dapp')
 
@@ -50,11 +50,11 @@ const enableWeb3 = async (originName: string) => {
     return accounts
 }
 
-export const PolkadotProvider: React.FC<{
+export const PolkadotProvider = ({ children, endpoint, originName, registryTypes }: PropsWithChildren<{
     endpoint: string
     originName: string
     registryTypes: RegistryTypes
-}> = ({ children, endpoint, originName, registryTypes }) => {
+}>): ReactElement => {
     const [account, setAccount] = useState<string | undefined>(undefined)
     const [accounts, setAccounts] = useState<InjectedAccountWithMeta[] | undefined>(undefined)
     const [api, setApi] = useState<ApiPromise | undefined>(undefined)
@@ -64,43 +64,46 @@ export const PolkadotProvider: React.FC<{
     const enableWeb3Promise = useRef<Promise<InjectedAccountWithMeta[]>>()
 
     const value: IPolkadotContext = {
-        account, accounts, api, readystate,
+        account,
+        accounts,
+        api,
+        readystate,
 
-        enableApi: () => {
+        enableApi: async () => {
             if (api !== undefined) {
-                return Promise.resolve(api)
+                return await Promise.resolve(api)
             }
 
             if (enableApiPromise.current !== undefined) {
-                return enableApiPromise.current
+                return await enableApiPromise.current
             }
 
-            return enableApiPromise.current = enableApi(endpoint, registryTypes).then(api => {
+            return await (enableApiPromise.current = enableApi(endpoint, registryTypes).then(api => {
                 setApi(api)
                 return api
             }).catch(error => {
                 logError(`Failed to enable API: ${(error as Error)?.message ?? error}`)
                 throw error
-            })
+            }))
         },
 
-        enableWeb3: () => {
+        enableWeb3: async () => {
             switch (readystate) {
                 case 'init':
                     if (enableWeb3Promise.current === undefined) {
-                        return Promise.reject(new Error('Assertion failed'))
+                        return await Promise.reject(new Error('Assertion failed'))
                     }
-                    return enableWeb3Promise.current
+                    return await enableWeb3Promise.current
 
                 case 'ready':
                     if (accounts === undefined) {
-                        return Promise.reject(new Error('Assertion failed'))
+                        return await Promise.reject(new Error('Assertion failed'))
                     }
-                    return Promise.resolve(accounts)
+                    return await Promise.resolve(accounts)
 
                 case 'start':
                     setReadystate('init')
-                    return enableWeb3Promise.current = enableWeb3(originName).then(accounts => {
+                    return await (enableWeb3Promise.current = enableWeb3(originName).then(accounts => {
                         setAccount(accounts[0]?.address)
                         setAccounts(accounts)
                         setReadystate('ready')
@@ -111,13 +114,13 @@ export const PolkadotProvider: React.FC<{
                         throw error
                     }).finally(() => {
                         enableWeb3Promise.current = undefined
-                    })
+                    }))
 
                 case 'unavailable':
                     return Promise.reject(new Error('Polkadot extension is not available'))
 
                 default:
-                    return Promise.reject(new Error(`Unexpected readystate ${readystate}`))
+                    return Promise.reject(new Error(`Unexpected readystate ${readystate as string}`))
             }
         },
 
@@ -134,7 +137,7 @@ export const PolkadotProvider: React.FC<{
     )
 }
 
-export const usePolkadot = () => {
+export const usePolkadot = (): IPolkadotContext => {
     const ctx = useContext(PolkadotContext)
     return ctx
 }

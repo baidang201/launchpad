@@ -1,7 +1,7 @@
+import { LabelMedium as Label } from 'baseui/typography'
 import React, { ReactElement } from 'react'
 import { useQuery } from 'react-query'
 import { getGlobalTelemetry } from '../../libs/apis/globalTelemetry'
-import { LabelMedium as Label, DisplayMedium as Display } from 'baseui/typography'
 import styles from './GlobalTelemetry.module.css'
 
 const TelemetryItem = ({ label, value }: {
@@ -21,9 +21,7 @@ const TelemetryItem = ({ label, value }: {
 }
 
 export const GlobalTelemetry: React.FC = () => {
-    const { data, isFetched } = useQuery(['api', 'getGlobalTelemetry'], async () => await getGlobalTelemetry())
-
-    const isLoading = !isFetched
+    const { data } = useQuery(['api', 'getGlobalTelemetry'], async () => await getGlobalTelemetry())
 
     return (
         <>

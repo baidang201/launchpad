@@ -21,7 +21,7 @@ export async function getGlobalTelemetry(): Promise<GlobalTelemetry> {
         })
     ).finish()
 
-    const result = await requestSuccess(payload, Api.GlobalStatisticsResponse.decode)
+    const result = await requestSuccess(payload, Api.GlobalStatisticsResponse.decode.bind(undefined))
 
     return {
         allWorkers: result.workerNum ?? -1,

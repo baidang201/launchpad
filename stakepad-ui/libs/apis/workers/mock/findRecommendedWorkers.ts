@@ -17,5 +17,5 @@ export const findRecommendedWorkers: (
         })
     }
 
-    return { total: 1499, workers: result }
+    return await Promise.resolve({ total: 1499, workers: result })
 }

@@ -1,4 +1,4 @@
-import { usePolkadot } from "../../libs/polkadot/context"
+import { usePolkadot } from '../../libs/polkadot/context'
 
 export const PolkadotStatus: React.FC = () => {
     const { accounts, readystate, enableWeb3 } = usePolkadot()
@@ -7,7 +7,7 @@ export const PolkadotStatus: React.FC = () => {
         <div>
             <div>Readystate: {readystate}</div>
             {accounts?.map(account => <div key={account.address}>Account: {account.address} ({account.meta.source})</div>)}
-            {readystate === 'start' && <button onClick={() => enableWeb3()}>Enable Web3</button>}
+            {readystate === 'start' && <button onClick={async () => await enableWeb3()}>Enable Web3</button>}
         </div>
     )
 }
