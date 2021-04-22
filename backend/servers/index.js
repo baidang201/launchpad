@@ -281,7 +281,7 @@ const processRoundAt = async (header, roundNumber, api) => {
             computeReward: value.computeReward,
             reward: reward,
             apy: 1, // todo@@ 根据mongodb历史数据完善 看看产品更新公式
-            slash: value.slash
+            penalty: value.slash
         })
 
         return stashAccounts[key]

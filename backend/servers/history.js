@@ -14,8 +14,8 @@ const { default: Queue } = pQueue
 const ONE_THOUSAND = new BN('1000', 10)
 const ZERO = new BN('0')
 const DEFAULT_OUTPUT = 'null'
-const BLOCK_FIRST_ROUND_START = 60000
-const FIRST_SCAN_QUEUE_NUMBER = 60000
+const BLOCK_FIRST_ROUND_START = 1
+const FIRST_SCAN_QUEUE_NUMBER = 1
 const ROUND_CYCLE_TIME = 3600
 const BATCH_MIN_SIZE = 4
 
@@ -311,7 +311,7 @@ class BlocksHistoryScan {
                 .div(1000)
                 .div(1000)
 
-            const reward = new Decimal(value.onlineReward + value.computeReward - value.slash)
+            const reward = (new Decimal(value.onlineReward)).plus(new Decimal(value.computeReward)).minus(new Decimal(value.slash))
 
             function getApy(reward, userStake) {
                 if (userStake.isZero()) {
@@ -335,7 +335,7 @@ class BlocksHistoryScan {
                 computeReward: value.computeReward,
                 reward: reward,
                 apy: getApy(reward, userStake),
-                slash: value.slash
+                penalty: value.slash
             })
 
             return stashAccounts[key]
