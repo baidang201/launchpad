@@ -10,28 +10,16 @@ interface ChartProps {
 export function Chart({ dataset, options, ...props }: ChartProps & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element {
     const [echartsElement, setEchartsElement] = useState<HTMLDivElement | null>(null)
     const echarts = useMemo(() => {
-        if (echartsElement === null || typeof window === 'undefined') {
+        if (echartsElement === null) {
             return
         }
 
-        return ECharts.init(echartsElement)
-    }, [echartsElement])
+        const instance = ECharts.getInstanceByDom(echartsElement) ?? ECharts.init(echartsElement)
+        instance?.setOption(options)
+        return instance
+    }, [echartsElement, options])
 
-    useEffect(() => {
-        // update echarts dataset
-
-        typeof setImmediate === 'function' && setImmediate(() => {
-            echarts?.setOption({ dataset }, { lazyUpdate: true })
-        })
-    }, [echarts, dataset])
-
-    useEffect(() => {
-        // update echarts options
-
-        typeof setImmediate === 'function' && setImmediate(() => {
-            echarts?.setOption(options)
-        })
-    }, [echarts, options])
+    useEffect(() => { echarts?.setOption({ dataset }) }, [echarts, dataset])
 
     useEffect(() => {
         // responsive resize
