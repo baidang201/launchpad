@@ -61,7 +61,7 @@ export function CommissionRateChart({ stash }: { stash: string }): JSX.Element {
         },
         {
             id: 'round',
-            source: data?.map(point => [point.timestamp, point.round])
+            source: data?.map(point => [point.timestamp, point.round]) ?? []
         }
     ], [data])
 
