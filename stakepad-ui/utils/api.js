@@ -25,7 +25,7 @@ export async function fetchProtobuf(url, data, resMessage) {
 export async function getWorkers(
     page,
     page_size,
-    filter_runing,
+    filter_running,
     filter_stake_enough,
     filter_commission_less_then,
     sort_field_name,
@@ -35,7 +35,7 @@ export async function getWorkers(
     {
       page: page, 
       page_size: page_size, 
-      filter_runing: filter_runing, 
+      filter_running: filter_running, 
       filter_stake_enough: filter_stake_enough, 
       filter_commission_less_then: filter_commission_less_then, 
       sort_field_name: sort_field_name,
