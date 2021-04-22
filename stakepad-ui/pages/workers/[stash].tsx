@@ -11,11 +11,12 @@ import { WorkerInformation } from '../../components/workerByStash/information'
 
 const WorkerByStashPage: React.FC = () => {
     const router = useRouter()
-    const { stash } = router.query
+    const { stash: rawStash } = router.query
+    const stash = typeof rawStash === 'string' ? rawStash : rawStash?.[0] ?? ''
 
     const { data } = useQuery(
         ['api', 'getWorkerByStash', stash],
-        async () => await getWorkerByStash(stash instanceof Array ? stash[0] : stash)
+        async () => await getWorkerByStash(stash)
     )
 
     return (
@@ -23,16 +24,16 @@ const WorkerByStashPage: React.FC = () => {
             <WorkerInformation worker={data} />
             <FlexGrid flexGridColumnCount={2}>
                 <FlexGridItem>
-                    <StakeChart worker={data} />
+                    <StakeChart stash={stash} />
                 </FlexGridItem>
                 <FlexGridItem>
-                    <CommissionRateChart worker={data} />
+                    <CommissionRateChart stash={stash} />
                 </FlexGridItem>
                 <FlexGridItem>
-                    <RewardChart worker={data} />
+                    <RewardChart stash={stash} />
                 </FlexGridItem>
                 <FlexGridItem>
-                    <AnnualizedReturnRateChart worker={data} />
+                    <AnnualizedReturnRateChart stash={stash} />
                 </FlexGridItem>
             </FlexGrid>
         </>

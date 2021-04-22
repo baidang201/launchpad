@@ -1,22 +1,36 @@
 import * as ECharts from 'echarts'
-import { EChartsOption } from 'echarts'
+import { DatasetComponentOption, EChartsOption } from 'echarts'
 import { useEffect, useMemo, useState } from 'react'
 
-// TODO: performance optimization
-/*
-    chart configuration (axes, styling, etc.) should be set only once, via `echarts.init`
-    following setOption should update only datasets
-*/
+interface ChartProps {
+    dataset?: DatasetComponentOption[]
+    options: EChartsOption
+}
 
-export function Chart({ options, ...props }: { options: EChartsOption } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement
->): JSX.Element {
+export function Chart({ dataset, options, ...props }: ChartProps & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element {
     const [echartsElement, setEchartsElement] = useState<HTMLDivElement | null>(null)
-    const echarts = useMemo(() => echartsElement === null ? null : ECharts.init(echartsElement), [echartsElement])
+    const echarts = useMemo(() => {
+        if (echartsElement === null || typeof window === 'undefined') {
+            return
+        }
+
+        return ECharts.init(echartsElement)
+    }, [echartsElement])
 
     useEffect(() => {
-        // update EChart options
+        // update echarts dataset
 
-        echarts?.setOption(options)
+        typeof setImmediate === 'function' && setImmediate(() => {
+            echarts?.setOption({ dataset }, { lazyUpdate: true })
+        })
+    }, [echarts, dataset])
+
+    useEffect(() => {
+        // update echarts options
+
+        typeof setImmediate === 'function' && setImmediate(() => {
+            echarts?.setOption(options)
+        })
     }, [echarts, options])
 
     useEffect(() => {
@@ -42,7 +56,7 @@ export function Chart({ options, ...props }: { options: EChartsOption } & React.
 export const ChartWithDefaults = ({
     options,
     ...props
-}: { options: EChartsOption } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element => {
+}: ChartProps & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element => {
     const defaults: EChartsOption = {
         backgroundColor: '#000000',
 
