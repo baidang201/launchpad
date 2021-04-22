@@ -47,9 +47,9 @@ message Status {
 message WorkerRequest {
   int32  page = 1;
   int32  page_size = 2;
-  bool   filter_runing_only = 3;
-  bool   filter_stake_less_than_only = 4;
-  bool   filter_commission_less_than_only = 5;
+  bool   filter_running = 3;
+  bool   filter_stake_less_than_minimum = 4;
+  bool   filter_commission_less_than_limit = 5;
   string sort_field_name = 6;
   bool   sort_asc = 7; // true:ase   false:desc
   repeated string filter_stash_accounts = 8;
