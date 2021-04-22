@@ -26,7 +26,8 @@
     "target": "esnext"
   },
   "include": [
-    "libs/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
     "next-env.d.ts"
   ],
   "exclude": [
