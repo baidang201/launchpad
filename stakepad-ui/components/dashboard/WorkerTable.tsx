@@ -1,7 +1,7 @@
 import { StyledLink } from 'baseui/link'
 import { Pagination } from 'baseui/pagination'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
-import React, { useMemo, useState } from 'react'
+import React, { ReactElement, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { Worker } from '../../libs/apis'
 import { findWorkersByStash } from '../../libs/apis/workers'
@@ -9,17 +9,16 @@ import { findWorkersByStash } from '../../libs/apis/workers'
 const defaultPageSize = 10
 
 interface FindWorkerFilters {
+    // TODO: maybe should be put under @/libs/apis/
     commissionRateLessThan20: boolean
     mining: boolean
     stakePending: boolean
 }
 
-interface WorkerTableProps {
+export const WorkerTable = ({ filters, stash }: {
     filters: FindWorkerFilters
     stash?: string
-}
-
-export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
+}): ReactElement => {
     const [currentPage, setCurrentPage] = useState(1)
 
     const { data, isFetched } = useQuery([
@@ -30,10 +29,12 @@ export const WorkerTable: React.FC<WorkerTableProps> = ({ filters, stash }) => {
 
     const totalPages = useMemo(() => Math.ceil((data?.total ?? 0) / defaultPageSize), [data])
 
+    const workers = data?.workers ?? []
+
     return (
         <>
             <TableBuilder
-                data={data?.workers?.length > 0 ? data.workers : undefined}
+                data={workers}
                 emptyMessage="没有数据"
                 isLoading={!isFetched}
                 loadingMessage="读取中"
