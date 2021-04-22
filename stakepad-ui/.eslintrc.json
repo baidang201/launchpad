@@ -56,5 +56,10 @@
                 "asyncArrow": "always"
             }
         ]
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
     }
 }
