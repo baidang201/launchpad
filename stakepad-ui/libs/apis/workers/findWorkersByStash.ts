@@ -8,7 +8,7 @@ export const findWorkersByStash: (
     const workerRequest: Api.IWorkerRequest = {
         filterCommissionLessThanLimit: filters.commissionRateLessThan20,
         filterRunning: filters.mining,
-        filterStakeLessThanMinimum: !filters.stakePending,
+        filterStakeLessThanMinimum: filters.stakePending,
         filterStashAccounts: stash === undefined ? [] : [stash],
         page,
         pageSize
