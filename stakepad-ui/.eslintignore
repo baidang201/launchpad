@@ -1,0 +1,4 @@
+libs/apis/proto/api.d.ts
+libs/apis/proto/api.js
+next-env.d.ts
+node_modules
