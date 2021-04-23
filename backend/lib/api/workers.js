@@ -2,9 +2,7 @@
 import { RealtimeRoundInfo } from '../models/realtimeRoundInfo.js'
 import { HistoryRoundInfo } from '../models/historyRoundInfo.js'
 import protobuf from '../protobuf/protobuf.js'
-
-const BASE_STAKE_PHA = 1620
-const COMMISSION_LIMIT = 20
+import { workerConfig } from '../../config/index.js'
 
 function paginate(array, pageSize, pageNumber) {
     // human-readable page numbers usually start with 1, so we reduce 1 in the first argument
@@ -20,10 +18,10 @@ export async function getWorkers(workerRequest) {
         filterList.push({ $match: { 'workers.onlineStatus': true } })
     }
     if (workerRequest.filterStakeLessThanMinimum) {
-        filterList.push({ $match: { 'workers.workerStake': { $lt: BASE_STAKE_PHA } } })
+        filterList.push({ $match: { 'workers.accumulatedStake': { $lt: workerConfig.BASE_STAKE_PHA } } })
     }
     if (workerRequest.filterCommissionLessThanLimit) {
-        filterList.push({ $match: { 'workers.commission': { $lte: COMMISSION_LIMIT } } })
+        filterList.push({ $match: { 'workers.commission': { $lte: workerConfig.COMMISSION_LIMIT } } })
     }
     if (workerRequest.filterStashAccounts) {
         filterList.push({ $match: { 'workers.stashAccount': { $in: workerRequest.filterStashAccounts } } })
@@ -84,7 +82,7 @@ export async function getWorkers(workerRequest) {
             payout: worker.payout,
             onlineStatus: worker.onlineStatus,
             status: worker.status,
-            stakeEnough: worker.workerStake >= BASE_STAKE_PHA,
+            stakeEnough: worker.accumulatedStake >= workerConfig.BASE_STAKE_PHA,
             accumulatedStake: worker.accumulatedStake.toString(),
             profitLastMonth: getProfitLastMonth(historyRoundInfo, worker.stashAccount).toString(),
             workerStake: worker.workerStake.toString(),
@@ -95,7 +93,7 @@ export async function getWorkers(workerRequest) {
             machineScore: worker.machineScore,
             apy: worker.apy,
             diffToMinStake: worker.workerStake >= BASE_STAKE_PHA ? 0 : BASE_STAKE_PHA - worker.workerStake,
-            stakeToMinApy: 1// todo@@ 基础抵押年化 实时计算 看看产品更新公式
+            stakeToMinApy: worker.stakeToMinApy
         })
     }
 

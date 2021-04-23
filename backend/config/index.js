@@ -11,3 +11,8 @@ export const api = {
     prefix: '/api',
     version: '/v1'
 }
+
+export const workerConfig = {
+    BASE_STAKE_PHA: 1620,
+    COMMISSION_LIMIT: 20
+}
