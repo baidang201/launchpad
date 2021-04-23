@@ -317,7 +317,7 @@ class BlocksHistoryScan {
                 if (userStake.isZero()) {
                     return 0
                 }
-                return reward / userStake * 24 * 365
+                return reward / userStake * 24 * 365 * 100  //增加100倍数，方便保存和传输 10表示10%
             }
 
             workers.push({
