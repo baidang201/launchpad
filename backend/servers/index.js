@@ -323,13 +323,13 @@ const processRoundAt = async (header, roundNumber, api) => {
                 return 0
             }
             const onlineReward = sumOfOnlineReward.mul((score / sumOfScore)) 
-            const computeReward = sumOfComputeReward.mul(winningRate(
+            const computeReward = sumOfComputeReward.mul(winningRate({
                 score, 
                 stake, 
                 miners, 
                 avgScore, 
                 avgStake
-            ) ).div(  targetVirtualTaskCount.toNumber() )
+            }) ).div(  targetVirtualTaskCount.toNumber() )
 
             const newRate = (100 - commission) / 100
             const apy = onlineReward.add(computeReward).mul(newRate).mul(24 * 365).div(userStake).mul(100) //小数转为百分比 乘于100
@@ -361,10 +361,10 @@ const processRoundAt = async (header, roundNumber, api) => {
                 targetVirtualTaskCount,
                 userStake: userStake.isZero()? new Decimal(1): userStake,
                 score: value.overallScore, 
-                stake: accumulatedStake, 
+                stake: accumulatedStake.toDecimalPlaces(0), 
                 miners: parseInt(onlineWorkers), 
-                avgScore,
-                avgStake
+                avgScore: avgScore.toDecimalPlaces(0),
+                avgStake: avgStake.toDecimalPlaces(0)
             }), 
             stakeToMinApy: getApy({
                 sumOfOnlineReward,
@@ -376,8 +376,8 @@ const processRoundAt = async (header, roundNumber, api) => {
                 score: value.overallScore, 
                 stake: workerConfig.BASE_STAKE_PHA, 
                 miners: parseInt(onlineWorkers), 
-                avgScore,
-                avgStake
+                avgScore: avgScore.toDecimalPlaces(0),
+                avgStake: avgStake.toDecimalPlaces(0)
             }), 
             penalty: value.slash
         })
