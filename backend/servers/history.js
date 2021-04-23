@@ -287,7 +287,7 @@ class BlocksHistoryScan {
                 return 0
             }
 
-            return accumulatedFire2PHA / stakeSumOfUserStake * 24 * 365
+            return accumulatedFire2PHA / stakeSumOfUserStake * 24 * 365 * 100
         }
 
         const workers = []
