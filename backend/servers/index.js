@@ -341,10 +341,10 @@ const processRoundAt = async (header, roundNumber, api) => {
                 targetVirtualTaskCount,
                 userStake: userStake.isZero()? new Decimal(1): userStake,
                 score: value.overallScore, 
-                stake: accumulatedStake.toDecimalPlaces(0), 
+                stake: parseInt(accumulatedStake.toDecimalPlaces(0)), 
                 miners: parseInt(onlineWorkers), 
-                avgScore: avgScore.toDecimalPlaces(0),
-                avgStake: avgStake.toDecimalPlaces(0)
+                avgScore: parseInt(avgScore.toDecimalPlaces(0)),
+                avgStake: parseInt(avgStake.toDecimalPlaces(0))
             }), 
             stakeToMinApy: getApy({
                 sumOfOnlineReward,
@@ -354,10 +354,10 @@ const processRoundAt = async (header, roundNumber, api) => {
                 targetVirtualTaskCount,
                 userStake: userStake.isZero()? new Decimal(1): userStake,
                 score: value.overallScore, 
-                stake: workerConfig.BASE_STAKE_PHA, 
+                stake: parseInt(workerConfig.BASE_STAKE_PHA), 
                 miners: parseInt(onlineWorkers), 
-                avgScore: avgScore.toDecimalPlaces(0),
-                avgStake: avgStake.toDecimalPlaces(0)
+                avgScore: parseInt(avgScore.toDecimalPlaces(0)),
+                avgStake: parseInt(avgStake.toDecimalPlaces(0))
             }), 
             penalty: value.slash
         })
