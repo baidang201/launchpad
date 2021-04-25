@@ -31,7 +31,7 @@ export function Chart({ dataset, options, ...props }: ChartProps & React.Detaile
         const resizeListener = (): void => echarts?.resize()
 
         window.addEventListener('resize', resizeListener)
-        resizeListener() // also call once on mounted
+        typeof setImmediate === 'function' && setImmediate(() => { resizeListener() }) // also call once on mounted
 
         return () => {
             window.removeEventListener('resize', resizeListener)
