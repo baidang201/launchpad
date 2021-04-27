@@ -38,3 +38,24 @@ export function sumEvery(arr, n) {
             ))
     )
 }
+
+export function winningRate({ score = 200, stake = 1000, miners = 500, avgScore = 420, avgStake = 1000, myMiners = 1 }) {
+    const n = 5
+    const weight = w(score, stake)
+    const otherWeight = w(avgScore, avgStake)
+    return p(weight, myMiners, otherWeight, miners, 1, n - myMiners)
+}
+
+function w(score, stake) {
+    return score + Math.sqrt(stake) * 5
+}
+
+function p(a, m, b, n, x, y) {
+    if (x === 0 && y === 0) return 1
+    if (m === 0 || n === 0) return 1
+    const sigma = a * m + b * n
+    return (
+        (x > 0 ? (a * m / sigma) * p(a, m - 1, b, n, x - 1, y) : 0) +
+    (y > 0 ? (b * n / sigma) * p(a, m, b, n - 1, x, y - 1) : 0)
+    )
+}

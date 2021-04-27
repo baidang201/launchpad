@@ -30,9 +30,9 @@ function testWorkerRequest() {
     {
         page: 1,
         pageSize: 5,
-        filterRuningOnly: false,
-        filterStakeLessThanOnly: true,
-        filterCommissionLessThanOnly: true,
+        filterRunning: false,
+        filterStakeLessThanMinimum: true,
+        filterCommissionLessThanLimit: true,
         sortFieldName: 'commission',
         sortAsc: false,
         filterStashAccounts: []

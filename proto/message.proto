@@ -2,62 +2,62 @@ syntax = "proto3";
 package  launchpadpackage;
 
 message Worker {
-  string stash_account = 1;
-  string controller_account = 2;
-  string payout = 3;
-  bool   online_status = 4;
-  bool   stake_enough = 5;
-  string accumulated_stake = 6;  // bignum
-  string profit_last_month = 7;  // bignum
-  string worker_stake = 8;  // bignum
-  string user_stake = 9;  // bignum
-  int32  stake_account_num = 10;
-  float  commission = 11;
-  int32  task_score = 12;
-  int32  machine_score = 13;
-  double apy = 14;
-  int32  diff_to_min_stake = 15;
-  double stake_to_min_apy = 16;
-  string status = 17;
+  string stash_account = 1;  // stash账号
+  string controller_account = 2;  // controller账号
+  string payout = 3;  //收益地址
+  bool   online_status = 4;  //矿机是否在线
+  bool   stake_enough = 5;  //是否满足最低抵押 1620 PHA
+  string accumulated_stake = 6;  //矿工总抵押 bignum
+  string profit_last_month = 7;  //矿工上个月的收益 bignum
+  string worker_stake = 8;  //矿工自身抵押 bignum
+  string user_stake = 9;  //用户抵押 bignum
+  int32  stake_account_num = 10;  //抵押账户数
+  float  commission = 11;  //矿工分润率 范围：0-100
+  int32  task_score = 12;  //任务分
+  int32  machine_score = 13;  //机器分
+  double apy = 14;  //年化 小数，范围：0～无穷   10表示年化10%
+  int32  diff_to_min_stake = 15;  //最小抵押额度  产品目前定义为1620
+  double stake_to_min_apy = 16;  //矿工达到最小抵押值的年化 小数，范围：0～无穷   10表示年化10%
+  string status = 17;  //矿机状态  范围："free" "gatekeeper" "miningPending" "mining" "miningStopping"
 }
 
 message RoundInfo {
-  int32 total = 1;
-  repeated Worker workers = 2;
+  int32 total = 1;  //轮数
+  repeated Worker workers = 2;  //矿工数组
 }
 
 message Globalstatistics {
-  float apy = 1;
-  int32 round = 2;
-  int32 cycle_time = 3;
-  int32 online_worker_num = 4;
-  int32 worker_num = 5;
-  string stake_sum = 6;  //bignum
-  float  stake_supply_rate = 7;
-  string avg_stake = 8;  //bignum
-  string reward_last_round = 9;
+  float apy = 1;  //年化 小数，范围：0～无穷   10表示年化10%
+  int32 round = 2;  //轮数
+  int32 cycle_time = 3;  //每一轮所用的周期 单位：秒
+  int32 online_worker_num = 4;  //在线矿工数量
+  int32 worker_num = 5;  //矿工总数
+  string stake_sum = 6;  //总抵押数量 bignum
+  float  stake_supply_rate = 7;  //抵押量占流通百分比 小数，范围：0～无穷   10表示年化10%
+  string avg_stake = 8;  //平均抵押量bignum
+  string reward_last_round = 9;  //上一轮的总奖励
 }
 
 message Status {
-  int32 success = 1;
-  string msg = 2;
+  int32 success = 1;  //状态码 -1 失败  0 成功  其他状态码
+  string msg = 2;  //具体错误原因
 }
 
 //worker
 message WorkerRequest {
-  int32  page = 1;
-  int32  page_size = 2;
-  bool   filter_running = 3;
-  bool   filter_stake_less_than_minimum = 4;
-  bool   filter_commission_less_than_limit = 5;
-  string sort_field_name = 6;
-  bool   sort_asc = 7; // true:ase   false:desc
-  repeated string filter_stash_accounts = 8;
+  int32  page = 1;  //请求页数
+  int32  page_size = 2;  //每页的数据数
+  bool   filter_running = 3;  //启用过滤在线矿机
+  bool   filter_stake_less_than_minimum = 4;  //启用过滤小于基础抵押额（当前产品定义为1620 PHA）
+  bool   filter_commission_less_than_limit = 5;  //启用分润率小于限制（当前产品定义为20）
+  string sort_field_name = 6;  //启用排序的字段， 范围 “” 或 某列的名称 “accumulatedStake”  “commission”  “taskScore” “machineScore” “apy” “profitLastMonth”
+  bool   sort_asc = 7;  //启用排序后，升序顺序 true:ase 升序  false:desc 降序
+  repeated string filter_stash_accounts = 8;  //使用stash账号过滤，范围: 空数组[] 或 账号列表["xxx", "xxx"]
 }
 
 message WorkerResponse {
-  Status status = 1;
-  RoundInfo result = 2;
+  Status status = 1;  //请求返回状态
+  RoundInfo result = 2;  //请求结果
 }
 
 //GlobalStatistics
@@ -65,132 +65,132 @@ message GlobalStatisticsRequest {
 }
 
 message GlobalStatisticsResponse {
-  Status status = 1;
-  Globalstatistics result = 2;
+  Status status = 1;  //请求返回状态
+  Globalstatistics result = 2;  //请求结果
 }
 
 //stakes
 message AvgStake {
   message SubMsg {
-    string avg_stake = 1;//bignum
-    int32  round = 2;
-    int32  timestamp = 3;
+    string avg_stake = 1;  //平均抵押bignum
+    int32  round = 2;  //轮数
+    int32  timestamp = 3;  //时间戳 10位的整数
   }
-  repeated SubMsg avg_stake_infos = 1;
+  repeated SubMsg avg_stake_infos = 1;  //平均抵押数组
 }
 
 message AvgStakeRequest {
 }
 
 message AvgStakeResponse {
-  Status status = 1;
-  AvgStake result = 2;
+  Status status = 1;  //请求返回状态
+  AvgStake result = 2;  //请求结果
 }
 
 //stakeinfo
 message StakeInfo {
   message SubMsg {
-    string accumulated_stake = 1;
-    string worker_stake = 2;
-    int32  round = 3;
-    int32  timestamp = 4;
+    string accumulated_stake = 1;  //矿工总抵押
+    string worker_stake = 2;  //矿工自抵押
+    int32  round = 3;  //轮数
+    int32  timestamp = 4;  //时间戳 10位的整数
   }
   repeated SubMsg stake_infos = 1;
 }
 
 message StakeInfoRequest {
-  string stash_account = 1;
+  string stash_account = 1;  //stash账号
 }
 
 message StakeInfoResponse {
-  Status status = 1;
-  StakeInfo result = 2;
+  Status status = 1;  //请求返回状态
+  StakeInfo result = 2;  //请求结果
 }
 
 //rewardpenalty
 message RewardPenalty {
   message SubMsg {
-    string reward = 1;  
-    string penalty = 2;  
-    int32  round = 3;
-    int32  timestamp = 4;
+    string reward = 1;  //收益
+    string penalty = 2;  //惩罚
+    int32  round = 3;  //轮数
+    int32  timestamp = 4;  //时间戳 10位的整数
   }
-  repeated SubMsg reward_penalty_infos = 1;
+  repeated SubMsg reward_penalty_infos = 1;  //收益惩罚数组
 }
 
 message RewardPenaltyRequest {
-  string stash_account = 1;
+  string stash_account = 1;  //stash账号
 }
 
 message RewardPenaltyResponse {
-  Status status = 1;
-  RewardPenalty result = 2;
+  Status status = 1;  //请求返回状态
+  RewardPenalty result = 2;  //请求结果
 }
 
 //avgreward
 message AvgReward {
   message SubMsg {
-    string avg_reward = 1;  
-    int32  round = 2;
-    int32  timestamp = 3;
+    string avg_reward = 1;  //平均收益
+    int32  round = 2;  //轮数
+    int32  timestamp = 3;  //时间戳 10位的整数
   }
-  repeated SubMsg avg_reward_infos = 1;
+  repeated SubMsg avg_reward_infos = 1;  //平均收益数组
 
 }
 
 message AvgRewardRequest {
-  string stash_account = 1;
+  string stash_account = 1;  //stash账号
 }
 
 message AvgRewardResponse {
-  Status status = 1;
-  AvgReward result = 2;
+  Status status = 1;  //请求返回状态
+  AvgReward result = 2;  //请求结果
 }
 
 //apy
 message Apy {
   message SubMsg {
-    float  apy = 1;
-    int32  round = 2;
-    int32  timestamp = 3;
+    float  apy = 1;  //年化 小数，范围：0～无穷   10表示年化10%
+    int32  round = 2;  //轮数
+    int32  timestamp = 3;  //时间戳 10位的整数
   }
-  repeated SubMsg apy_infos = 1;
+  repeated SubMsg apy_infos = 1;  //年化数组
 }
 message ApyRequest {
-  string stash_account = 1;
+  string stash_account = 1;  //stash账号
 }
 message ApyResponse {
-  Status status = 1;
-  Apy result = 2;
+  Status status = 1;  //请求返回状态
+  Apy result = 2;  //请求结果
 }
 
 //commission
 message Commission {
   message SubMsg {
-    float  commission = 1;
-    int32  round = 2;
-    int32  timestamp = 3;
+    float  commission = 1;  //分润
+    int32  round = 2;  //轮数
+    int32  timestamp = 3;  //时间戳 10位的整数
   }
-  repeated SubMsg commission_infos = 1;
+  repeated SubMsg commission_infos = 1;  //分润结果数组
 }
 message CommissionRequest {
-  string stash_account = 1;
+  string stash_account = 1;  //stash账号
 }
 message CommissionResponse {
-  Status status = 1;
-  Commission result = 2;
+  Status status = 1;  //请求返回状态
+  Commission result = 2;  //请求结果
 }
 
 //notice
 message Notice {
-  string notice = 1;
+  string notice = 1;  //通知字符串
 }
 message NoticeRequest {
-  string stash_account = 1;
+  string stash_account = 1;  //stash账号
 }
 message NoticeResponse {
-  Status status = 1;
-  Notice result = 2;
+  Status status = 1;  //请求返回状态
+  Notice result = 2;  //请求结果
 }
 
 //common
@@ -209,5 +209,5 @@ message CommonRequest {
 }
 
 message CommonResponse {
-  Status status = 1;
+  Status status = 1;  //请求返回状态
 }
