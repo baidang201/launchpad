@@ -23,11 +23,23 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "esnext"
+    "target": "esnext",
+    "paths": {
+      "@phala/types": [
+        "./libs/polkadot/interfaces/types.ts"
+      ],
+      "@polkadot/api/augment": [
+        "./libs/polkadot/interfaces/augment-api.ts"
+      ],
+      "@polkadot/types/augment": [
+        "./libs/polkadot/interfaces/augment-types.ts"
+      ]
+    }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "libs/polkadot/interfaces/augment.d.ts",
     "next-env.d.ts"
   ],
   "exclude": [

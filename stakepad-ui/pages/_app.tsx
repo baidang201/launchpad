@@ -1,4 +1,4 @@
-import * as phalaTypedef from '@phala/typedefs/src/phala-typedef'
+import { Poc4 } from '@phala/typedefs'
 import { AppNavBar, NavItemT, setItemActive } from 'baseui/app-nav-bar'
 import { AppComponent, AppProps } from 'next/dist/next-server/lib/router/router'
 import { useEffect, useMemo, useState } from 'react'
@@ -38,7 +38,7 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
     ])
 
     return (
-        <PolkadotProvider endpoint={PhalaEndpoint} originName="Phala Stakepad" registryTypes={phalaTypedef.default}>
+        <PolkadotProvider endpoint={PhalaEndpoint} originName="Phala Stakepad" registryTypes={Poc4}>
             <QueryClientProvider client={client}>
                 <StyletronProvider value={styletron}>
                     <AppNavBar
