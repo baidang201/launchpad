@@ -1,7 +1,7 @@
 import { GlobalTelemetry } from '.'
 
 export async function getGlobalTelemetry(): Promise<GlobalTelemetry> {
-    return {
+    return await Promise.resolve({
         annualizedReturnRate: 0.153,
         currentRound: 12434,
         currentRoundClock: 45,
@@ -13,5 +13,5 @@ export async function getGlobalTelemetry(): Promise<GlobalTelemetry> {
 
         allWorkers: 534568,
         onlineWorkers: 12434
-    }
+    })
 }

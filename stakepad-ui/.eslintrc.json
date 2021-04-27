@@ -4,6 +4,7 @@
         "browser": true
     },
     "extends": [
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
         "plugin:import/errors",
         "plugin:import/typescript",
         "plugin:jsx-a11y/recommended",
@@ -55,5 +56,10 @@
                 "asyncArrow": "always"
             }
         ]
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
     }
 }

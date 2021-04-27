@@ -3,4 +3,9 @@
 libs/apis/proto/api.d.ts
 libs/apis/proto/api.js
 libs/apis/proto/api.json
+libs/polkadot/interfaces/*
+libs/polkadot/interfaces/phalaPoc4/*
+!libs/polkadot/interfaces/definitions.ts
+!libs/polkadot/interfaces/phalaPoc4
+!libs/polkadot/interfaces/phalaPoc4/definitions.ts
 node_modules

@@ -1,1 +1,1 @@
-export const endpoint = 'wss://poc3a.phala.network/ws'
+export const endpoint = 'wss://poc4.phala.network/ws'

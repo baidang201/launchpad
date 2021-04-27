@@ -1,23 +1,25 @@
 import * as ECharts from 'echarts'
-import { EChartsOption } from 'echarts'
+import { DatasetComponentOption, EChartsOption } from 'echarts'
 import { useEffect, useMemo, useState } from 'react'
 
-// TODO: performance optimization
-/*
-    chart configuration (axes, styling, etc.) should be set only once, via `echarts.init`
-    following setOption should update only datasets
-*/
+interface ChartProps {
+    dataset?: DatasetComponentOption[]
+    options: EChartsOption
+}
 
-export function Chart({ options, ...props }: { options: EChartsOption } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement
->): JSX.Element {
+export function Chart({ dataset, options, ...props }: ChartProps & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element {
     const [echartsElement, setEchartsElement] = useState<HTMLDivElement | null>(null)
-    const echarts = useMemo(() => echartsElement === null ? null : ECharts.init(echartsElement), [echartsElement])
+    const echarts = useMemo(() => {
+        if (echartsElement === null) {
+            return
+        }
 
-    useEffect(() => {
-        // update EChart options
+        const instance = ECharts.getInstanceByDom(echartsElement) ?? ECharts.init(echartsElement)
+        instance?.setOption(options)
+        return instance
+    }, [echartsElement, options])
 
-        echarts?.setOption(options)
-    }, [echarts, options])
+    useEffect(() => { echarts?.setOption({ dataset }) }, [echarts, dataset])
 
     useEffect(() => {
         // responsive resize
@@ -29,7 +31,7 @@ export function Chart({ options, ...props }: { options: EChartsOption } & React.
         const resizeListener = (): void => echarts?.resize()
 
         window.addEventListener('resize', resizeListener)
-        resizeListener() // also call once on mounted
+        typeof setImmediate === 'function' && setImmediate(() => { resizeListener() }) // also call once on mounted
 
         return () => {
             window.removeEventListener('resize', resizeListener)
@@ -42,7 +44,7 @@ export function Chart({ options, ...props }: { options: EChartsOption } & React.
 export const ChartWithDefaults = ({
     options,
     ...props
-}: { options: EChartsOption } & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element => {
+}: ChartProps & React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): JSX.Element => {
     const defaults: EChartsOption = {
         backgroundColor: '#000000',
 
