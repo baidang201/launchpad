@@ -9,14 +9,14 @@ import { createStyletron } from '../libs/styletron'
 import styles from '../styles/pages/_app.module.css'
 import { endpoint as PhalaEndpoint } from '../utils/polkadot'
 
-const ApiEnabler: React.FC = () => {
-    const { enableApi } = usePolkadot()
+const PolkadotEnabler: React.FC = () => {
+    const { enableApi, enableWeb3 } = usePolkadot()
     useEffect(() => {
-        enableApi().catch(() => {
-            // TODO: maybe some telemetry?
-            // TODO: reflect API enable error on UI
-        })
-    }, [enableApi])
+        if (typeof window !== 'undefined') {
+            enableApi().catch((error) => console.error(`Failed to enable Phala API: ${(error as Error)?.message ?? error}`))
+            enableWeb3().catch((error) => console.error(`Failed to enable Polkadot web3: ${(error as Error)?.message ?? error}`))
+        }
+    }, [enableApi, enableWeb3])
 
     return (<></>)
 }
@@ -52,7 +52,7 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
                     </div>
                 </StyletronProvider>
             </QueryClientProvider>
-            <ApiEnabler />
+            <PolkadotEnabler />
         </PolkadotProvider>
     )
 }
