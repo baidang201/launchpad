@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "yarn build:pbjs && yarn build:pbts && yarn typegen:defs && yarn typegen:meta && next build",
     "build:pbjs": "pbjs -t static-module -o ./libs/apis/proto/api.js ../proto/message.proto",
     "build:pbjs-json": "pbjs -t json -o ./libs/apis/proto/api.json ../proto/message.proto",
     "build:pbts": "pbjs -t static-module ../proto/message.proto | pbts -o ./libs/apis/proto/api.d.ts -",
