@@ -1,8 +1,9 @@
+import { BlockProps } from 'baseui/block'
 import { Button } from 'baseui/button'
+import { FlexGrid, FlexGridItem } from 'baseui/flex-grid'
 import { Alert as AlertIcon, Check as CheckIcon, Delete as DeleteIcon } from 'baseui/icon'
 import { Spinner } from 'baseui/spinner'
 import { StatefulTooltip } from 'baseui/tooltip'
-import { DisplayMedium as Display, LabelMedium as Label } from 'baseui/typography'
 import React, { PropsWithChildren } from 'react'
 import { WorkerDetails } from '../../libs/apis'
 import styles from './information.module.css'
@@ -24,41 +25,60 @@ const WorkerInformationItem: React.FC<WorkerInformationItemProps> = ({
     )
 }
 
-export const WorkerInformation: React.FC<WorkerInformationProps | undefined> = ({ worker }: WorkerInformationProps) => {
-    const onlineStatus = (worker?.online ?? false)
-        ? <><CheckIcon /> 在线</>
-        : <><AlertIcon /> 离线</>
+const blockProps: BlockProps = {
+    alignItems: 'center',
+    height: 'scale1000',
+    justifyContent: 'center',
+    overrides: {
+        Block: {
+            style: () => ({ flexGrow: 0 })
+        }
+    }
+}
 
-    const favouriteStatus = (worker?.favourited ?? false)
-        ? <StatefulTooltip content="已收藏"><Button kind="minimal" startEnhancer={<CheckIcon />}></Button></StatefulTooltip>
-        : <StatefulTooltip content="收藏"><Button kind="minimal" startEnhancer={<DeleteIcon />}></Button></StatefulTooltip>
+export const WorkerInformation: React.FC<WorkerInformationProps | undefined> = ({ worker }: WorkerInformationProps) => {
+    const onlineStatus =
+        typeof worker?.online === 'boolean'
+            ? (worker.online
+                ? <><CheckIcon /> 在线</>
+                : <><AlertIcon /> 离线</>)
+            : <Spinner />
+
+    const favouriteStatus =
+        typeof worker?.favourited === 'boolean'
+            ? (worker.favourited
+                ? <StatefulTooltip content="已收藏"><Button startEnhancer={<CheckIcon />}></Button></StatefulTooltip>
+                : <StatefulTooltip content="收藏"><Button startEnhancer={<DeleteIcon />}></Button></StatefulTooltip>)
+            : <Spinner />
 
     return (
-        <WorkerInformationItem label="Stash">{worker?.stash ?? <Spinner />}</WorkerInformationItem>
-        // <Card>
-        //     <Row align="middle" gutter={32}>
-        //         <Col flex={1}>
-        //         </Col>
-        //         <Col flex={1}>
-        //             <WorkerInformationItem label="Controller">{worker?.controller ?? <LoadingOutlined />}</WorkerInformationItem>
-        //         </Col>
-        //     </Row>
+        <>
+            <FlexGrid flexGridColumnGap="1000scale">
+                <FlexGridItem {...blockProps}>
+                    <WorkerInformationItem label="Stash">{worker?.stash ?? <Spinner />}</WorkerInformationItem>
+                </FlexGridItem>
+                <FlexGridItem {...blockProps}>
+                    <WorkerInformationItem label="Controller">{worker?.controller ?? <Spinner />}</WorkerInformationItem>
+                </FlexGridItem>
+            </FlexGrid>
 
-        //     <Divider type="horizontal" />
-
-        //     <Row align="middle" gutter={32} justify="space-between">
-        //         <Col flex="none">
-        //             <Space size={32}>
-        //                 <WorkerInformationItem label="机器分">{worker?.minerScore ?? <LoadingOutlined />}</WorkerInformationItem>
-        //                 <WorkerInformationItem label="任务分">{worker?.taskScore ?? <LoadingOutlined />}</WorkerInformationItem>
-        //                 <WorkerInformationItem label="状态">{onlineStatus ?? <LoadingOutlined />}</WorkerInformationItem>
-        //             </Space>
-        //         </Col>
-        //         <Col flex="none">
-        //             {favouriteStatus}
-        //             <Button size="large">抵押</Button>
-        //         </Col>
-        //     </Row>
-        // </Card>
+            <FlexGrid flexGridColumnGap="1000scale">
+                <FlexGridItem {...blockProps}>
+                    <WorkerInformationItem label="机器分">{worker?.minerScore ?? <Spinner />}</WorkerInformationItem>
+                </FlexGridItem>
+                <FlexGridItem {...blockProps}>
+                    <WorkerInformationItem label="任务分">{worker?.taskScore ?? <Spinner />}</WorkerInformationItem>
+                </FlexGridItem>
+                <FlexGridItem {...blockProps}>
+                    <WorkerInformationItem label="状态">{onlineStatus}</WorkerInformationItem>
+                </FlexGridItem>
+                <FlexGridItem {...blockProps}>
+                    <WorkerInformationItem label="收藏">{favouriteStatus}</WorkerInformationItem>
+                </FlexGridItem>
+                <FlexGridItem {...blockProps}>
+                    <Button onClick={() => alert('click')}>抵押</Button>
+                </FlexGridItem>
+            </FlexGrid>
+        </>
     )
 }
