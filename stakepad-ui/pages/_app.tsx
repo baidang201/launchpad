@@ -8,7 +8,7 @@ import { ApiPromiseProvider, AppName, Web3Provider } from '../libs/polkadot'
 import { usePolkadot } from '../libs/polkadot/context'
 import { createStyletron } from '../libs/styletron'
 import styles from '../styles/pages/_app.module.css'
-import { endpoint as PhalaEndpoint } from '../utils/polkadot'
+import { endpoint as PhalaEndpoint } from '../libs/config'
 
 const App: AppComponent = ({ Component, pageProps }: AppProps) => {
     const client = useMemo(() => new QueryClient(), [])
