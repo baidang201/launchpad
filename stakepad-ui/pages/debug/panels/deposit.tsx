@@ -1,8 +1,22 @@
 import { ReactElement } from 'react'
-import { DepositFundPanel } from '../../../components/deposits/DepositFundPanel'
+import { DepositPanel } from '../../../components/deposits/DepositPanel'
+import { Card, CardOverrides } from 'baseui/card'
 
 const DepositFundPanelPage = (): ReactElement => {
-    return (<DepositFundPanel />)
+    const cardOverrides: CardOverrides = {
+        Root: {
+            style: {
+                margin: '2em auto',
+                maxWidth: '32em'
+            }
+        }
+    }
+
+    return (
+        <Card overrides={cardOverrides}>
+            <DepositPanel />
+        </Card>
+    )
 }
 
 export default DepositFundPanelPage

@@ -11,11 +11,11 @@ interface DepositQueryResult {
 
 const queryKey = uuidv4()
 
-export function useDepositQuery(accountId: AccountId): UseQueryResult<BalanceOf> {
+export function useDepositQuery(accountId?: AccountId): UseQueryResult<BalanceOf> {
     const { api } = useApiPromise()
     return useQuery(
         [queryKey, accountId, api],
-        async () => (await api?.query.miningStaking.wallet(accountId))?.unwrapOrDefault()
+        async () => accountId !== undefined ? (await api?.query.miningStaking.wallet(accountId))?.unwrapOrDefault() : undefined
     )
 }
 
