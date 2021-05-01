@@ -1,15 +1,14 @@
 import { Poc4 } from '@phala/typedefs'
 import { AppNavBar, NavItemT, setItemActive } from 'baseui/app-nav-bar'
+import { LayersManager } from 'baseui/layer'
 import { AppComponent, AppProps } from 'next/dist/next-server/lib/router/router'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { Provider as StyletronProvider } from 'styletron-react'
+import { endpoint as PhalaEndpoint } from '../libs/config'
 import { ApiPromiseProvider, AppName, Web3Provider } from '../libs/polkadot'
-import { usePolkadot } from '../libs/polkadot/context'
 import { createStyletron } from '../libs/styletron'
 import styles from '../styles/pages/_app.module.css'
-import { endpoint as PhalaEndpoint } from '../libs/config'
-import { LayersManager } from 'baseui/layer'
 
 const App: AppComponent = ({ Component, pageProps }: AppProps) => {
     const client = useMemo(() => new QueryClient(), [])
