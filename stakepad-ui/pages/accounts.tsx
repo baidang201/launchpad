@@ -1,79 +1,84 @@
-import { ApiPromise } from '@polkadot/api'
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { AccountId } from '@polkadot/types/interfaces'
 import { SIZE as SpinnerSize, StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
-import { ReactElement, useMemo } from 'react'
-import { useQuery, UseQueryResult } from 'react-query'
-import { usePolkadot } from '../libs/polkadot'
-import { StashInfo } from '../libs/polkadot/interfaces'
+import { PropsWithChildren, ReactElement, useMemo } from 'react'
+import { useApiPromise, useWeb3 } from '../libs/polkadot'
+import { useAccountQuery } from '../libs/queries/useAccountQuery'
+import { useDepositQuery } from '../libs/queries/useBalanceQuery'
+import { useStashInfoQuery } from '../libs/queries/useStashInfoQuery'
 
 const LoadingSpinner = (): ReactElement => <StyledSpinnerNext $size={SpinnerSize.small} />
 
-const useQueryStashState = (accountId: AccountId, api?: ApiPromise): UseQueryResult<StashInfo | undefined> => useQuery(
-    ['polkadot', 'query', 'phala', 'stashState', accountId, api === undefined], async () => {
-        const result = await api?.query.phala.stashState(accountId)
-        // console.log('account=', encodeAddress(accountId), ', result.isEmpty=', result?.isEmpty)
-        // console.log(result)
-        // console.log(result?.payoutPrefs.target.toHex())
-        return result
+const LoadingColumn = ({ children }: PropsWithChildren<{}>): ReactElement => {
+    if (children === undefined) {
+        return (<LoadingSpinner />)
     }
-)
 
-const StashStateColumn = ({ accountId, children }: {
-    accountId: AccountId
-    children: (info: StashInfo) => ReactElement<any>
-}): ReactElement => {
-    const { api } = usePolkadot()
-    const { data: stashState } = useQueryStashState(accountId, api)
+    if (children === null) {
+        return (<>n/a</>)
+    }
 
-    return stashState !== undefined ? children(stashState) : <LoadingSpinner />
+    return <>{children}</>
 }
 
-const WalletBalance = ({ accountId }: { accountId: AccountId }): ReactElement<any> => {
-    const { api } = usePolkadot()
-    const { data: balance } = useQuery(
-        ['polkadot', 'query', 'miningStaking', 'wallet', accountId, api === undefined], async () => {
-            const result = await api?.query.miningStaking.wallet(accountId)
-            console.log('account=', encodeAddress(accountId), ', result=', result)
-            return result?.unwrapOr(undefined)
-        }
-    )
+const PayoutAddressColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
+    const { api } = useApiPromise()
+    const { data } = useStashInfoQuery(accountId, api)
+    const target = data?.payoutPrefs.target
+    if (target !== undefined) {
+        return (<LoadingColumn>{encodeAddress(target)}</LoadingColumn>)
+    } else {
+        return (<LoadingColumn />)
+    }
+}
 
-    return balance === undefined ? (<LoadingSpinner />) : <>{balance}</>
+const AccountBalanceColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
+    const { data: account } = useAccountQuery(accountId)
+    return (<LoadingColumn>{account?.data.free.toHuman()}</LoadingColumn>)
+}
+
+const DepositBalanceColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
+    const { data } = useDepositQuery(accountId)
+    return (<LoadingColumn>{data?.toHuman()}</LoadingColumn>)
 }
 
 const Accounts = (): ReactElement => {
-    const { accounts, readystate } = usePolkadot()
+    const { accounts, readystate: web3Readystate } = useWeb3()
 
-    const accountIds: AccountId[] = useMemo(() => accounts?.map(account => {
-        return decodeAddress(account.address) as AccountId
-    }) ?? [], [accounts])
+    const accountIds = useMemo(() => accounts?.map(account => decodeAddress(account.address)) ?? [], [accounts])
 
     return (
         <>
             <TableBuilder
                 data={accountIds}
                 emptyMessage="没有账号"
-                isLoading={readystate !== 'ready'}
-                loadingMessage="读取中"
+                isLoading={web3Readystate !== 'ready'}
+                loadingMessage="正在等待 polkadot{.js} 浏览器扩展"
             >
-                <TableBuilderColumn header="账户">{(accountId: AccountId) => encodeAddress(accountId)}</TableBuilderColumn>
+                <TableBuilderColumn header="账户">
+                    {(accountId: AccountId) => encodeAddress(accountId)}
+                </TableBuilderColumn>
 
                 <TableBuilderColumn header="收益地址">
-                    {(accountId: AccountId) => (
-                        <StashStateColumn accountId={accountId}>{({ payoutPrefs: { target } }) => {
-                            return <>{target.isEmpty ? 'n/a' : encodeAddress(target)}</>
-                        }}</StashStateColumn>)}
+                    {(accountId: AccountId) => <PayoutAddressColumn accountId={accountId} />}
                 </TableBuilderColumn>
 
                 <TableBuilderColumn header="账户钱包余额">
-                    {(accountId: AccountId) => <WalletBalance accountId={accountId} />}
+                    {(accountId: AccountId) => <AccountBalanceColumn accountId={accountId} />}
                 </TableBuilderColumn>
 
-                <TableBuilderColumn header="挖矿储值余额">{() => <LoadingSpinner />}</TableBuilderColumn>
-                <TableBuilderColumn header="抵押总额">{() => <LoadingSpinner />}</TableBuilderColumn>
-                <TableBuilderColumn header="抵押机器数量">{() => <LoadingSpinner />}</TableBuilderColumn>
+                <TableBuilderColumn header="挖矿储值余额">
+                    {(accountId: AccountId) => <DepositBalanceColumn accountId={accountId} />}
+                </TableBuilderColumn>
+
+                <TableBuilderColumn header="抵押总额">
+                    {() => <LoadingSpinner />}
+                </TableBuilderColumn>
+
+                <TableBuilderColumn header="抵押机器数量">
+                    {() => <LoadingSpinner />}
+                </TableBuilderColumn>
             </TableBuilder>
         </>
     )
