@@ -9,6 +9,7 @@ import { usePolkadot } from '../libs/polkadot/context'
 import { createStyletron } from '../libs/styletron'
 import styles from '../styles/pages/_app.module.css'
 import { endpoint as PhalaEndpoint } from '../libs/config'
+import { LayersManager } from 'baseui/layer'
 
 const App: AppComponent = ({ Component, pageProps }: AppProps) => {
     const client = useMemo(() => new QueryClient(), [])
@@ -31,15 +32,17 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
             <Web3Provider originName={AppName}>
                 <QueryClientProvider client={client}>
                     <StyletronProvider value={styletron}>
-                        <AppNavBar
-                            mainItems={mainItems}
-                            onMainItemSelect={item => setMainItems(prev => setItemActive(prev, item))}
-                            title="Stakepad"
-                        />
+                        <LayersManager>
+                            <AppNavBar
+                                mainItems={mainItems}
+                                onMainItemSelect={item => setMainItems(prev => setItemActive(prev, item))}
+                                title="Stakepad"
+                            />
 
-                        <div className={styles.container}>
-                            <Component {...pageProps} />
-                        </div>
+                            <div className={styles.container}>
+                                <Component {...pageProps} />
+                            </div>
+                        </LayersManager>
                     </StyletronProvider>
                 </QueryClientProvider>
             </Web3Provider>
