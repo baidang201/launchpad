@@ -19,10 +19,13 @@ import { AccountSelect } from '../accounts/AccountSelector'
 // const LoadingSpinner = (): ReactElement => <StyledSpinnerNext $as="span" $size={SpinnerSize.small} />
 const LoadingSpinner = (): ReactElement => <>Loading...</>
 
-export const DepositPanel = (): ReactElement => {
-    const [accountId, setAccountId] = useState<AccountId>()
+export const DepositPanel = ({ defaultAccount, defaultMode }: {
+    defaultAccount?: AccountId
+    defaultMode?: 'deposit' | 'withdraw'
+}): ReactElement => {
+    const [accountId, setAccountId] = useState<AccountId | undefined>(defaultAccount ?? undefined)
     const [amount, setAmount] = useState<number>()
-    const [mode, setMode] = useState<'deposit' | 'withdraw'>('deposit')
+    const [mode, setMode] = useState<'deposit' | 'withdraw'>(defaultMode ?? 'deposit')
     const [extrinsicStatus, setExtrinsicStatus] = useState<ExtrinsicStatus>()
 
     const { data: accountInfo } = useAccountQuery(accountId)
