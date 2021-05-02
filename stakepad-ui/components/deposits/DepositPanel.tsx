@@ -66,7 +66,7 @@ export const DepositPanel = (): ReactElement => {
     ), [accountId, amount, apiReadystate, web3Readystate])
 
     const handleAmountChange = (newValue: string): void => {
-        setAmount(/^\d+(\.\d+)?$/.test(newValue) ? parseFloat(newValue) : undefined)
+        setAmount(/^\d+(\.\d{0,4})?$/.test(newValue) ? parseFloat(newValue) : undefined)
     }
 
     const handleSubmit = (): void => {
@@ -79,7 +79,7 @@ export const DepositPanel = (): ReactElement => {
                 console.log('extrinsic status=', status)
                 setExtrinsicStatus(status)
             },
-            value: new BN(amount) as BalanceOf
+            value: new BN(amount * 1e4).mul(new BN(1e8)) as BalanceOf
         }).catch(error => { throw error })
     }
 
