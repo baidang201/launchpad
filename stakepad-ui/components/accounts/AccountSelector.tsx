@@ -3,8 +3,9 @@ import { Option as SelectOption, Select } from 'baseui/select'
 import { ReactElement, ReactNode, useState } from 'react'
 import { useWeb3 } from '../../libs/polkadot'
 
-export const AccountSelect = ({ caption, label, onChange }: {
+export const AccountSelect = ({ caption, error, label, onChange }: {
     caption: ReactNode
+    error: boolean
     label: ReactNode
     onChange: (account?: string) => void
 }): ReactElement => {
@@ -22,6 +23,7 @@ export const AccountSelect = ({ caption, label, onChange }: {
     return (
         <FormControl caption={caption} label={label}>
             <Select
+                error={error}
                 isLoading={readystate !== 'ready'}
                 onChange={value => {
                     setValue(value.value)
