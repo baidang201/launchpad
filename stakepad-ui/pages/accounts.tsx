@@ -1,8 +1,13 @@
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { AccountId } from '@polkadot/types/interfaces'
+import { Button, KIND as ButtonKind, SIZE as ButtonSize } from 'baseui/button'
+import { Overflow as OverflowIcon } from 'baseui/icon'
+import { ItemT, StatefulMenu } from 'baseui/menu'
+import { StatefulPopover } from 'baseui/popover'
 import { SIZE as SpinnerSize, StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
-import { PropsWithChildren, ReactElement, useMemo } from 'react'
+import { useRouter } from 'next/router'
+import React, { PropsWithChildren, ReactElement, useMemo } from 'react'
 import { useApiPromise, useWeb3 } from '../libs/polkadot'
 import { useAccountQuery } from '../libs/queries/useAccountQuery'
 import { useDepositQuery } from '../libs/queries/useBalanceQuery'
@@ -43,6 +48,36 @@ const DepositBalanceColumn = ({ accountId }: { accountId: AccountId }): ReactEle
     return (<LoadingColumn>{data?.toHuman()}</LoadingColumn>)
 }
 
+interface OperationItemMenuItem {
+    action: () => void
+    label: string
+}
+
+const OperationMenu = ({ address }: { address: string }): ReactElement => {
+    const { push } = useRouter()
+
+    const items: ItemT[] = [{
+        action: () => { push(`/debug/panels/deposit?address=${address}`).catch(() => { }) },
+        label: '储值'
+    }, {
+        action: () => { push(`/debug/panels/withdraw?address=${address}`).catch(() => { }) },
+        label: '提取'
+    }]
+
+    const handleItemSelect = (item: OperationItemMenuItem, close: () => void): void => {
+        item.action()
+        close()
+    }
+
+    return (
+        <StatefulPopover content={({ close }) => (
+            <StatefulMenu items={items} onItemSelect={({ item }) => handleItemSelect(item as unknown as OperationItemMenuItem, close)} />
+        )} placement="auto" >
+            <Button kind={ButtonKind.minimal} size={ButtonSize.mini} startEnhancer={<OverflowIcon />} />
+        </StatefulPopover >
+    )
+}
+
 const Accounts = (): ReactElement => {
     const { accounts, readystate: web3Readystate } = useWeb3()
 
@@ -78,6 +113,10 @@ const Accounts = (): ReactElement => {
 
                 <TableBuilderColumn header="抵押机器数量">
                     {() => <LoadingSpinner />}
+                </TableBuilderColumn>
+
+                <TableBuilderColumn>
+                    {(accountId: AccountId) => <OperationMenu address={encodeAddress(accountId)} />}
                 </TableBuilderColumn>
             </TableBuilder>
         </>
