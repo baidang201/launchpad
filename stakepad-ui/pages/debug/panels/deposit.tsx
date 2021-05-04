@@ -1,8 +1,10 @@
+import { validateAddress } from '@polkadot/util-crypto'
 import { Card, CardOverrides } from 'baseui/card'
-import { ReactElement } from 'react'
+import { useRouter } from 'next/router'
+import { ReactElement, useMemo } from 'react'
 import { DepositPanel } from '../../../components/deposits/DepositPanel'
 
-const DepositFundPanelPage = (): ReactElement => {
+export const PanelPage = (defaultMode: 'deposit' | 'withdraw') => function DepositFundPanelPage(): ReactElement {
     const cardOverrides: CardOverrides = {
         Root: {
             style: {
@@ -12,11 +14,21 @@ const DepositFundPanelPage = (): ReactElement => {
         }
     }
 
+    const { query: { address } } = useRouter()
+
+    const defaultAddress = useMemo(() => {
+        try {
+            return (typeof address === 'string' && validateAddress(address)) ? address : undefined
+        } catch {
+            return undefined
+        }
+    }, [address])
+
     return (
         <Card overrides={cardOverrides}>
-            <DepositPanel />
+            <DepositPanel defaultAddress={defaultAddress} defaultMode={defaultMode} />
         </Card>
     )
 }
 
-export default DepositFundPanelPage
+export default PanelPage('deposit')
