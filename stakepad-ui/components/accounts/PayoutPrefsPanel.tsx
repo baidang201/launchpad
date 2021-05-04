@@ -1,47 +1,90 @@
-import { Check as CheckIcon } from 'baseui/icon';
-import { Button } from 'baseui/button'
 import { decodeAddress, encodeAddress } from '@polkadot/keyring'
 import { AccountId } from '@polkadot/types/interfaces'
+import { Button } from 'baseui/button'
 import { FormControl } from 'baseui/form-control'
+import { Alert as AlertIcon, Check as CheckIcon } from 'baseui/icon'
+import { Input } from 'baseui/input'
+import { KIND as NotificationKind, Notification } from 'baseui/notification'
 import { Radio, RadioGroup } from 'baseui/radio'
-import React, { ReactElement, ReactNode, useMemo, useState } from 'react'
+import React, { ReactElement, ReactNode, useEffect, useMemo, useState } from 'react'
+import { setPayoutPrefs } from '../../libs/extrinsics/payoutPrefs'
 import { useApiPromise } from '../../libs/polkadot'
+import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
+import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 import { ValidatedAccountInput } from './AccountInput'
 import { InjectedAccountSelect } from './AccountSelector'
-import { Input } from 'baseui/input';
-import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics';
 
-export const PayoutPrefsPanel = (): ReactElement => {
+export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }): ReactElement => {
     const { api } = useApiPromise()
 
-    /* current states */
+    const [account, setAccount] = useState<string | undefined>(defaultAddress) // selected stash account
 
-    const [account, setAccount] = useState<string>()
+    /* current on-chain states */
+
     const accountId = useMemo(() => account === undefined ? undefined : decodeAddress(account) as AccountId, [account])
     const { data: stashInfo } = useStashInfoQuery(accountId, api)
     const currentPayoutTarget = useMemo(() => stashInfo === undefined ? undefined : encodeAddress(stashInfo.payoutPrefs.target), [stashInfo])
 
+    /* target on-chain states */
+
     const [mode, setMode] = useState<'keep' | 'stash' | 'select' | 'input'>('keep')
 
-    /* target stashInfo */
-
     const [newPayoutTarget, setNewPayoutTarget] = useState<string>()
-    // const [newCommissionRate, setNewCommissionRate] = useState<number>()
+    const [newCommissionRate, setNewCommissionRate] = useState<number>()
 
-    /* display */
+    /* current component states */
 
     const accountSelectCaption = useMemo<ReactNode>(() => (
         <>{account === undefined ? '选择一个账户' : undefined}</>
     ), [account])
 
-    const extrinsicStatus = useState<ExtrinsicStatus>()
+    const [extrinsicStatus, setExtrinsicStatus] = useState<ExtrinsicStatus | undefined>()
+    const extrinsicStatusNotification = useMemo(() => <ExtrinsicStatusNotification status={extrinsicStatus} />, [extrinsicStatus])
+
+    const [lastError, setLastError] = useState<string | undefined>()
+    const lastErrorNotification = useMemo(() => {
+        return lastError === undefined ? <></> : <Notification kind={NotificationKind.negative}><AlertIcon />{lastError}</Notification>
+    }, [lastError])
 
     /* handlers */
 
+    useEffect(() => {
+        /* update target payout target */
+
+        if (mode === 'keep') {
+            setNewPayoutTarget(currentPayoutTarget === undefined ? undefined : encodeAddress(currentPayoutTarget))
+        }
+
+        if (mode === 'stash') {
+            setNewPayoutTarget(account)
+        }
+
+        // NOTE: 'select' and 'input' will update target state on their owns
+
+        /* update target commission rate */
+
+        setNewCommissionRate(stashInfo?.payoutPrefs.commission.toNumber() ?? undefined) // TODO: accept input
+    }, [account, currentPayoutTarget, mode, stashInfo])
+
     const handleModeChange = (value: string): void => { setMode(value as any) }
 
-    const handleSubmit = () => { }
+    const handleSubmit = (): void => {
+        if (account === undefined || api === undefined || newCommissionRate === undefined || newPayoutTarget === undefined) {
+            return
+        }
+
+        setPayoutPrefs({
+            account,
+            api,
+            commissionRate: newCommissionRate,
+            statusCallback: status => setExtrinsicStatus(status),
+            target: decodeAddress(newPayoutTarget) as AccountId
+        }).catch(error => {
+            setExtrinsicStatus('invalid')
+            setLastError((error as Error)?.message ?? error)
+        })
+    }
 
     return (
         <>
@@ -65,7 +108,7 @@ export const PayoutPrefsPanel = (): ReactElement => {
             </FormControl>
 
             <FormControl label="分润率">
-                <Input disabled value={stashInfo?.payoutPrefs.commission.toString()} />
+                <Input disabled onChange={() => { }} value={stashInfo?.payoutPrefs.commission.toString()} />
             </FormControl>
 
             {mode === 'select' && (
@@ -80,6 +123,9 @@ export const PayoutPrefsPanel = (): ReactElement => {
             )}
 
             <Button onClick={handleSubmit} startEnhancer={<CheckIcon />}>Submit</Button>
+
+            {extrinsicStatusNotification}
+            {lastErrorNotification}
         </>
     )
 }
