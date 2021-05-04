@@ -1,37 +1,41 @@
 import { validateAddress } from '@polkadot/util-crypto'
 import { FormControl } from 'baseui/form-control'
 import { Input } from 'baseui/input'
-import { ReactElement, useState } from 'react'
+import { ReactElement, useEffect, useMemo, useState } from 'react'
 
 const defaultValidator = (value: string): boolean => { try { return validateAddress(value) } catch { return false } }
 
 export const ValidatedAccountInput = (props: {
+    defaultAddress?: string
     label?: string
     onChange?: (address?: string) => void
     validate?: (value: string) => boolean
 }): ReactElement => {
-    const { label, onChange } = props
-    const validate = props.validate ?? defaultValidator
+    const { defaultAddress, label, onChange } = props
+    const validate = useMemo(() => props.validate ?? defaultValidator, [props.validate])
 
+    const [address, setAddress] = useState<string>('')
     const [error, setError] = useState<string>()
 
-    const handleInputChange = (value: string): void => {
-        const validation = validate(value)
+    useEffect(() => {
+        const validation = validate(address)
         setError(validation
             ? undefined
-            : value.length === 0
+            : address.length === 0
                 ? 'Address is required'
                 : 'Malformed address')
-        onChange?.(validation ? value : undefined)
-    }
+        onChange?.(validation ? address : undefined)
+    }, [address, onChange, validate])
+
+    useEffect(() => setAddress(defaultAddress ?? ''), [defaultAddress])
 
     return (
         <FormControl error={error} label={label}>
             <Input
                 clearable
                 error={error !== undefined}
-                inputRef={input => handleInputChange(input?.value ?? '')} // trigger validation on first mount
-                onChange={e => handleInputChange(e.currentTarget.value)}
+                onChange={e => setAddress(e.currentTarget.value)}
+                value={address}
             />
         </FormControl >
     )
