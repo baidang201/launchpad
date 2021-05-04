@@ -67,7 +67,7 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
 
     const handleCommissionRateChange = (value: string): void => {
         const parsedValue = parseInt(value)
-        setNewCommissionRate((parsedValue >= 0 && parsedValue <= 100) ? parsedValue : undefined)
+        setNewCommissionRate((parsedValue >= 0 && parsedValue <= 100) ? parsedValue : 0)
     }
 
     const handleModeChange = (value: string): void => { setMode(value as any) }
