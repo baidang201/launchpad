@@ -60,10 +60,15 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
     }, [account, currentPayoutTarget, mode, stashInfo])
 
     useEffect(() => {
-        if (stashInfo !== undefined) {
+        if (stashInfo !== undefined && newCommissionRate === undefined) {
             setNewCommissionRate(stashInfo.payoutPrefs.commission.toNumber())
         }
-    }, [stashInfo])
+    }, [newCommissionRate, stashInfo])
+
+    const handleCommissionRateChange = (value: string): void => {
+        const parsedValue = parseInt(value)
+        setNewCommissionRate((parsedValue >= 0 && parsedValue <= 100) ? parsedValue : undefined)
+    }
 
     const handleModeChange = (value: string): void => { setMode(value as any) }
 
@@ -72,16 +77,13 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
             return
         }
 
-        const props = {
+        setPayoutPrefs({
             account,
             api,
             commissionRate: newCommissionRate,
             statusCallback: (status: ExtrinsicStatus) => setExtrinsicStatus(status),
             target: decodeAddress(newPayoutTarget) as AccountId
-        }
-        console.log(props)
-
-        setPayoutPrefs(props).catch(error => {
+        }).catch(error => {
             setExtrinsicStatus('invalid')
             setLastError((error as Error)?.message ?? error)
         })
@@ -107,10 +109,6 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
                 </RadioGroup>
             </FormControl>
 
-            <FormControl label="分润率">
-                <Input disabled onChange={() => { }} value={stashInfo?.payoutPrefs.commission.toString() ?? ''} />
-            </FormControl>
-
             {mode === 'select' && (
                 <InjectedAccountSelect
                     defaultAddress={account}
@@ -120,11 +118,23 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
             )}
 
             {mode === 'input' && (
-                <ValidatedAccountInput onChange={account => setNewPayoutTarget(account)} />
+                <ValidatedAccountInput
+                    disabled={extrinsicStatus !== undefined}
+                    onChange={account => setNewPayoutTarget(account)}
+                />
             )}
 
+            <FormControl label="分润率">
+                <Input
+                    disabled={extrinsicStatus !== undefined}
+                    error={newCommissionRate === undefined}
+                    onChange={e => handleCommissionRateChange(e.currentTarget.value)}
+                    value={newCommissionRate}
+                />
+            </FormControl>
+
             <Button
-                disabled={account === undefined || api === undefined || newCommissionRate === undefined || newPayoutTarget === undefined}
+                disabled={account === undefined || api === undefined || extrinsicStatus !== undefined || newCommissionRate === undefined || newPayoutTarget === undefined}
                 onClick={handleSubmit}
                 startEnhancer={<CheckIcon />}
             >Submit</Button>

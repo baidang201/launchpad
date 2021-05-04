@@ -7,11 +7,12 @@ const defaultValidator = (value: string): boolean => { try { return validateAddr
 
 export const ValidatedAccountInput = (props: {
     defaultAddress?: string
+    disabled?: boolean
     label?: string
     onChange?: (address?: string) => void
     validate?: (value: string) => boolean
 }): ReactElement => {
-    const { defaultAddress, label, onChange } = props
+    const { defaultAddress, disabled, label, onChange } = props
     const validate = useMemo(() => props.validate ?? defaultValidator, [props.validate])
 
     const [address, setAddress] = useState<string>('')
@@ -33,6 +34,7 @@ export const ValidatedAccountInput = (props: {
         <FormControl error={error} label={label}>
             <Input
                 clearable
+                disabled={disabled}
                 error={error !== undefined}
                 onChange={e => setAddress(e.currentTarget.value)}
                 value={address}
