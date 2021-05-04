@@ -62,6 +62,9 @@ const OperationMenu = ({ address }: { address: string }): ReactElement => {
     }, {
         action: () => { push(`/debug/panels/withdraw?address=${address}`).catch(() => { }) },
         label: '提取'
+    }, {
+        action: () => { push(`/debug/panels/payoutPrefs?address=${address}`).catch(() => { }) },
+        label: '收益偏好'
     }]
 
     const handleItemSelect = (item: OperationItemMenuItem, close: () => void): void => {
