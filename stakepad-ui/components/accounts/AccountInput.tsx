@@ -14,7 +14,6 @@ export const ValidatedAccountInput = (props: {
     const validate = props.validate ?? defaultValidator
 
     const [error, setError] = useState<string>()
-    const [validation, setValidation] = useState<boolean>(false)
 
     const handleInputChange = (value: string): void => {
         const validation = validate(value)
@@ -23,12 +22,11 @@ export const ValidatedAccountInput = (props: {
             : value.length === 0
                 ? 'Address is required'
                 : 'Malformed address')
-        setValidation(validation)
         onChange?.(validation ? value : undefined)
     }
 
     return (
-        <FormControl error={error} label={label} positive={validation}>
+        <FormControl error={error} label={label}>
             <Input
                 clearable
                 error={error !== undefined}
