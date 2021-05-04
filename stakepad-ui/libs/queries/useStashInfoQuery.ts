@@ -6,9 +6,9 @@ import { StashInfo } from '../polkadot/interfaces'
 
 const useStashInfoQueryId = uuidv4()
 
-export const useStashInfoQuery = (accountId: AccountId, api?: ApiPromise): UseQueryResult<StashInfo> => {
+export const useStashInfoQuery = (accountId?: AccountId, api?: ApiPromise): UseQueryResult<StashInfo> => {
     return useQuery(
         [useStashInfoQueryId, accountId, api],
-        async () => await api?.query.phala.stashState(accountId)
+        async () => accountId === undefined ? undefined : await api?.query.phala.stashState(accountId)
     )
 }

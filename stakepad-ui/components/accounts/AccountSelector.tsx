@@ -1,12 +1,13 @@
 import { FormControl } from 'baseui/form-control'
-import { Option as SelectOption, Select } from 'baseui/select'
+import { OnChangeParams, Option as SelectOption, Select } from 'baseui/select'
 import { ReactElement, ReactNode, useState } from 'react'
 import { useWeb3 } from '../../libs/polkadot'
 
-export const AccountSelect = ({ caption, error, label, onChange }: {
-    caption: ReactNode
+export const InjectedAccountSelect = ({ caption, error, label, onChange }: {
+    caption?: ReactNode
+    label?: ReactNode
+
     error: boolean
-    label: ReactNode
     onChange: (account?: string) => void
 }): ReactElement => {
     const { accounts, readystate } = useWeb3()
@@ -18,19 +19,21 @@ export const AccountSelect = ({ caption, error, label, onChange }: {
         label: accountId
     }))
 
-    const [value, setValue] = useState<readonly SelectOption[]>([])
+    const [selectValue, setSelectValue] = useState<readonly SelectOption[]>([])
+
+    const handleSelectChange = ({ value }: OnChangeParams): void => {
+        setSelectValue(value)
+        onChange(value[0]?.id?.toString())
+    }
 
     return (
         <FormControl caption={caption} label={label}>
             <Select
                 error={error}
                 isLoading={readystate !== 'ready'}
-                onChange={value => {
-                    setValue(value.value)
-                    onChange(value.value[0]?.id?.toString())
-                }}
+                onChange={handleSelectChange}
                 options={options}
-                value={value}
+                value={selectValue}
             />
         </FormControl>
     )
