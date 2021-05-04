@@ -14,7 +14,7 @@ import { useApiPromise, useWeb3 } from '../../libs/polkadot'
 import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
 import { useAccountQuery } from '../../libs/queries/useAccountQuery'
 import { useDepositQuery } from '../../libs/queries/useBalanceQuery'
-import { InjectedAccountSelect } from '../accounts/AccountSelector'
+import { InjectedAccountSelect } from '../accounts/AccountSelect'
 import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 
 const LoadingText = (): ReactElement => <>Loading...</>

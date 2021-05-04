@@ -1,6 +1,6 @@
 import { FormControl } from 'baseui/form-control'
 import { OnChangeParams, Option as SelectOption, Select } from 'baseui/select'
-import { ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { ReactElement, ReactNode, useEffect, useMemo, useState } from 'react'
 import { useWeb3 } from '../../libs/polkadot'
 
 export const InjectedAccountSelect = ({ caption, defaultAddress, error, label, onChange }: {
@@ -13,28 +13,21 @@ export const InjectedAccountSelect = ({ caption, defaultAddress, error, label, o
 }): ReactElement => {
     const { accounts, readystate } = useWeb3()
     const addresses = useMemo(() => accounts?.map(account => account.address) ?? [], [accounts])
-    const options = addresses.map<SelectOption>(accountId => ({
+    const options = useMemo(() => addresses.map<SelectOption>(accountId => ({
         id: accountId,
         label: accountId
-    }))
+    })), [addresses])
 
     const [selectValue, setSelectValue] = useState<readonly SelectOption[]>([])
+
+    useEffect(() => {
+        setSelectValue([options.find(option => option.id === defaultAddress) as readonly SelectOption[]])
+    }, [defaultAddress, options])
 
     const handleSelectChange = ({ value }: OnChangeParams): void => {
         setSelectValue(value)
         onChange(value[0]?.id?.toString())
     }
-
-    const pendingDefaultAddress = useRef(defaultAddress)
-    useEffect(() => {
-        const candidate = typeof pendingDefaultAddress.current === 'string'
-            ? options.find(option => option.id === pendingDefaultAddress.current)
-            : undefined
-        if (candidate !== undefined && selectValue.length === 0) {
-            pendingDefaultAddress.current = undefined
-            setSelectValue([candidate])
-        }
-    }, [defaultAddress, options, selectValue.length])
 
     return (
         <FormControl caption={caption} label={label}>

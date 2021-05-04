@@ -13,7 +13,7 @@ import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 import { ValidatedAccountInput } from './AccountInput'
-import { InjectedAccountSelect } from './AccountSelector'
+import { InjectedAccountSelect } from './AccountSelect'
 
 export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }): ReactElement => {
     const { api } = useApiPromise()
