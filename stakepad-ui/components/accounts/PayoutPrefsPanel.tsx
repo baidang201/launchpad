@@ -6,7 +6,7 @@ import { Alert as AlertIcon, Check as CheckIcon } from 'baseui/icon'
 import { Input } from 'baseui/input'
 import { KIND as NotificationKind, Notification } from 'baseui/notification'
 import { Radio, RadioGroup } from 'baseui/radio'
-import React, { ReactElement, ReactNode, useEffect, useMemo, useState } from 'react'
+import React, { ReactElement, useEffect, useMemo, useState } from 'react'
 import { setPayoutPrefs } from '../../libs/extrinsics/payoutPrefs'
 import { useApiPromise } from '../../libs/polkadot'
 import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
@@ -35,10 +35,6 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
 
     /* current component states */
 
-    const accountSelectCaption = useMemo<ReactNode>(() => (
-        <>{account === undefined ? '选择一个账户' : undefined}</>
-    ), [account])
-
     const [extrinsicStatus, setExtrinsicStatus] = useState<ExtrinsicStatus | undefined>()
     const extrinsicStatusNotification = useMemo(() => <ExtrinsicStatusNotification status={extrinsicStatus} />, [extrinsicStatus])
 
@@ -53,7 +49,7 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
         /* update target payout target */
 
         if (mode === 'keep') {
-            setNewPayoutTarget(currentPayoutTarget === undefined ? undefined : encodeAddress(currentPayoutTarget))
+            setNewPayoutTarget(currentPayoutTarget === undefined ? undefined : currentPayoutTarget)
         }
 
         if (mode === 'stash') {
@@ -61,11 +57,13 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
         }
 
         // NOTE: 'select' and 'input' will update target state on their owns
-
-        /* update target commission rate */
-
-        setNewCommissionRate(stashInfo?.payoutPrefs.commission.toNumber() ?? undefined) // TODO: accept input
     }, [account, currentPayoutTarget, mode, stashInfo])
+
+    useEffect(() => {
+        if (stashInfo !== undefined) {
+            setNewCommissionRate(stashInfo.payoutPrefs.commission.toNumber())
+        }
+    }, [stashInfo])
 
     const handleModeChange = (value: string): void => { setMode(value as any) }
 
@@ -74,13 +72,16 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
             return
         }
 
-        setPayoutPrefs({
+        const props = {
             account,
             api,
             commissionRate: newCommissionRate,
-            statusCallback: status => setExtrinsicStatus(status),
+            statusCallback: (status: ExtrinsicStatus) => setExtrinsicStatus(status),
             target: decodeAddress(newPayoutTarget) as AccountId
-        }).catch(error => {
+        }
+        console.log(props)
+
+        setPayoutPrefs(props).catch(error => {
             setExtrinsicStatus('invalid')
             setLastError((error as Error)?.message ?? error)
         })
@@ -89,8 +90,7 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
     return (
         <>
             <InjectedAccountSelect
-                caption={accountSelectCaption}
-                error={account === undefined}
+                defaultAddress={defaultAddress}
                 label="Stash Account"
                 onChange={account => setAccount(account)}
             />
@@ -108,11 +108,12 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
             </FormControl>
 
             <FormControl label="分润率">
-                <Input disabled onChange={() => { }} value={stashInfo?.payoutPrefs.commission.toString()} />
+                <Input disabled onChange={() => { }} value={stashInfo?.payoutPrefs.commission.toString() ?? ''} />
             </FormControl>
 
             {mode === 'select' && (
                 <InjectedAccountSelect
+                    defaultAddress={account}
                     error={newPayoutTarget === undefined}
                     onChange={account => setNewPayoutTarget(account)}
                 />
@@ -122,7 +123,11 @@ export const PayoutPrefsPanel = ({ defaultAddress }: { defaultAddress?: string }
                 <ValidatedAccountInput onChange={account => setNewPayoutTarget(account)} />
             )}
 
-            <Button onClick={handleSubmit} startEnhancer={<CheckIcon />}>Submit</Button>
+            <Button
+                disabled={account === undefined || api === undefined || newCommissionRate === undefined || newPayoutTarget === undefined}
+                onClick={handleSubmit}
+                startEnhancer={<CheckIcon />}
+            >Submit</Button>
 
             {extrinsicStatusNotification}
             {lastErrorNotification}
