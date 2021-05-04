@@ -1,14 +1,13 @@
 import { FormControl } from 'baseui/form-control'
-import { OnChangeParams, Option as SelectOption, Select } from 'baseui/select'
+import { Option as SelectOption, Select } from 'baseui/select'
 import { ReactElement, ReactNode, useEffect, useMemo, useState } from 'react'
 import { useWeb3 } from '../../libs/polkadot'
 
-export const InjectedAccountSelect = ({ caption, defaultAddress, error, label, onChange }: {
+export const InjectedAccountSelect = ({ caption: customCaption, defaultAddress, error: customError, label, onChange }: {
     caption?: ReactNode
-    label?: ReactNode
-
     defaultAddress?: string
-    error: boolean
+    error?: boolean // set to undefined to let the component verify against injected accounts
+    label?: ReactNode
     onChange: (account?: string) => void
 }): ReactElement => {
     const { accounts, readystate } = useWeb3()
@@ -20,21 +19,32 @@ export const InjectedAccountSelect = ({ caption, defaultAddress, error, label, o
 
     const [selectValue, setSelectValue] = useState<readonly SelectOption[]>([])
 
+    const { caption, error } = useMemo(() => {
+        const hasSelected = selectValue.length > 0
+        return {
+            caption: typeof customCaption !== 'undefined'
+                // use if custom caption is provided
+                ? customCaption
+                // or prompt for required input
+                : (hasSelected ? '选择一个账户' : undefined),
+            error: typeof customError === 'boolean' ? customError : !hasSelected
+        }
+    }, [selectValue, customCaption, customError])
+
     useEffect(() => {
-        setSelectValue([options.find(option => option.id === defaultAddress) as readonly SelectOption[]])
+        if (typeof defaultAddress === 'string') {
+            setSelectValue([...options.filter(option => option.id === defaultAddress) as readonly SelectOption[]])
+        }
     }, [defaultAddress, options])
 
-    const handleSelectChange = ({ value }: OnChangeParams): void => {
-        setSelectValue(value)
-        onChange(value[0]?.id?.toString())
-    }
+    useEffect(() => onChange(selectValue[0]?.id?.toString()), [onChange, selectValue])
 
     return (
         <FormControl caption={caption} label={label}>
             <Select
                 error={error}
                 isLoading={readystate !== 'ready'}
-                onChange={handleSelectChange}
+                onChange={({ value }) => setSelectValue(value)}
                 options={options}
                 value={selectValue}
             />
