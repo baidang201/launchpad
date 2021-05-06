@@ -8,10 +8,10 @@ import { SIZE as SpinnerSize, StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import { useRouter } from 'next/router'
 import React, { PropsWithChildren, ReactElement, useMemo } from 'react'
-import { useApiPromise, useWeb3 } from '../libs/polkadot'
-import { useAccountQuery } from '../libs/queries/useAccountQuery'
-import { useDepositQuery } from '../libs/queries/useBalanceQuery'
-import { useStashInfoQuery } from '../libs/queries/useStashInfoQuery'
+import { useApiPromise, useWeb3 } from '../../libs/polkadot'
+import { useAccountQuery } from '../../libs/queries/useAccountQuery'
+import { useDepositQuery } from '../../libs/queries/useBalanceQuery'
+import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 
 const LoadingSpinner = (): ReactElement => <StyledSpinnerNext $size={SpinnerSize.small} />
 
@@ -65,6 +65,9 @@ const OperationMenu = ({ address }: { address: string }): ReactElement => {
     }, {
         action: () => { push(`/debug/panels/payoutPrefs?address=${address}`).catch(() => { }) },
         label: '收益偏好'
+    }, {
+        action: () => { push(`/accounts/${address}/stakes`).catch(() => { }) },
+        label: '抵押列表'
     }]
 
     const handleItemSelect = (item: OperationItemMenuItem, close: () => void): void => {
