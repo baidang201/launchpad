@@ -11,7 +11,7 @@ const queryKey = uuidv4()
 /**
  * @param address the account who sent stakes to other accounts
  */
-export const useStakedByQuery = (address?: string, api?: ApiPromise): UseQueryResult<StakedByResult> => {
+export const useStakesByStakerQuery = (address?: string, api?: ApiPromise): UseQueryResult<StakedByResult> => {
     return useQuery(
         [queryKey, address, api],
         async () => {
