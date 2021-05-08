@@ -61,7 +61,6 @@ export async function signAndSend({ account, api, extrinsic, signer, statusCallb
                 }
 
                 resolve(result.status.hash)
-
                 statusCallback?.('finalized')
             }
 

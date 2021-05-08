@@ -2,6 +2,7 @@ import { Poc4 } from '@phala/typedefs'
 import { AppNavBar, NavItemT, setItemActive } from 'baseui/app-nav-bar'
 import { LayersManager } from 'baseui/layer'
 import { AppComponent, AppProps } from 'next/dist/next-server/lib/router/router'
+import { useRouter } from 'next/router'
 import { useMemo, useState } from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { Provider as StyletronProvider } from 'styletron-react'
@@ -10,21 +11,36 @@ import { ApiPromiseProvider, AppName, Web3Provider } from '../libs/polkadot'
 import { createStyletron } from '../libs/styletron'
 import styles from '../styles/pages/_app.module.css'
 
+interface NavItemWithTarget extends NavItemT {
+    info: {
+        target: string
+    }
+}
+
 const App: AppComponent = ({ Component, pageProps }: AppProps) => {
     const client = useMemo(() => new QueryClient(), [])
     const styletron = useMemo(() => createStyletron(), [])
 
-    // const [selectedTab, setSelectedTab] = useState<string>('dashboard')
-    // const router = useRouter()
+    const { pathname, push } = useRouter()
 
-    // const onSelectTab = (tab: string): void => {
-    //     setSelectedTab(tab)
-    //     router.push(tab).catch(() => { /* TODO: maybe some telemetry? */ })
-    // }
-
-    const [mainItems, setMainItems] = useState<NavItemT[]>([
-        { label: '主页' }
+    const [mainItems, setMainItems] = useState<NavItemWithTarget[]>([
+        {
+            active: pathname === '/',
+            label: '主页',
+            info: { target: '/' }
+        }, {
+            active: pathname === '/accounts',
+            label: '账户',
+            info: { target: '/accounts' }
+        }
     ])
+
+    const handleMainItemSelect = (item: NavItemWithTarget): void => {
+        push(item.info.target).catch(error => {
+            console.error(`[${__filename}] Failed navigating to ${item.info.target}: ${(error as Error)?.message ?? error}`)
+        })
+        setMainItems(prev => setItemActive(prev, item) as NavItemWithTarget[])
+    }
 
     return (
         <ApiPromiseProvider endpoint={PhalaEndpoint} registryTypes={Poc4}>
@@ -34,7 +50,7 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
                         <LayersManager>
                             <AppNavBar
                                 mainItems={mainItems}
-                                onMainItemSelect={item => setMainItems(prev => setItemActive(prev, item))}
+                                onMainItemSelect={item => handleMainItemSelect(item as NavItemWithTarget)}
                                 title="Stakepad"
                             />
 
