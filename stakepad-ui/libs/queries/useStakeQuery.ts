@@ -4,24 +4,29 @@ import { encodeAddress } from '@polkadot/util-crypto'
 import { useQuery, UseQueryResult } from 'react-query'
 import { v4 as uuidv4 } from 'uuid'
 
-type StakedByResult = Record<string, BalanceOf>
-
-const queryKey = uuidv4()
+const StakerPositionsQueryKey = uuidv4()
 
 /**
- * @param address the account who sent stakes to other accounts
+ * @param staker Account address of staker who has open stake positions to other miners
  */
-export const useStakesByStakerQuery = (address?: string, api?: ApiPromise): UseQueryResult<StakedByResult> => {
+export const useStakerPositionsQuery = (staker?: string, api?: ApiPromise): UseQueryResult<Record<string, BalanceOf>> => {
     return useQuery(
-        [queryKey, address, api],
+        [StakerPositionsQueryKey, staker, api],
         async () => {
-            if (address === undefined || api === undefined) return undefined
-            // TODO: add pending stakes
-            const entries = await api.query.miningStaking.staked.entries(address)
-            return entries.reduce<Record<string, BalanceOf>>((records, [{ args: [, stakee] }, value]) => {
-                records[encodeAddress(stakee)] = value.unwrapOrDefault()
-                return records
-            }, {})
+            if (staker === undefined || api === undefined) { return undefined }
+            const entries = await api.query.miningStaking.staked.entries(staker)
+            return Object.fromEntries(entries.map(([{ args: [, miner] }, value]) => {
+                return [encodeAddress(miner), value]
+            }))
         }
     )
+}
+
+/**
+ * @param staker Account address of staker who stakes
+ * @param miner Account address of miner for who is staked
+ */
+export const useStakePositionQuery = (staker?: string, miner?: string, api?: ApiPromise): BalanceOf | undefined => {
+    const { data } = useStakerPositionsQuery(staker, api)
+    return miner !== undefined ? data?.[miner] : undefined
 }
