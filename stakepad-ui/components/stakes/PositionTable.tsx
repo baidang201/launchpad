@@ -1,13 +1,14 @@
-import { AccountId } from '@polkadot/types/interfaces'
+import { AccountId, BalanceOf } from '@polkadot/types/interfaces'
 import { decodeAddress } from '@polkadot/util-crypto'
 import { Button } from 'baseui/button'
+import { FlexGrid, FlexGridItem } from 'baseui/flex-grid'
 import { StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import BN from 'bn.js'
-import React, { ReactElement, useMemo, useState } from 'react'
+import React, { ReactElement, useMemo, useState, useRef } from 'react'
 import { useApiPromise } from '../../libs/polkadot'
 import { useStakePendingQuery } from '../../libs/queries/usePendingStakeQuery'
-import { useStakePositionQuery } from '../../libs/queries/useStakeQuery'
+import { useStakePositionQuery, useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 import { PositionInput } from './PositionInput'
 
@@ -41,20 +42,23 @@ const PositionPendingColumn = ({ miner, staker }: { miner: string, staker: strin
     return <>n/a</>
 }
 
-const PositionInputColumn = ({ miner, onChange, staker, value }: {
+const PositionInputColumn = ({ miner, onChange, staker, zeroizeEvent }: {
     miner: string
     staker: string
     onChange: (newPosition?: number) => void
-    value?: number | string
+    zeroizeEvent: EventTarget
 }): ReactElement => {
     const { api } = useApiPromise()
     const balance = useStakePositionQuery(staker, miner, api)
 
-    return (<PositionInput currentPosition={balance} onChange={onChange} value={value} />)
+    return (<PositionInput currentPosition={balance} onChange={onChange} zeroizeEvent={zeroizeEvent} />)
 }
 
 export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
     const [targetPositions, setTargetPositions] = useState<Record<string, number | undefined>>({})
+
+    const { api } = useApiPromise()
+    const { data: currentPositions } = useStakerPositionsQuery(staker, api)
 
     const handlePositionChange = (miner: string, newPosition?: number): void => {
         const newTargetPositions = { ...targetPositions }
@@ -62,43 +66,61 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
         setTargetPositions(newTargetPositions)
     }
 
-    const positionInputHeader = useMemo(() => {
-        const zeroizeAllPositions = (): void => {
-            setTargetPositions(Object.fromEntries(miners?.map(miner => [miner, 0]) ?? []))
-        }
+    const zeroizeEvent = useRef(new EventTarget())
 
-        return (<Button onClick={() => zeroizeAllPositions()} size="mini">Zeroize All</Button>)
-    }, [miners])
+    const positionInputHeader = useMemo(() => {
+        return (<Button onClick={() => zeroizeEvent.current.dispatchEvent(new Event('zeroize'))} size="mini">Zeroize All</Button>)
+    }, [])
+
+    const minerSet = useMemo(() => new Set(miners), [miners])
+    const closingBalance = useMemo(() => {
+        const balance = Object
+            .entries(currentPositions ?? {})
+            .filter(([miner]) => minerSet.has(miner))
+            .map(([miner, balance]) => {
+                const target = targetPositions[miner]
+                return target === undefined ? balance : new BN(target)
+            })
+            .reduce((accumulator, current) => accumulator.add(current), BNZero)
+        return api?.registry.createType('BalanceOf', balance) as BalanceOf ?? balance
+    }, [api, currentPositions, minerSet, targetPositions])
 
     return (
-        <TableBuilder
-            data={miners ?? []}
-            emptyMessage="No Data"
-            isLoading={miners === undefined}
-            loadingMessage="Loading"
-        >
-            <TableBuilderColumn header="Miner">
-                {miner => <>{miner}</>}
-            </TableBuilderColumn>
+        <>
+            <TableBuilder
+                data={miners ?? []}
+                emptyMessage="No Data"
+                isLoading={miners === undefined}
+                loadingMessage="Loading"
+            >
+                <TableBuilderColumn header="Miner">
+                    {miner => <>{miner}</>}
+                </TableBuilderColumn>
 
-            <TableBuilderColumn header="Commission">
-                {(miner: string) => <CommissionRateColumn address={miner} />}
-            </TableBuilderColumn>
+                <TableBuilderColumn header="Commission">
+                    {(miner: string) => <CommissionRateColumn address={miner} />}
+                </TableBuilderColumn>
 
-            <TableBuilderColumn header="Pending">
-                {(miner: string) => <PositionPendingColumn miner={miner} staker={staker} />}
-            </TableBuilderColumn>
+                <TableBuilderColumn header="Pending">
+                    {(miner: string) => <PositionPendingColumn miner={miner} staker={staker} />}
+                </TableBuilderColumn>
 
-            <TableBuilderColumn header={positionInputHeader}>
-                {(miner: string) => (
-                    <PositionInputColumn
-                        miner={miner}
-                        onChange={newPosition => handlePositionChange(miner, newPosition)}
-                        staker={staker}
-                        value={targetPositions[miner] ?? ''}
-                    />
-                )}
-            </TableBuilderColumn>
-        </TableBuilder>
+                <TableBuilderColumn header={positionInputHeader}>
+                    {(miner: string) => (
+                        <PositionInputColumn
+                            miner={miner}
+                            onChange={newPosition => handlePositionChange(miner, newPosition)}
+                            staker={staker}
+                            zeroizeEvent={zeroizeEvent.current}
+                        />
+                    )}
+                </TableBuilderColumn>
+            </TableBuilder>
+            <FlexGrid>
+                <FlexGridItem>
+                    Closing Balance: {closingBalance.toHuman?.() ?? closingBalance.toString()}
+                </FlexGridItem>
+            </FlexGrid>
+        </>
     )
 }
