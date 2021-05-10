@@ -1,6 +1,6 @@
-import { FindWorkerFilters } from '.'
 import { GetWorkerResult } from '..'
 import { Api, requestSuccess } from '../proto'
+import { FindWorkerFilters } from '.'
 
 export const findWorkersByStash: (
     filters: FindWorkerFilters, page: number, pageSize: number, stash?: string
