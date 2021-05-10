@@ -3,7 +3,7 @@ import { Input } from 'baseui/input'
 import { ReactElement, useState } from 'react'
 
 const defaultSuffix = 'PHA'
-const validFloat = /^\d+(\.\d+)$/
+const validFloat = /^\d+(\.\d+)?$/
 
 export const PositionInput = ({ currentPosition, disabled, onChange, value }: {
     currentPosition?: BalanceOf // current on-chain stake position
