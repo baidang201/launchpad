@@ -16,7 +16,7 @@ export const useStakerPositionsQuery = (staker?: string, api?: ApiPromise): UseQ
             if (staker === undefined || api === undefined) { return undefined }
             const entries = await api.query.miningStaking.staked.entries(staker)
             return Object.fromEntries(entries.map(([{ args: [, miner] }, value]) => {
-                return [encodeAddress(miner), value]
+                return [encodeAddress(miner), value.unwrapOrDefault()]
             }))
         }
     )
