@@ -35,6 +35,9 @@
                 "named": "never"
             }
         ],
+        "import/no-unassigned-import": [
+            "warn"
+        ],
         "import/order": [
             "warn"
         ],
