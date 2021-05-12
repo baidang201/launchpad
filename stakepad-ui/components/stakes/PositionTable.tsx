@@ -1,15 +1,18 @@
-import { AccountId, BalanceOf } from '@polkadot/types/interfaces'
+import { ApiPromise } from '@polkadot/api'
+import { AccountId, Balance } from '@polkadot/types/interfaces'
 import { decodeAddress } from '@polkadot/util-crypto'
 import { Button } from 'baseui/button'
 import { FlexGrid, FlexGridItem } from 'baseui/flex-grid'
 import { StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import BN from 'bn.js'
-import React, { ReactElement, useMemo, useState, useRef } from 'react'
+import { Decimal } from 'decimal.js'
+import React, { ReactElement, useMemo, useState } from 'react'
 import { useApiPromise } from '../../libs/polkadot'
 import { useStakePendingQuery } from '../../libs/queries/usePendingStakeQuery'
-import { useStakePositionQuery, useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
+import { useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
+import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
 import { PositionInput } from './PositionInput'
 
 const LoadingSpinner = (): ReactElement => <StyledSpinnerNext $as="span" />
@@ -24,8 +27,6 @@ const CommissionRateColumn = ({ address }: { address: string }): ReactElement =>
                 : <>{data.payoutPrefs.commission}</>
     )
 }
-
-const BNZero = new BN(0)
 
 const PositionPendingColumn = ({ miner, staker }: { miner: string, staker: string }): ReactElement => {
     const { api } = useApiPromise()
@@ -42,48 +43,81 @@ const PositionPendingColumn = ({ miner, staker }: { miner: string, staker: strin
     return <>n/a</>
 }
 
-const PositionInputColumn = ({ miner, onChange, staker, zeroizeEvent }: {
-    miner: string
-    staker: string
-    onChange: (newPosition?: number) => void
-    zeroizeEvent: EventTarget
-}): ReactElement => {
-    const { api } = useApiPromise()
-    const balance = useStakePositionQuery(staker, miner, api)
+const BNZero = new BN(0)
+const DecimalZero = new Decimal(0)
 
-    return (<PositionInput currentPosition={balance} onChange={onChange} zeroizeEvent={zeroizeEvent} />)
+const ClosingBalance = ({ api, currentPositions, miners, targetPositions }: {
+    api?: ApiPromise
+    currentPositions?: Record<string, Balance>
+    miners?: string[]
+    targetPositions: Record<string, Decimal | undefined>
+}): ReactElement => {
+    const targetPositionMap = useMemo(() => new Map(Object.entries(targetPositions)), [targetPositions])
+    const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
+
+    const closingBalance = useMemo<Balance | undefined>(() => {
+        if (api === undefined || miners === undefined || tokenDecimals === undefined) { return undefined }
+
+        const closing = miners
+            .map(miner => {
+                const current = currentPositions?.[miner] ?? BNZero
+                const target = targetPositionMap.get(miner)
+                if (target !== undefined) {
+                    return new BN(target.mul(tokenDecimals).toString())
+                } else {
+                    return current
+                }
+            }).reduce((acc, balance) => acc.add(balance), BNZero)
+
+        return api.registry.createType('Balance', closing)
+    }, [api, currentPositions, miners, targetPositionMap, tokenDecimals])
+
+    const openingBalance = useMemo<Balance | undefined>(() => {
+        if (api === undefined || currentPositions === undefined || miners === undefined || tokenDecimals === undefined) { return undefined }
+
+        const opening = miners
+            .map(miner => currentPositions?.[miner] ?? BNZero)
+            .reduce((acc, balance) => acc.add(balance), BNZero)
+
+        return api.registry.createType('Balance', opening)
+    }, [api, currentPositions, miners, tokenDecimals])
+
+    const floatingResult = useMemo<[boolean, Balance] | undefined>(() => {
+        if (api === undefined || closingBalance === undefined || openingBalance === undefined) { return undefined }
+
+        const result = closingBalance.sub(openingBalance)
+        if (result.eq(BNZero)) {
+            return undefined
+        } else {
+            return [result.lt(BNZero), api.registry.createType('Balance', result.abs())]
+        }
+    }, [api, closingBalance, openingBalance])
+
+    return (<>
+        {closingBalance?.toHuman() ?? <LoadingSpinner />}
+        {floatingResult !== undefined && <>({floatingResult[0] ? '-' : '+'}{floatingResult[1].toHuman()})</>}
+    </>)
 }
 
 export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
-    const [targetPositions, setTargetPositions] = useState<Record<string, number | undefined>>({})
-
     const { api } = useApiPromise()
     const { data: currentPositions } = useStakerPositionsQuery(staker, api)
 
-    const handlePositionChange = (miner: string, newPosition?: number): void => {
+    const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
+
+    const handlePositionChange = (miner: string, newPosition?: Decimal): void => {
         const newTargetPositions = { ...targetPositions }
         newTargetPositions[miner] = newPosition
         setTargetPositions(newTargetPositions)
     }
 
-    const zeroizeEvent = useRef(new EventTarget())
-
     const positionInputHeader = useMemo(() => {
-        return (<Button onClick={() => zeroizeEvent.current.dispatchEvent(new Event('zeroize'))} size="mini">Zeroize All</Button>)
-    }, [])
+        const zeroize = (): void => {
+            setTargetPositions(Object.fromEntries(miners?.map(miner => [miner, DecimalZero]) ?? []))
+        }
 
-    const minerSet = useMemo(() => new Set(miners), [miners])
-    const closingBalance = useMemo(() => {
-        const balance = Object
-            .entries(currentPositions ?? {})
-            .filter(([miner]) => minerSet.has(miner))
-            .map(([miner, balance]) => {
-                const target = targetPositions[miner]
-                return target === undefined ? balance : new BN(target)
-            })
-            .reduce((accumulator, current) => accumulator.add(current), BNZero)
-        return api?.registry.createType('BalanceOf', balance) as BalanceOf ?? balance
-    }, [api, currentPositions, minerSet, targetPositions])
+        return (<Button onClick={() => zeroize()} size="mini">Zeroize All</Button>)
+    }, [miners])
 
     return (
         <>
@@ -107,18 +141,21 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
 
                 <TableBuilderColumn header={positionInputHeader}>
                     {(miner: string) => (
-                        <PositionInputColumn
-                            miner={miner}
+                        <PositionInput
+                            currentPosition={currentPositions?.[miner]}
+                            disabled={false} // TODO: set to true during submitting
                             onChange={newPosition => handlePositionChange(miner, newPosition)}
-                            staker={staker}
-                            zeroizeEvent={zeroizeEvent.current}
+                            targetPosition={targetPositions[miner]}
                         />
                     )}
                 </TableBuilderColumn>
             </TableBuilder>
-            <FlexGrid>
+            <FlexGrid flexDirection="row">
                 <FlexGridItem>
-                    Closing Balance: {closingBalance.toHuman?.() ?? closingBalance.toString()}
+                    Closing Balance: <ClosingBalance api={api} currentPositions={currentPositions} miners={miners} targetPositions={targetPositions} />
+                </FlexGridItem>
+                <FlexGridItem alignSelf="flex-end">
+                    <Button>Submit</Button>
                 </FlexGridItem>
             </FlexGrid>
         </>
