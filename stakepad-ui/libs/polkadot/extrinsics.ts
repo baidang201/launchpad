@@ -1,5 +1,6 @@
 import { ApiPromise } from '@polkadot/api'
 import { Signer, SubmittableExtrinsic } from '@polkadot/api/types'
+import { InjectedExtension } from '@polkadot/extension-inject/types'
 import { encodeAddress } from '@polkadot/keyring'
 import { AccountId, DispatchError, Hash } from '@polkadot/types/interfaces'
 import { ISubmittableResult } from '@polkadot/types/types'
@@ -78,11 +79,15 @@ export async function signAndSend({ account, api, extrinsic, signer, statusCallb
     return await extrinsicPromise
 }
 
+export async function web3FromAddress(account: string): Promise<InjectedExtension> {
+    const { web3FromAddress } = await import('@polkadot/extension-dapp')
+    return await web3FromAddress(encodeAddress(account))
+}
+
 export async function withWeb3(props: SignAndSendProps): Promise<Hash> {
     const { account, statusCallback } = props
 
     statusCallback?.('localSign')
-    const { web3FromAddress } = await import('@polkadot/extension-dapp')
     const web3 = await web3FromAddress(encodeAddress(account))
 
     return await signAndSend({ ...props, signer: web3.signer })
