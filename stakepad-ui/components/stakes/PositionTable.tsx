@@ -8,7 +8,7 @@ import { StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import BN from 'bn.js'
 import { Decimal } from 'decimal.js'
-import React, { ReactElement, useMemo, useState } from 'react'
+import React, { ReactElement, useCallback, useMemo, useState } from 'react'
 import { stakeBatch } from '../../libs/extrinsics/stake'
 import { useApiPromise } from '../../libs/polkadot'
 import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
@@ -117,6 +117,9 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
 
     const [extrinsicError, setExtrinsicError] = useState<string>()
     const [extrinsicStatus, setExtrinsicStatus] = useState<ExtrinsicStatus>()
+    const inputDisabled = useMemo(() => {
+        return extrinsicStatus !== undefined && extrinsicStatus !== 'finalized' && extrinsicStatus !== 'invalid'
+    }, [extrinsicStatus])
 
     const handleSubmit = (): void => {
         if (api === undefined || tokenDecimals === undefined) { return }
@@ -175,7 +178,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
                     {(miner: string) => (
                         <PositionInput
                             currentPosition={currentPositions?.[miner]}
-                            disabled={false} // TODO: set to true during submitting
+                            disabled={inputDisabled}
                             onChange={newPosition => handlePositionChange(miner, newPosition)}
                             targetPosition={targetPositions[miner]}
                         />
