@@ -109,11 +109,11 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
 
-    const handlePositionChange = (miner: string, newPosition?: Decimal): void => {
+    const handlePositionChange = useCallback((miner: string, newPosition?: Decimal): void => {
         const newTargetPositions = { ...targetPositions }
         newTargetPositions[miner] = newPosition
         setTargetPositions(newTargetPositions)
-    }
+    }, [targetPositions])
 
     const [extrinsicError, setExtrinsicError] = useState<string>()
     const [extrinsicStatus, setExtrinsicStatus] = useState<ExtrinsicStatus>()
