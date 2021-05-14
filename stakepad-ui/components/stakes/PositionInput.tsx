@@ -36,7 +36,7 @@ export const PositionInput = ({ currentPosition, disabled, onChange, targetPosit
         if (targetPosition?.isZero() === true) {
             setValue('0')
         }
-    }, [handleInputChange, targetPosition])
+    }, [targetPosition])
 
     return (
         <Input
