@@ -1,9 +1,7 @@
 import { Balance } from '@polkadot/types/interfaces'
 import { Input } from 'baseui/input'
 import { Decimal } from 'decimal.js'
-import { ReactElement, useEffect, useState } from 'react'
-
-const DecimalZero = new Decimal(0)
+import { ReactElement, useCallback, useEffect, useState } from 'react'
 
 const defaultSuffix = 'PHA'
 const validFloat = /^\d+(\.(\d+)?)?$/
@@ -17,7 +15,7 @@ export const PositionInput = ({ currentPosition, disabled, onChange, targetPosit
     const [error, setError] = useState<boolean>(false)
     const [value, setValue] = useState<string>('')
 
-    const handleInputChange = (newValue: string): void => {
+    const handleInputChange = useCallback((newValue: string): void => {
         setValue(newValue)
 
         if (newValue.length === 0) {
@@ -28,13 +26,17 @@ export const PositionInput = ({ currentPosition, disabled, onChange, targetPosit
             setError(!validation)
             onChange(validation ? new Decimal(newValue) : undefined)
         }
-    }
+    }, [onChange])
 
     useEffect(() => {
-        if (targetPosition?.eq(DecimalZero) === true) {
+        if (targetPosition === undefined) {
+            setValue('')
+        }
+
+        if (targetPosition?.isZero() === true) {
             setValue('0')
         }
-    }, [targetPosition])
+    }, [handleInputChange, targetPosition])
 
     return (
         <Input
