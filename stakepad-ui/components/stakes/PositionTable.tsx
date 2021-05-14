@@ -3,16 +3,21 @@ import { AccountId, Balance } from '@polkadot/types/interfaces'
 import { decodeAddress } from '@polkadot/util-crypto'
 import { Button } from 'baseui/button'
 import { FlexGrid, FlexGridItem } from 'baseui/flex-grid'
+import { KIND as NotificationKind, Notification } from 'baseui/notification'
 import { StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import BN from 'bn.js'
 import { Decimal } from 'decimal.js'
 import React, { ReactElement, useMemo, useState } from 'react'
+import { stakeBatch } from '../../libs/extrinsics/stake'
 import { useApiPromise } from '../../libs/polkadot'
+import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
 import { useStakePendingQuery } from '../../libs/queries/usePendingStakeQuery'
 import { useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
+import { bnToBalance, decimalToBN } from '../../libs/utils/balances'
+import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 import { PositionInput } from './PositionInput'
 
 const LoadingSpinner = (): ReactElement => <StyledSpinnerNext $as="span" />
@@ -101,7 +106,8 @@ const ClosingBalance = ({ api, currentPositions, miners, targetPositions }: {
 
 export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
     const { api } = useApiPromise()
-    const { data: currentPositions } = useStakerPositionsQuery(staker, api)
+    const { data: currentPositions, refetch } = useStakerPositionsQuery(staker, api)
+    const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
 
@@ -109,6 +115,33 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
         const newTargetPositions = { ...targetPositions }
         newTargetPositions[miner] = newPosition
         setTargetPositions(newTargetPositions)
+    }
+
+    const [extrinsicError, setExtrinsicError] = useState<string>()
+    const [extrinsicStatus, setExtrinsicStatus] = useState<ExtrinsicStatus>()
+
+    const handleSubmit = (): void => {
+        if (api === undefined || tokenDecimals === undefined) { return }
+
+        setExtrinsicStatus(undefined)
+
+        const adjustments = Object.fromEntries(Object.entries(targetPositions)
+            .filter((tuple): tuple is [string, Decimal] => {
+                return typeof tuple[0] === 'string' && tuple[1] instanceof Decimal
+            }).map(([miner, decimalTarget]): [string, ['stake' | 'unstake', Balance]] => {
+                const current = currentPositions?.[miner] ?? BNZero
+                const target = decimalToBN(decimalTarget, tokenDecimals)
+                const offset = target.sub(current)
+                return [miner, [offset.gt(BNZero) ? 'stake' : 'unstake', bnToBalance(offset.abs(), api)]]
+            }))
+
+        stakeBatch({
+            api, batch: adjustments, staker, statusCallback: (status) => setExtrinsicStatus(status)
+        }).then(() => {
+            refetch().catch(() => { })
+        }).catch(error => {
+            setExtrinsicError((error as Error)?.message ?? error)
+        })
     }
 
     const positionInputHeader = useMemo(() => {
@@ -155,7 +188,11 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
                     Closing Balance: <ClosingBalance api={api} currentPositions={currentPositions} miners={miners} targetPositions={targetPositions} />
                 </FlexGridItem>
                 <FlexGridItem alignSelf="flex-end">
-                    <Button>Submit</Button>
+                    <Button onClick={handleSubmit}>Submit</Button>
+                    {typeof extrinsicError === 'string' && (
+                        <Notification kind={NotificationKind.negative}>{extrinsicError}</Notification>
+                    )}
+                    <ExtrinsicStatusNotification status={extrinsicStatus} />
                 </FlexGridItem>
             </FlexGrid>
         </>

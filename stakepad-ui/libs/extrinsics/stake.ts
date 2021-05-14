@@ -1,14 +1,15 @@
 import { ApiPromise } from '@polkadot/api'
 import { AccountId, BalanceOf, Hash } from '@polkadot/types/interfaces'
 import { encodeAddress } from '@polkadot/util-crypto'
-import { signAndSend, web3FromAddress } from '../polkadot/extrinsics'
+import { ExtrinsicStatus, signAndSend, web3FromAddress } from '../polkadot/extrinsics'
 
 interface StakeBatchProps {
     api: ApiPromise
     batch: Record<string, ['stake' | 'unstake', BalanceOf]>
     staker: AccountId | string
+    statusCallback: (status: ExtrinsicStatus) => void
 }
-export const stakeBatch = async ({ api, batch, staker }: StakeBatchProps): Promise<Hash> => {
+export const stakeBatch = async ({ api, batch, staker, statusCallback }: StakeBatchProps): Promise<Hash> => {
     const stakeExtrinsics = Object.entries(batch).map(([miner, [type, balance]]) => {
         switch (type) {
             case 'stake':
@@ -28,6 +29,6 @@ export const stakeBatch = async ({ api, batch, staker }: StakeBatchProps): Promi
         api,
         extrinsic: batchExtrinsic,
         signer,
-        statusCallback: (status) => { console.info('batch extrinsic status=', status) }
+        statusCallback: (status) => { statusCallback(status) }
     })
 }
