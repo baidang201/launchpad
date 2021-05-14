@@ -37,15 +37,13 @@ const PositionPendingColumn = ({ miner, staker }: { miner: string, staker: strin
     const { api } = useApiPromise()
     const data = useStakePendingQuery(staker, miner, api)
 
-    if (data !== undefined) {
-        const { staking, unstaking } = data
-        const pending = api?.registry.createType('Balance', (staking ?? BNZero).add(unstaking ?? BNZero))
-        if (pending !== undefined) {
-            return (<>{pending.gt(BNZero) ? `+${pending.toHuman()}` : pending.toHuman()}</>)
-        }
+    if (api === undefined || data === undefined) {
+        return (<>n/a</>)
     }
 
-    return <>n/a</>
+    const { staking, unstaking } = data
+    const pending = bnToBalance((staking ?? BNZero).add(unstaking ?? BNZero), api)
+    return (<>{pending.gt(BNZero) ? `+${pending.toHuman()}` : pending.toHuman()}</>)
 }
 
 const BNZero = new BN(0)
