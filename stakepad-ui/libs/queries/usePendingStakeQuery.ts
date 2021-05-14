@@ -17,6 +17,7 @@ export const useStakerPendingsQuery = (staker?: string, api?: ApiPromise): UseQu
         async () => {
             if (staker === undefined || api === undefined) { return undefined }
 
+            // TODO: parallelize these queries
             const staking = await api.query.miningStaking.pendingStaking.entries(staker)
             const unstaking = await api.query.miningStaking.pendingUnstaking.entries(staker)
 
