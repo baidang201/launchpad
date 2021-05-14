@@ -1,5 +1,4 @@
 import { AccountId, BalanceOf } from '@polkadot/types/interfaces'
-import { } from '@polkadot/util'
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto/address'
 import { Button } from 'baseui/button'
 import { FormControl } from 'baseui/form-control'
