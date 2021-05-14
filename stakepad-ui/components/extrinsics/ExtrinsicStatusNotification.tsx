@@ -15,9 +15,9 @@ export const ExtrinsicStatusNotification = ({ status }: { status?: ExtrinsicStat
         case 'broadcast':
             return <Notification kind={NotificationKind.info}><LoadingSpinner /> 交易发送中</Notification>
         case 'inBlock':
-            return <Notification kind={NotificationKind.info}><LoadingSpinner /> 交易等待进入区块</Notification>
+            return <Notification kind={NotificationKind.info}><LoadingSpinner /> 交易正在进入区块</Notification>
         case 'finalized':
-            return <Notification kind={NotificationKind.positive}><CheckIcon /> 交易完成</Notification>
+            return <Notification kind={NotificationKind.positive}><CheckIcon /> 交易结束</Notification>
         default:
             return <Notification kind={NotificationKind.negative}><AlertIcon /> 交易失败或异常</Notification>
     }
