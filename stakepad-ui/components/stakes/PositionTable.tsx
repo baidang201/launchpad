@@ -136,7 +136,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
         stakeBatch({
             api, batch: adjustments, staker, statusCallback: (status) => setExtrinsicStatus(status)
         }).then(() => {
-            setTargetPositions(Object.fromEntries(miners?.map(miner => [miner, undefined]) ?? []))
+            setTargetPositions({})
             refetch({ cancelRefetch: true }).catch(() => { })
         }).catch(error => {
             setExtrinsicError((error as Error)?.message ?? error)
