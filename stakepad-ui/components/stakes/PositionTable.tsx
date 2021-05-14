@@ -12,11 +12,11 @@ import React, { ReactElement, useCallback, useMemo, useState } from 'react'
 import { stakeBatch } from '../../libs/extrinsics/stake'
 import { useApiPromise } from '../../libs/polkadot'
 import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
-import { useStakePendingQuery } from '../../libs/queries/usePendingStakeQuery'
+import { useStakerPendingsQuery } from '../../libs/queries/usePendingStakeQuery'
 import { useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
-import { bnToBalance, decimalToBN } from '../../libs/utils/balances'
+import { balanceToDecimal, bnToBalance, decimalToBN } from '../../libs/utils/balances'
 import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 import { PositionInput } from './PositionInput'
 
@@ -31,19 +31,6 @@ const CommissionRateColumn = ({ address }: { address: string }): ReactElement =>
                 ? <>n/a</>
                 : <>{data.payoutPrefs.commission}</>
     )
-}
-
-const PositionPendingColumn = ({ miner, staker }: { miner: string, staker: string }): ReactElement => {
-    const { api } = useApiPromise()
-    const data = useStakePendingQuery(staker, miner, api)
-
-    if (api === undefined || data === undefined) {
-        return (<>n/a</>)
-    }
-
-    const { staking, unstaking } = data
-    const pending = bnToBalance((staking ?? BNZero).add(unstaking ?? BNZero), api)
-    return (<>{pending.gt(BNZero) ? `+${pending.toHuman()}` : pending.toHuman()}</>)
 }
 
 const BNZero = new BN(0)
@@ -105,7 +92,18 @@ const ClosingBalance = ({ api, currentPositions, miners, targetPositions }: {
 export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
     const { api } = useApiPromise()
     const { data: currentPositions, refetch } = useStakerPositionsQuery(staker, api)
+    const { data: rawPendings } = useStakerPendingsQuery(staker, api)
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
+
+    const currentPendings = useMemo(() => {
+        return api !== undefined && tokenDecimals !== undefined
+            ? Object.fromEntries(Object.entries(rawPendings ?? {})
+                .map(([miner, { staking, unstaking }]) => {
+                    return [miner, balanceToDecimal((staking ?? BNZero).sub(unstaking ?? BNZero), tokenDecimals)]
+                })
+            )
+            : undefined
+    }, [api, rawPendings, tokenDecimals])
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
 
@@ -170,21 +168,19 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
                     {(miner: string) => <CommissionRateColumn address={miner} />}
                 </TableBuilderColumn>
 
-                <TableBuilderColumn header="Pending">
-                    {(miner: string) => <PositionPendingColumn miner={miner} staker={staker} />}
-                </TableBuilderColumn>
-
                 <TableBuilderColumn header={positionInputHeader}>
                     {(miner: string) => (
                         <PositionInput
-                            currentPosition={currentPositions?.[miner]}
+                            current={currentPositions?.[miner]}
                             disabled={inputDisabled}
                             onChange={newPosition => handlePositionChange(miner, newPosition)}
-                            targetPosition={targetPositions[miner]}
+                            pending={currentPendings?.[miner]}
+                            target={targetPositions[miner]}
                         />
                     )}
                 </TableBuilderColumn>
             </TableBuilder>
+
             <FlexGrid flexDirection="row">
                 <FlexGridItem>
                     Closing Balance: <ClosingBalance api={api} currentPositions={currentPositions} miners={miners} targetPositions={targetPositions} />

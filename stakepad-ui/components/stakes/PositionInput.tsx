@@ -1,17 +1,24 @@
 import { Balance } from '@polkadot/types/interfaces'
 import { Input } from 'baseui/input'
 import { Decimal } from 'decimal.js'
-import { ReactElement, useCallback, useEffect, useState } from 'react'
+import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
+import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
+import { balanceToDecimal } from '../../libs/utils/balances'
 
-const defaultSuffix = 'PHA'
 const validFloat = /^\d+(\.(\d+)?)?$/
 
-export const PositionInput = ({ currentPosition, disabled, onChange, targetPosition }: {
-    currentPosition?: Balance // current on-chain stake position
+export const PositionInput = ({ current: balanceCurrent, disabled, onChange, pending, target }: {
+    current?: Balance // on-chian stake position
+    pending?: Decimal // on-chain pending stake/unstake
+    target?: Decimal
+
     disabled?: boolean
     onChange: (newPosition?: Decimal) => void
-    targetPosition?: Decimal
 }): ReactElement => {
+    const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
+
+    const current = useMemo(() => balanceToDecimal(balanceCurrent, tokenDecimals), [balanceCurrent, tokenDecimals])
+
     const [error, setError] = useState<boolean>(false)
     const [value, setValue] = useState<string>('')
 
@@ -28,22 +35,35 @@ export const PositionInput = ({ currentPosition, disabled, onChange, targetPosit
         }
     }, [onChange])
 
+    const placeholder = useMemo(() => {
+        if (current !== undefined) {
+            if (pending !== undefined) {
+                const sign = pending.isPositive() ? '+' : ''
+                return `${current.toString()} (${sign}${pending.toString()} pending)`
+            } else {
+                return `${current.toString()}`
+            }
+        } else {
+            return 'Loading...'
+        }
+    }, [current, pending])
+
     useEffect(() => {
-        if (targetPosition === undefined) {
+        if (target === undefined) {
             setValue('')
         }
 
-        if (targetPosition?.isZero() === true) {
+        if (target?.isZero() === true) {
             setValue('0')
         }
-    }, [targetPosition])
+    }, [target])
 
     return (
         <Input
             disabled={disabled === true}
-            endEnhancer={<>{targetPosition === undefined && defaultSuffix}</>}
+            endEnhancer={'PHA'}
             error={error}
-            placeholder={currentPosition?.toHuman() ?? 'Loading'}
+            placeholder={placeholder}
             onChange={e => handleInputChange(e.currentTarget.value)}
             value={value}
         />
