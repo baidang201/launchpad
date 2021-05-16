@@ -17,7 +17,11 @@ export const PositionInput = ({ current: balanceCurrent, disabled, onChange, pen
 }): ReactElement => {
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
 
-    const current = useMemo(() => balanceToDecimal(balanceCurrent, tokenDecimals), [balanceCurrent, tokenDecimals])
+    const current = useMemo(() => {
+        return balanceCurrent === undefined || tokenDecimals === undefined
+            ? undefined
+            : balanceToDecimal(balanceCurrent, tokenDecimals)
+    }, [balanceCurrent, tokenDecimals])
 
     const [error, setError] = useState<boolean>(false)
     const [value, setValue] = useState<string>('')

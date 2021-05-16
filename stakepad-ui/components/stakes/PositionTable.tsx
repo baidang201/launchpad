@@ -16,7 +16,7 @@ import { useStakerPendingsQuery } from '../../libs/queries/usePendingStakeQuery'
 import { useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
-import { balanceToDecimal, bnToBalance, decimalToBN } from '../../libs/utils/balances'
+import { bnToBalance, decimalToBN } from '../../libs/utils/balances'
 import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 import { PositionInput } from './PositionInput'
 
@@ -92,18 +92,8 @@ const ClosingBalance = ({ api, currentPositions, miners, targetPositions }: {
 export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
     const { api } = useApiPromise()
     const { data: currentPositions, refetch } = useStakerPositionsQuery(staker, api)
-    const { data: rawPendings } = useStakerPendingsQuery(staker, api)
+    const { data: currentPendings } = useStakerPendingsQuery(staker, api)
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
-
-    const currentPendings = useMemo(() => {
-        return api !== undefined && tokenDecimals !== undefined
-            ? Object.fromEntries(Object.entries(rawPendings ?? {})
-                .map(([miner, { staking, unstaking }]) => {
-                    return [miner, balanceToDecimal((staking ?? BNZero).sub(unstaking ?? BNZero), tokenDecimals)]
-                })
-            )
-            : undefined
-    }, [api, rawPendings, tokenDecimals])
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
 
@@ -174,7 +164,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
                             current={currentPositions?.[miner]}
                             disabled={inputDisabled}
                             onChange={newPosition => handlePositionChange(miner, newPosition)}
-                            pending={currentPendings?.[miner]}
+                            pending={currentPendings?.[miner]?.balance}
                             target={targetPositions[miner]}
                         />
                     )}
