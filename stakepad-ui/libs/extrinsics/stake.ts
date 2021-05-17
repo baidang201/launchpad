@@ -1,21 +1,21 @@
 import { ApiPromise } from '@polkadot/api'
-import { AccountId, BalanceOf, Hash } from '@polkadot/types/interfaces'
+import { AccountId, Balance, Hash } from '@polkadot/types/interfaces'
 import { encodeAddress } from '@polkadot/util-crypto'
 import { ExtrinsicStatus, signAndSend, web3FromAddress } from '../polkadot/extrinsics'
 
 interface StakeBatchProps {
     api: ApiPromise
-    batch: Record<string, ['stake' | 'unstake', BalanceOf]>
+    batch: Array<[string, 'stake' | 'unstake', Balance]>
     staker: AccountId | string
     statusCallback: (status: ExtrinsicStatus) => void
 }
 export const stakeBatch = async ({ api, batch, staker, statusCallback }: StakeBatchProps): Promise<Hash> => {
-    const stakeExtrinsics = Object.entries(batch).map(([miner, [type, balance]]) => {
+    const stakeExtrinsics = batch.map(([miner, type, offset]) => {
         switch (type) {
             case 'stake':
-                return api.tx.miningStaking.stake(miner, balance)
+                return api.tx.miningStaking.stake(miner, offset)
             case 'unstake':
-                return api.tx.miningStaking.unstake(miner, balance)
+                return api.tx.miningStaking.unstake(miner, offset)
             default:
                 throw new Error(`Unsupported stake type: ${type as string}`)
         }

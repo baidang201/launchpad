@@ -15,22 +15,12 @@ import { useStakerPendingsQuery } from '../../libs/queries/usePendingStakeQuery'
 import { useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
-import { bnToBalance, bnToDecimal, decimalToBN } from '../../libs/utils/balances'
+import { bnToDecimal, decimalToBalance } from '../../libs/utils/balances'
+import { isNonNullableTuple } from '../../libs/utils/isNonNullableTuple'
 import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 import { PositionInput } from './PositionInput'
 
 const LoadingSpinner = (): ReactElement => <StyledSpinnerNext $as="span" />
-
-const CommissionRateColumn = ({ address }: { address: string }): ReactElement => {
-    const { data, isLoading } = useStashInfoQuery(decodeAddress(address) as AccountId)
-    return (
-        isLoading
-            ? <LoadingSpinner />
-            : data === undefined
-                ? <>n/a</>
-                : <>{data.payoutPrefs.commission}</>
-    )
-}
 
 const BNZero = new BN(0)
 const DecimalZero = new Decimal(0)
@@ -46,8 +36,15 @@ const ClosingBalance = ({ closingBalance, floatingResult }: {
     </>)
 }
 
-function isNonNullableTuple<T extends readonly any[]>(t: T): t is T & [T[0], NonNullable<T[1]>] {
-    return t[1] !== undefined
+const CommissionRateColumn = ({ address }: { address: string }): ReactElement => {
+    const { data, isLoading } = useStashInfoQuery(decodeAddress(address) as AccountId)
+    return (
+        isLoading
+            ? <LoadingSpinner />
+            : data === undefined
+                ? <>n/a</>
+                : <>{data.payoutPrefs.commission}</>
+    )
 }
 
 export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
@@ -58,7 +55,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
 
-    const { closingBalance, floatingResult } = useMemo(() => {
+    const { adjustments, closingBalance, floatingResult } = useMemo(() => {
         if (currentPositions === undefined || currentPendings === undefined || tokenDecimals === undefined) {
             return {}
         }
@@ -76,19 +73,14 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
                 const pending = currentPendings[miner]?.balance ?? DecimalZero
                 return [miner, balance?.sub(current).sub(pending)]
             })
+            .filter(([, offset]) => !offset.isZero())
 
-        const closingBalance = adjustments.reduce((acc, [, balance]) => acc.add(balance), openingBalance)
+        const closingBalance = adjustments.reduce((acc, [, offset]) => acc.add(offset), openingBalance)
 
         const floatingResult = closingBalance.sub(openingBalance)
 
         return { adjustments, closingBalance, floatingResult, openingBalance }
     }, [currentPendings, currentPositions, targetPositions, tokenDecimals])
-
-    const handlePositionChange = useCallback((miner: string, newPosition?: Decimal): void => {
-        const newTargetPositions = { ...targetPositions }
-        newTargetPositions[miner] = newPosition
-        setTargetPositions(newTargetPositions)
-    }, [targetPositions])
 
     const [extrinsicError, setExtrinsicError] = useState<string>()
     const [extrinsicStatus, setExtrinsicStatus] = useState<ExtrinsicStatus>()
@@ -96,23 +88,23 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
         return extrinsicStatus !== undefined && extrinsicStatus !== 'finalized' && extrinsicStatus !== 'invalid'
     }, [extrinsicStatus])
 
+    const handlePositionChange = useCallback((miner: string, newPosition?: Decimal): void => {
+        const newTargetPositions = { ...targetPositions }
+        newTargetPositions[miner] = newPosition
+        setTargetPositions(newTargetPositions)
+    }, [targetPositions])
+
     const handleSubmit = (): void => {
-        if (api === undefined || tokenDecimals === undefined) { return }
+        if (adjustments === undefined || api === undefined || tokenDecimals === undefined) { return }
 
         setExtrinsicStatus(undefined)
 
-        const adjustments = Object.fromEntries(Object.entries(targetPositions)
-            .filter((tuple): tuple is [string, Decimal] => {
-                return typeof tuple[0] === 'string' && tuple[1] instanceof Decimal
-            }).map(([miner, decimalTarget]): [string, ['stake' | 'unstake', Balance]] => {
-                const current = currentPositions?.[miner] ?? BNZero
-                const target = decimalToBN(decimalTarget, tokenDecimals)
-                const offset = target.sub(current)
-                return [miner, [offset.gt(BNZero) ? 'stake' : 'unstake', bnToBalance(offset.abs(), api)]]
-            }))
+        const batch = adjustments.map(([miner, offset]): [string, 'stake' | 'unstake', Balance] => {
+            return [miner, offset.isPositive() ? 'stake' : 'unstake', decimalToBalance(offset.abs(), tokenDecimals, api)]
+        })
 
         stakeBatch({
-            api, batch: adjustments, staker, statusCallback: (status) => setExtrinsicStatus(status)
+            api, batch, staker, statusCallback: (status) => setExtrinsicStatus(status)
         }).then(() => {
             setTargetPositions({})
             refetch({ cancelRefetch: true }).catch(() => { })
