@@ -26,6 +26,7 @@
     "@types/uuid": "^8.3.0",
     "baseui": "^9.112.0",
     "bunyan": "^1.8.15",
+    "decimal.js": "^10.2.1",
     "echarts": "^5.0.2",
     "echarts-for-react": "^3.0.1",
     "next": "10.0.8",

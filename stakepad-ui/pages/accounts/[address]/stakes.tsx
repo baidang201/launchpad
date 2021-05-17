@@ -17,10 +17,9 @@ const StakedPage = (): ReactElement => {
     const { query: { address: urlAddress } } = useRouter()
     const defaultAddress = useMemo(() => {
         try {
-            console.log('urlAddress=', urlAddress)
             return typeof urlAddress === 'string' && validateAddress(urlAddress) ? urlAddress : undefined
         } catch {
-            console.error('Invalid address in URL param:', urlAddress)
+            console.error('[StakePage] Invalid address in URL param:', urlAddress)
             return undefined
         }
     }, [urlAddress])

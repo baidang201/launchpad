@@ -35,6 +35,12 @@
                 "named": "never"
             }
         ],
+        "import/no-unassigned-import": [
+            "warn"
+        ],
+        "import/order": [
+            "warn"
+        ],
         "indent": [
             "error",
             4,
@@ -59,6 +65,12 @@
         ]
     },
     "settings": {
+        "import/parser": {
+            "@typescript-eslint/parser": [
+                ".ts",
+                ".tsx"
+            ]
+        },
         "react": {
             "version": "detect"
         }

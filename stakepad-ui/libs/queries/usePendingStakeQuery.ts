@@ -1,38 +1,58 @@
 import { ApiPromise } from '@polkadot/api'
 import { BalanceOf } from '@polkadot/types/interfaces'
 import { encodeAddress } from '@polkadot/util-crypto'
+import { Decimal } from 'decimal.js'
 import { useQuery, UseQueryResult } from 'react-query'
 import { v4 as uuidv4 } from 'uuid'
+import { bnToDecimal } from '../utils/balances'
+import { useDecimalJsTokenDecimalMultiplier } from './useTokenDecimals'
 
 interface PendingStake {
     staking?: BalanceOf
     unstaking?: BalanceOf
+
+    balance: Decimal
 }
+
+const decimalZero = new Decimal(0)
 
 const StakerPendingQueryKey = uuidv4()
 
 export const useStakerPendingsQuery = (staker?: string, api?: ApiPromise): UseQueryResult<Record<string, PendingStake>> => {
+    const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
+
     return useQuery(
         [StakerPendingQueryKey, staker, api],
         async () => {
-            if (staker === undefined || api === undefined) { return undefined }
+            if (api === undefined || staker === undefined || tokenDecimals === undefined) { return undefined }
 
-            const staking = await api.query.miningStaking.pendingStaking.entries(staker)
-            const unstaking = await api.query.miningStaking.pendingUnstaking.entries(staker)
+            return await Promise.all([
+                api.query.miningStaking.pendingStaking.entries(staker),
+                api.query.miningStaking.pendingUnstaking.entries(staker)
+            ]).then(([stakes, unstakes]) => {
+                const result: Record<string, PendingStake> = {}
+                stakes.forEach(([{ args: [, miner] }, balance]) => {
+                    const stake = balance.unwrapOrDefault()
+                    result[encodeAddress(miner)] = {
+                        balance: bnToDecimal(stake, tokenDecimals),
+                        staking: stake
+                    }
+                })
+                unstakes.forEach(([{ args: [, miner] }, balance]) => {
+                    const address = encodeAddress(miner)
+                    const unstake = balance.unwrapOrDefault()
+                    const deciamlUnstake = bnToDecimal(unstake, tokenDecimals)
 
-            const result: Record<string, PendingStake> = {}
-            staking.forEach(([{ args: [, miner] }, balance]) => {
-                result[encodeAddress(miner)] = { staking: balance.unwrapOrDefault() }
+                    const previous = result[address] ?? { balance: decimalZero }
+                    result[address] = {
+                        ...previous,
+                        balance: previous.balance.sub(deciamlUnstake),
+                        unstaking: unstake
+                    }
+                })
+
+                return result
             })
-            unstaking.forEach(([{ args: [, miner] }, balance]) => {
-                const address = encodeAddress(miner)
-                result[address] = {
-                    ...result[address],
-                    unstaking: balance.unwrapOrDefault()
-                }
-            })
-
-            return result
         }
     )
 }
