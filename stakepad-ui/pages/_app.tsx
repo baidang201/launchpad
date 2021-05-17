@@ -37,7 +37,7 @@ const App: AppComponent = ({ Component, pageProps }: AppProps) => {
 
     const handleMainItemSelect = (item: NavItemWithTarget): void => {
         push(item.info.target).catch(error => {
-            console.error(`[${__filename}] Failed navigating to ${item.info.target}: ${(error as Error)?.message ?? error}`)
+            console.error(`[_app] Failed navigating to ${item.info.target}: ${(error as Error)?.message ?? error}`)
         })
         setMainItems(prev => setItemActive(prev, item) as NavItemWithTarget[])
     }
