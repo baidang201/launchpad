@@ -20,8 +20,8 @@ export function decimalToBalance(decimal: Decimal, tokenDecimals?: Decimal, api?
     return bnToBalance(decimalToBN(decimal, tokenDecimals), api)
 }
 
-export function balanceToDecimal(bn: Balance, tokenDecimals: Decimal): Decimal
-export function balanceToDecimal(bn?: Balance, tokenDecimals?: Decimal): Decimal | undefined {
+export function bnToDecimal(bn: BN, tokenDecimals: Decimal): Decimal
+export function bnToDecimal(bn?: BN, tokenDecimals?: Decimal): Decimal | undefined {
     if (bn === undefined || tokenDecimals === undefined) { return undefined }
 
     return new Decimal(bn.toString()).div(tokenDecimals)

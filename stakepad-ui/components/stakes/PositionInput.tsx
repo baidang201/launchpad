@@ -3,7 +3,7 @@ import { Input } from 'baseui/input'
 import { Decimal } from 'decimal.js'
 import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
 import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
-import { balanceToDecimal } from '../../libs/utils/balances'
+import { bnToDecimal } from '../../libs/utils/balances'
 
 const validFloat = /^\d+(\.(\d+)?)?$/
 
@@ -20,7 +20,7 @@ export const PositionInput = ({ current: balanceCurrent, disabled, onChange, pen
     const current = useMemo(() => {
         return balanceCurrent === undefined || tokenDecimals === undefined
             ? undefined
-            : balanceToDecimal(balanceCurrent, tokenDecimals)
+            : bnToDecimal(balanceCurrent, tokenDecimals)
     }, [balanceCurrent, tokenDecimals])
 
     const [error, setError] = useState<boolean>(false)

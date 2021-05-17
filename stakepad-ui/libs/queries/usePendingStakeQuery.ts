@@ -4,7 +4,7 @@ import { encodeAddress } from '@polkadot/util-crypto'
 import { Decimal } from 'decimal.js'
 import { useQuery, UseQueryResult } from 'react-query'
 import { v4 as uuidv4 } from 'uuid'
-import { balanceToDecimal } from '../utils/balances'
+import { bnToDecimal } from '../utils/balances'
 import { useDecimalJsTokenDecimalMultiplier } from './useTokenDecimals'
 
 interface PendingStake {
@@ -34,14 +34,14 @@ export const useStakerPendingsQuery = (staker?: string, api?: ApiPromise): UseQu
                 stakes.forEach(([{ args: [, miner] }, balance]) => {
                     const stake = balance.unwrapOrDefault()
                     result[encodeAddress(miner)] = {
-                        balance: balanceToDecimal(stake, tokenDecimals),
+                        balance: bnToDecimal(stake, tokenDecimals),
                         staking: stake
                     }
                 })
                 unstakes.forEach(([{ args: [, miner] }, balance]) => {
                     const address = encodeAddress(miner)
                     const unstake = balance.unwrapOrDefault()
-                    const deciamlUnstake = balanceToDecimal(unstake, tokenDecimals)
+                    const deciamlUnstake = bnToDecimal(unstake, tokenDecimals)
 
                     const previous = result[address] ?? { balance: decimalZero }
                     result[address] = {

@@ -1,4 +1,3 @@
-import { ApiPromise } from '@polkadot/api'
 import { AccountId, Balance } from '@polkadot/types/interfaces'
 import { decodeAddress } from '@polkadot/util-crypto'
 import { Button } from 'baseui/button'
@@ -16,7 +15,7 @@ import { useStakerPendingsQuery } from '../../libs/queries/usePendingStakeQuery'
 import { useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
-import { bnToBalance, decimalToBN } from '../../libs/utils/balances'
+import { bnToBalance, bnToDecimal, decimalToBN } from '../../libs/utils/balances'
 import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 import { PositionInput } from './PositionInput'
 
@@ -36,57 +35,19 @@ const CommissionRateColumn = ({ address }: { address: string }): ReactElement =>
 const BNZero = new BN(0)
 const DecimalZero = new Decimal(0)
 
-const ClosingBalance = ({ api, currentPositions, miners, targetPositions }: {
-    api?: ApiPromise
-    currentPositions?: Record<string, Balance>
-    miners?: string[]
-    targetPositions: Record<string, Decimal | undefined>
+const ClosingBalance = ({ closingBalance, floatingResult }: {
+    closingBalance?: Decimal
+    floatingResult?: Decimal
 }): ReactElement => {
-    const targetPositionMap = useMemo(() => new Map(Object.entries(targetPositions)), [targetPositions])
-    const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
-
-    const closingBalance = useMemo<Balance | undefined>(() => {
-        if (api === undefined || miners === undefined || tokenDecimals === undefined) { return undefined }
-
-        const closing = miners
-            .map(miner => {
-                const current = currentPositions?.[miner] ?? BNZero
-                const target = targetPositionMap.get(miner)
-                if (target !== undefined) {
-                    return new BN(target.mul(tokenDecimals).toString())
-                } else {
-                    return current
-                }
-            }).reduce((acc, balance) => acc.add(balance), BNZero)
-
-        return api.registry.createType('Balance', closing)
-    }, [api, currentPositions, miners, targetPositionMap, tokenDecimals])
-
-    const openingBalance = useMemo<Balance | undefined>(() => {
-        if (api === undefined || currentPositions === undefined || miners === undefined || tokenDecimals === undefined) { return undefined }
-
-        const opening = miners
-            .map(miner => currentPositions?.[miner] ?? BNZero)
-            .reduce((acc, balance) => acc.add(balance), BNZero)
-
-        return api.registry.createType('Balance', opening)
-    }, [api, currentPositions, miners, tokenDecimals])
-
-    const floatingResult = useMemo<[boolean, Balance] | undefined>(() => {
-        if (api === undefined || closingBalance === undefined || openingBalance === undefined) { return undefined }
-
-        const result = closingBalance.sub(openingBalance)
-        if (result.eq(BNZero)) {
-            return undefined
-        } else {
-            return [result.lt(BNZero), api.registry.createType('Balance', result.abs())]
-        }
-    }, [api, closingBalance, openingBalance])
-
     return (<>
-        {closingBalance?.toHuman() ?? <LoadingSpinner />}
-        {floatingResult !== undefined && <>({floatingResult[0] ? '-' : '+'}{floatingResult[1].toHuman()})</>}
+        {closingBalance !== undefined ? `${closingBalance.toString()} PHA` : <LoadingSpinner />}
+        &nbsp;
+        {floatingResult !== undefined && <>({floatingResult.isPositive() && '+'}{floatingResult.toString()})</>}
     </>)
+}
+
+function isNonNullableTuple<T extends readonly any[]>(t: T): t is T & [T[0], NonNullable<T[1]>] {
+    return t[1] !== undefined
 }
 
 export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
@@ -96,6 +57,32 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
+
+    const { closingBalance, floatingResult } = useMemo(() => {
+        if (currentPositions === undefined || currentPendings === undefined || tokenDecimals === undefined) {
+            return {}
+        }
+
+        const currentBalance = Object.entries(currentPositions)
+            .reduce((acc, [, balance]) => acc.add(balance), BNZero)
+
+        const openingBalance = Object.entries(currentPendings)
+            .reduce((acc, [, { balance }]) => acc.add(balance), bnToDecimal(currentBalance, tokenDecimals))
+
+        const adjustments = Object.entries(targetPositions)
+            .filter(isNonNullableTuple)
+            .map(([miner, balance]): [string, Decimal] => {
+                const current = bnToDecimal(currentPositions[miner] ?? BNZero, tokenDecimals)
+                const pending = currentPendings[miner]?.balance ?? DecimalZero
+                return [miner, balance?.sub(current).sub(pending)]
+            })
+
+        const closingBalance = adjustments.reduce((acc, [, balance]) => acc.add(balance), openingBalance)
+
+        const floatingResult = closingBalance.sub(openingBalance)
+
+        return { adjustments, closingBalance, floatingResult, openingBalance }
+    }, [currentPendings, currentPositions, targetPositions, tokenDecimals])
 
     const handlePositionChange = useCallback((miner: string, newPosition?: Decimal): void => {
         const newTargetPositions = { ...targetPositions }
@@ -173,7 +160,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
 
             <FlexGrid flexDirection="row">
                 <FlexGridItem>
-                    Closing Balance: <ClosingBalance api={api} currentPositions={currentPositions} miners={miners} targetPositions={targetPositions} />
+                    <ClosingBalance closingBalance={closingBalance} floatingResult={floatingResult} />
                 </FlexGridItem>
                 <FlexGridItem alignSelf="flex-end">
                     <Button onClick={handleSubmit}>Submit</Button>
