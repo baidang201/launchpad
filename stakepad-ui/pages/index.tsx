@@ -1,13 +1,15 @@
 import { Pagination } from 'baseui/pagination'
-import React, { useMemo, useState } from 'react'
+import React, { ReactElement, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
+import { InjectedAccountSelect } from '../components/accounts/AccountSelect'
 import { MinerTable } from '../components/dashboard/MinerTable'
 import { StakeInit } from '../components/dashboard/StakeInit'
+import { PositionTable } from '../components/stakes/PositionTable'
 import { FindWorkerFilters, findWorkersByStash } from '../libs/apis/workers'
 
 const defaultPageSize = 10
 
-const DashboardPage: React.FC = () => {
+const Dashboard = ({ setMiners }: { setMiners: (miners: string[]) => void }): ReactElement => {
     const [filters, setFilters] = useState<FindWorkerFilters>({
         commissionRateLessThan20: true,
         mining: false,
@@ -22,8 +24,14 @@ const DashboardPage: React.FC = () => {
     )
     const totalPages = useMemo(() => Math.ceil((data?.total ?? 0) / defaultPageSize), [data])
 
-    const [, setSelection] = useState<string[]>()
+    const [selection, setSelection] = useState<string[]>()
     const handleSelectionChange = (miners: string[]): void => { setSelection(miners) }
+
+    const handleClickManual = (): void => {
+        if (selection !== undefined && selection.length > 0) {
+            setMiners(selection)
+        }
+    }
 
     return (
         <>
@@ -31,6 +39,7 @@ const DashboardPage: React.FC = () => {
 
             <StakeInit
                 currentFilters={filters}
+                onClickManual={() => handleClickManual()}
                 onFilterChanged={setFilters}
                 onStashChanged={stash => setStashFilter(typeof stash === 'string' && stash.length > 0 ? stash : undefined)}
             />
@@ -48,6 +57,22 @@ const DashboardPage: React.FC = () => {
             />
         </>
     )
+}
+
+const DashboardPage = (): ReactElement => {
+    const [miners, setMiners] = useState<string[]>()
+    const [staker, setStaker] = useState<string>()
+
+    if (miners !== undefined) {
+        return (
+            <>
+                <InjectedAccountSelect onChange={address => setStaker(address)} />
+                <PositionTable miners={miners} staker={staker} />
+            </>
+        )
+    } else {
+        return <Dashboard setMiners={miners => setMiners(miners)} />
+    }
 }
 
 export default DashboardPage

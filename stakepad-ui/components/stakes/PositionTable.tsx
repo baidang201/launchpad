@@ -15,7 +15,7 @@ import { useStakerPendingsQuery } from '../../libs/queries/usePendingStakeQuery'
 import { useStakerPositionsQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 import { useDecimalJsTokenDecimalMultiplier } from '../../libs/queries/useTokenDecimals'
-import { bnToDecimal, decimalToBalance } from '../../libs/utils/balances'
+import { bnToBalance, bnToDecimal, decimalToBalance } from '../../libs/utils/balances'
 import { isNonNullableTuple } from '../../libs/utils/isNonNullableTuple'
 import { ExtrinsicStatusNotification } from '../extrinsics/ExtrinsicStatusNotification'
 import { PositionInput } from './PositionInput'
@@ -47,7 +47,7 @@ const CommissionRateColumn = ({ address }: { address: string }): ReactElement =>
     )
 }
 
-export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
+export const PositionTable = ({ miners, staker }: { miners?: string[], staker?: string }): ReactElement => {
     const { api } = useApiPromise()
     const { data: currentPositions, refetch: refetchPositions } = useStakerPositionsQuery(staker, api)
     const { data: currentPendings, refetch: refetchPendings } = useStakerPendingsQuery(staker, api)
@@ -96,7 +96,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
     }, [targetPositions])
 
     const handleSubmit = (): void => {
-        if (adjustments === undefined || api === undefined || tokenDecimals === undefined) { return }
+        if (adjustments === undefined || api === undefined || staker === undefined || tokenDecimals === undefined) { return }
 
         setExtrinsicStatus(undefined)
 
@@ -157,6 +157,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
                     <ClosingBalance closingBalance={closingBalance} floatingResult={floatingResult} />
                 </FlexGridItem>
                 <FlexGridItem alignSelf="flex-end">
+                    {/* TODO: disabled on condition not fulfilled */}
                     <Button onClick={handleSubmit}>Submit</Button>
                     {typeof extrinsicError === 'string' && (
                         <Notification kind={NotificationKind.negative}>{extrinsicError}</Notification>
