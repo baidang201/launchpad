@@ -51,6 +51,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
     const { api } = useApiPromise()
     const { data: currentPositions, refetch: refetchPositions } = useStakerPositionsQuery(staker, api)
     const { data: currentPendings, refetch: refetchPendings } = useStakerPendingsQuery(staker, api)
+    const balanceZero = useMemo(() => api !== undefined ? bnToBalance(BNZero, api) : undefined, [api])
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
@@ -141,7 +142,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
                 <TableBuilderColumn header={positionInputHeader}>
                     {(miner: string) => (
                         <PositionInput
-                            current={currentPositions?.[miner]}
+                            current={currentPositions !== undefined ? (currentPositions?.[miner] ?? balanceZero) : undefined}
                             disabled={inputDisabled}
                             onChange={newPosition => handlePositionChange(miner, newPosition)}
                             pending={currentPendings?.[miner]?.balance}
