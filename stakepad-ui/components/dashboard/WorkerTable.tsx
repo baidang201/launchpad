@@ -1,44 +1,57 @@
 import { StyledLink } from 'baseui/link'
-import { Pagination } from 'baseui/pagination'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
-import React, { ReactElement, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
+import React, { ReactElement } from 'react'
 import { Worker } from '../../libs/apis'
-import { findWorkersByStash } from '../../libs/apis/workers'
 
-const defaultPageSize = 10
-
-interface FindWorkerFilters {
-    // TODO: maybe should be put under @/libs/apis/
-    commissionRateLessThan20: boolean
-    mining: boolean
-    stakePending: boolean
-}
-
-export const WorkerTable = ({ filters, stash }: {
-    filters: FindWorkerFilters
-    stash?: string
+export const MinerTable = ({ isLoading, miners }: {
+    isLoading?: boolean
+    miners: Worker[]
+    // onSelectionChange: (miners: string[]) => void
 }): ReactElement => {
-    const [currentPage, setCurrentPage] = useState(1)
+    // const [selected, setSelected] = useState<Set<string>>(new Set())
 
-    const { data, isFetched } = useQuery([
-        'api', 'findWorkersByStash', filters, currentPage, defaultPageSize, stash
-    ], async () => {
-        return await findWorkersByStash(filters, currentPage, defaultPageSize, stash)
-    })
+    // const handleToggle = (stash: string, checked: boolean): void => {
+    //     if (checked) {
+    //         setSelected(new Set([...selected, stash]))
+    //     } else {
+    //         setSelected(new Set([...selected].filter(sel => sel !== stash)))
+    //     }
+    // }
 
-    const totalPages = useMemo(() => Math.ceil((data?.total ?? 0) / defaultPageSize), [data])
+    // const handleToggleAll = useCallback((checked: boolean): void => {
+    //     const filter = new Set(miners.map(miner => miner.stash))
+    //     if (checked) {
+    //         setSelected(new Set([...selected, ...filter]))
+    //     } else {
+    //         setSelected(new Set([...selected].filter(sel => !filter.has(sel))))
+    //     }
+    // }, [miners, selected])
 
-    const workers = data?.workers ?? []
+    // const hasCount = useMemo(() => {
+    //     return miners
+    //         .map(miner => selected.has(miner.stash))
+    //         .reduce((count, flag) => flag ? count + 1 : count, 0)
+    // }, [miners, selected])
+
+    // const ToggleAllCheckbox = useMemo(() => (
+    //     <Checkbox
+    //         checked={hasCount === miners.length && hasCount > 0}
+    //         isIndeterminate={hasCount > 0 && hasCount < miners.length}
+    //         onChange={e => handleToggleAll(e.currentTarget.checked)}
+    //     />
+    // ), [handleToggleAll, hasCount, miners.length])
 
     return (
         <>
             <TableBuilder
-                data={workers}
+                data={miners}
                 emptyMessage="没有数据"
-                isLoading={!isFetched}
+                isLoading={isLoading}
                 loadingMessage="读取中"
             >
+                {/* <TableBuilderColumn header={ToggleAllCheckbox}>
+                    {(miner: Worker) => <Checkbox checked={selected.has(miner.stash)} onChange={e => handleToggle(miner.stash, e.currentTarget.checked)} />}
+                </TableBuilderColumn> */}
                 <TableBuilderColumn header="账户">
                     {(worker: Worker) => <StyledLink href={`workers/${worker.stash}`}>{worker.stash}</StyledLink>}
                 </TableBuilderColumn>
@@ -52,12 +65,6 @@ export const WorkerTable = ({ filters, stash }: {
                     {(worker: Worker) => <StyledLink href={`workers/${worker.stash}`}>详情</StyledLink>}
                 </TableBuilderColumn>
             </TableBuilder>
-
-            <Pagination
-                currentPage={currentPage}
-                numPages={totalPages}
-                onPageChange={({ nextPage }) => setCurrentPage(Math.min(Math.max(nextPage, 1), totalPages))}
-            />
         </>
     )
 }
