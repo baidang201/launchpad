@@ -49,8 +49,8 @@ const CommissionRateColumn = ({ address }: { address: string }): ReactElement =>
 
 export const PositionTable = ({ miners, staker }: { miners?: string[], staker: string }): ReactElement => {
     const { api } = useApiPromise()
-    const { data: currentPositions, refetch } = useStakerPositionsQuery(staker, api)
-    const { data: currentPendings } = useStakerPendingsQuery(staker, api)
+    const { data: currentPositions, refetch: refetchPositions } = useStakerPositionsQuery(staker, api)
+    const { data: currentPendings, refetch: refetchPendings } = useStakerPendingsQuery(staker, api)
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
@@ -107,7 +107,8 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker: s
             api, batch, staker, statusCallback: (status) => setExtrinsicStatus(status)
         }).then(() => {
             setTargetPositions({})
-            refetch({ cancelRefetch: true }).catch(() => { })
+            refetchPositions({ cancelRefetch: true }).catch(() => { })
+            refetchPendings({ cancelRefetch: true }).catch(() => { })
         }).catch(error => {
             setExtrinsicError((error as Error)?.message ?? error)
         })
