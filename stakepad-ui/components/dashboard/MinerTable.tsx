@@ -4,7 +4,7 @@ import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import React, { ReactElement, useCallback, useMemo, useState } from 'react'
 import { Worker } from '../../libs/apis'
 
-export const MinerTable = ({ isLoading, miners }: {
+export const MinerTable = ({ isLoading, miners, onSelectionChange }: {
     isLoading?: boolean
     miners: Worker[]
     onSelectionChange: (miners: string[]) => void
@@ -12,21 +12,17 @@ export const MinerTable = ({ isLoading, miners }: {
     const [selected, setSelected] = useState<Set<string>>(new Set())
 
     const handleToggle = (stash: string, checked: boolean): void => {
-        if (checked) {
-            setSelected(new Set([...selected, stash]))
-        } else {
-            setSelected(new Set([...selected].filter(sel => sel !== stash)))
-        }
+        const result = checked ? [...selected, stash] : [...selected].filter(sel => sel !== stash)
+        setSelected(new Set(result))
+        onSelectionChange(result)
     }
 
     const handleToggleAll = useCallback((checked: boolean): void => {
         const filter = new Set(miners.map(miner => miner.stash))
-        if (checked) {
-            setSelected(new Set([...selected, ...filter]))
-        } else {
-            setSelected(new Set([...selected].filter(sel => !filter.has(sel))))
-        }
-    }, [miners, selected])
+        const result = checked ? [...selected, ...filter] : [...selected].filter(sel => !filter.has(sel))
+        setSelected(new Set(result))
+        onSelectionChange(result)
+    }, [miners, onSelectionChange, selected])
 
     const hasCount = useMemo(() => {
         return miners
