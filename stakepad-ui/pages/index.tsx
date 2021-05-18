@@ -1,8 +1,8 @@
 import { Pagination } from 'baseui/pagination'
 import React, { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
+import { MinerTable } from '../components/dashboard/MinerTable'
 import { StakeInit } from '../components/dashboard/StakeInit'
-import { MinerTable } from '../components/dashboard/WorkerTable'
 import { FindWorkerFilters, findWorkersByStash } from '../libs/apis/workers'
 
 const defaultPageSize = 10
@@ -22,12 +22,13 @@ const DashboardPage: React.FC = () => {
     )
     const totalPages = useMemo(() => Math.ceil((data?.total ?? 0) / defaultPageSize), [data])
 
-    // const [, setSelection] = useState<string[]>()
-    // const handleSelectionChange = (miners: string[]): void => { setSelection(miners) }
+    const [, setSelection] = useState<string[]>()
+    const handleSelectionChange = (miners: string[]): void => { setSelection(miners) }
 
     return (
         <>
             {/* <GlobalTelemetry /> */}
+
             <StakeInit
                 currentFilters={filters}
                 onFilterChanged={setFilters}
@@ -37,7 +38,7 @@ const DashboardPage: React.FC = () => {
             <MinerTable
                 isLoading={!isFetched}
                 miners={data?.workers ?? []}
-            // onSelectionChange={handleSelectionChange}
+                onSelectionChange={handleSelectionChange}
             />
 
             <Pagination
