@@ -1,8 +1,8 @@
 import { ApiPromise } from '@polkadot/api'
 import { BalanceOf } from '@polkadot/types/interfaces'
-import { encodeAddress } from '@polkadot/util-crypto'
 import { useQuery, UseQueryResult } from 'react-query'
 import { v4 as uuidv4 } from 'uuid'
+import { useAddressNormalizer } from './useAddressNormalizer'
 
 const StakerPositionsQueryKey = uuidv4()
 
@@ -10,13 +10,14 @@ const StakerPositionsQueryKey = uuidv4()
  * @param staker Account address of staker who has open stake positions to other miners
  */
 export const useStakerPositionsQuery = (staker?: string, api?: ApiPromise): UseQueryResult<Record<string, BalanceOf>> => {
+    const normalizeAddress = useAddressNormalizer(api)
     return useQuery(
         [StakerPositionsQueryKey, staker, api],
         async () => {
             if (staker === undefined || api === undefined) { return undefined }
             const entries = await api.query.miningStaking.staked.entries(staker)
             return Object.fromEntries(entries.map(([{ args: [, miner] }, value]) => {
-                return [encodeAddress(miner), value.unwrapOrDefault()]
+                return [normalizeAddress(miner), value.unwrapOrDefault()]
             }))
         }
     )
