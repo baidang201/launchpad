@@ -7,7 +7,7 @@ import { StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import BN from 'bn.js'
 import { Decimal } from 'decimal.js'
-import React, { ReactElement, useCallback, useMemo, useState } from 'react'
+import React, { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
 import { stakeBatch } from '../../libs/extrinsics/stake'
 import { useApiPromise } from '../../libs/polkadot'
 import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
@@ -57,17 +57,22 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker?: 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
 
     const { adjustments, closingBalance, floatingResult } = useMemo(() => {
-        if (currentPositions === undefined || currentPendings === undefined || tokenDecimals === undefined) {
+        if (currentPositions === undefined || currentPendings === undefined || miners === undefined || tokenDecimals === undefined) {
             return {}
         }
 
-        const currentBalance = Object.entries(currentPositions)
-            .reduce((acc, [, balance]) => acc.add(balance), BNZero)
+        const currentBalance = miners
+            .map(miner => bnToDecimal(currentPositions[miner] ?? BNZero, tokenDecimals))
+            .reduce((acc, balance) => acc.add(balance), DecimalZero)
 
-        const openingBalance = Object.entries(currentPendings)
-            .reduce((acc, [, { balance }]) => acc.add(balance), bnToDecimal(currentBalance, tokenDecimals))
+        const openingBalance = currentBalance.add(
+            miners
+                .map(miner => currentPendings[miner]?.balance ?? DecimalZero)
+                .reduce((acc, balance) => acc.add(balance), DecimalZero)
+        )
 
-        const adjustments = Object.entries(targetPositions)
+        const adjustments = miners
+            .map((miner): [string, Decimal | undefined] => [miner, targetPositions[miner]])
             .filter(isNonNullableTuple)
             .map(([miner, balance]): [string, Decimal] => {
                 const current = bnToDecimal(currentPositions[miner] ?? BNZero, tokenDecimals)
@@ -81,7 +86,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker?: 
         const floatingResult = closingBalance.sub(openingBalance)
 
         return { adjustments, closingBalance, floatingResult, openingBalance }
-    }, [currentPendings, currentPositions, targetPositions, tokenDecimals])
+    }, [currentPendings, currentPositions, miners, targetPositions, tokenDecimals])
 
     const [extrinsicError, setExtrinsicError] = useState<string>()
     const [extrinsicStatus, setExtrinsicStatus] = useState<ExtrinsicStatus>()
