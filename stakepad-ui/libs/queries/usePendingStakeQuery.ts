@@ -1,5 +1,5 @@
 import { ApiPromise } from '@polkadot/api'
-import { BalanceOf } from '@polkadot/types/interfaces'
+import { AccountId, BalanceOf } from '@polkadot/types/interfaces'
 import { encodeAddress } from '@polkadot/util-crypto'
 import { Decimal } from 'decimal.js'
 import { useQuery, UseQueryResult } from 'react-query'
@@ -14,11 +14,16 @@ interface PendingStake {
     balance: Decimal
 }
 
+interface UseStakerPendingTotalQueryResult {
+    balance: Decimal
+    count: number
+}
+
 const decimalZero = new Decimal(0)
 
 const StakerPendingQueryKey = uuidv4()
 
-export const useStakerPendingsQuery = (staker?: string, api?: ApiPromise): UseQueryResult<Record<string, PendingStake>> => {
+export const useStakerPendingsQuery = (staker?: AccountId | string, api?: ApiPromise): UseQueryResult<Record<string, PendingStake>> => {
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier(api)
 
     return useQuery(
@@ -55,6 +60,18 @@ export const useStakerPendingsQuery = (staker?: string, api?: ApiPromise): UseQu
             })
         }
     )
+}
+
+export const useStakerPendingTotalQuery = (staker?: AccountId | string, api?: ApiPromise): UseStakerPendingTotalQueryResult | undefined => {
+    const { data: pendings } = useStakerPendingsQuery(staker, api)
+
+    if (pendings === undefined) { return undefined }
+
+    const entries = Object.entries(pendings).filter(([, { balance }]) => !balance.isZero())
+    return {
+        balance: entries.reduce((acc, [, { balance }]) => acc.add(balance), decimalZero),
+        count: entries.length
+    }
 }
 
 export const useStakePendingQuery = (staker?: string, miner?: string, api?: ApiPromise): PendingStake | undefined => {

@@ -12,6 +12,7 @@ import { useApiPromise, useWeb3 } from '../../libs/polkadot'
 import { useAccountQuery } from '../../libs/queries/useAccountQuery'
 import { useAddressNormalizer } from '../../libs/queries/useAddressNormalizer'
 import { useDepositQuery } from '../../libs/queries/useBalanceQuery'
+import { useStakerPendingTotalQuery } from '../../libs/queries/usePendingStakeQuery'
 import { useStakerPositionTotalQuery } from '../../libs/queries/useStakeQuery'
 import { useStashInfoQuery } from '../../libs/queries/useStashInfoQuery'
 
@@ -53,13 +54,24 @@ const DepositBalanceColumn = ({ accountId }: { accountId: AccountId }): ReactEle
 const StakerPositionTotalColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
     const { api } = useApiPromise()
     const positions = useStakerPositionTotalQuery(accountId, api)
-    return (<LoadingColumn>{(positions !== undefined) && `${positions.balance.toString()} PHA`}</LoadingColumn>)
+    const pendings = useStakerPendingTotalQuery(accountId, api)
+
+    const pendingSign = pendings?.balance.isPositive() === true ? '+' : ''
+    const pendingText = pendings?.balance.isZero() === false ? ` (${pendingSign}${pendings.balance.toString()} pending)` : ''
+    return (
+        <LoadingColumn>
+            {(positions !== undefined) && (`${positions.balance.toString()}${pendingText} PHA`)}
+        </LoadingColumn>
+    )
 }
 
 const StakerPositionCountColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
     const { api } = useApiPromise()
     const positions = useStakerPositionTotalQuery(accountId, api)
-    return (<LoadingColumn>{(positions !== undefined) && `${positions.count.toString()}`}</LoadingColumn>)
+    const pendings = useStakerPendingTotalQuery(accountId, api)
+
+    const pendingText = pendings !== undefined && pendings.count > 0 ? ` (${pendings.count} pending)` : ''
+    return (<LoadingColumn>{(positions !== undefined) && `${positions.count.toString()}${pendingText}`}</LoadingColumn>)
 }
 
 interface OperationItemMenuItem {
