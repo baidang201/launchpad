@@ -16,7 +16,7 @@ const StakePositionTablePage = (): ReactElement => {
     const { data: currentPositions } = useStakerPositionsQuery(address, api)
     const { data: currentPendings } = useStakerPendingsQuery(address, api)
     const miners = useMemo(() => [
-        // TODO: fix this costly array intersection
+        // TODO: fix this costly array union
         ...new Set([
             ...Object.keys(currentPositions ?? {}),
             ...Object.keys(currentPendings ?? {})]
