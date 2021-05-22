@@ -7,6 +7,11 @@ import { bnToDecimal } from '../utils/balances'
 import { useAddressNormalizer } from './useAddressNormalizer'
 import { useDecimalJsTokenDecimalMultiplier } from './useTokenDecimals'
 
+interface UseStakerPositionTotalQueryResult {
+    balance: Decimal
+    count: number
+}
+
 const StakerPositionsQueryKey = uuidv4()
 
 /**
@@ -26,13 +31,18 @@ export const useStakerPositionsQuery = (staker?: AccountId | string, api?: ApiPr
     )
 }
 
-export const useStakerPositionTotalQuery = (staker?: AccountId | string, api?: ApiPromise): Decimal | undefined => {
+export const useStakerPositionTotalQuery = (staker?: AccountId | string, api?: ApiPromise): UseStakerPositionTotalQueryResult | undefined => {
     const { data: positions } = useStakerPositionsQuery(staker, api)
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier(api)
 
     if (positions === undefined || tokenDecimals === undefined) { return undefined }
 
-    return Object.entries(positions).reduce((acc, [, balance]) => acc.add(bnToDecimal(balance, tokenDecimals)), new Decimal(0))
+    const entries = Object.entries(positions)
+
+    return {
+        balance: entries.reduce((acc, [, balance]) => acc.add(bnToDecimal(balance, tokenDecimals)), new Decimal(0)),
+        count: entries.length
+    }
 }
 
 /**

@@ -52,8 +52,14 @@ const DepositBalanceColumn = ({ accountId }: { accountId: AccountId }): ReactEle
 
 const StakerPositionTotalColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
     const { api } = useApiPromise()
-    const balance = useStakerPositionTotalQuery(accountId, api)
-    return (<LoadingColumn>{(balance !== undefined) && `${balance.toString()} PHA`}</LoadingColumn>)
+    const positions = useStakerPositionTotalQuery(accountId, api)
+    return (<LoadingColumn>{(positions !== undefined) && `${positions.balance.toString()} PHA`}</LoadingColumn>)
+}
+
+const StakerPositionCountColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
+    const { api } = useApiPromise()
+    const positions = useStakerPositionTotalQuery(accountId, api)
+    return (<LoadingColumn>{(positions !== undefined) && `${positions.count.toString()}`}</LoadingColumn>)
 }
 
 interface OperationItemMenuItem {
@@ -138,7 +144,7 @@ const Accounts = (): ReactElement => {
                 </TableBuilderColumn>
 
                 <TableBuilderColumn header="抵押机器数量">
-                    {() => <LoadingSpinner />}
+                    {(item: AccountTableItem) => <StakerPositionCountColumn accountId={item.accountId} />}
                 </TableBuilderColumn>
 
                 <TableBuilderColumn>
