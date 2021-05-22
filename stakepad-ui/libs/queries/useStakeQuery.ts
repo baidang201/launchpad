@@ -1,6 +1,5 @@
 import { ApiPromise } from '@polkadot/api'
 import { AccountId, Balance, BalanceOf } from '@polkadot/types/interfaces'
-import BN from 'bn.js'
 import { Decimal } from 'decimal.js'
 import { useQuery, UseQueryResult } from 'react-query'
 import { v4 as uuidv4 } from 'uuid'
@@ -13,7 +12,7 @@ interface UseStakerPositionTotalQueryResult {
     count: number
 }
 
-const BNZero = new BN(0)
+// const BNZero = new BN(0)
 
 const StakerPositionsQueryKey = uuidv4()
 
@@ -32,7 +31,7 @@ export const useStakerPositionsQuery = (staker?: AccountId | string, api?: ApiPr
                     .map(([{ args: [, miner] }, value]): [string, Balance] => {
                         return [normalizeAddress(miner), value.unwrapOrDefault()]
                     })
-                    .filter(([, balance]) => balance.gt(BNZero))
+                // .filter(([, balance]) => balance.gt(BNZero))
             )
         }
     )
