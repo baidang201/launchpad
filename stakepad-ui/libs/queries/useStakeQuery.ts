@@ -1,5 +1,6 @@
 import { ApiPromise } from '@polkadot/api'
-import { AccountId, BalanceOf } from '@polkadot/types/interfaces'
+import { AccountId, Balance, BalanceOf } from '@polkadot/types/interfaces'
+import BN from 'bn.js'
 import { Decimal } from 'decimal.js'
 import { useQuery, UseQueryResult } from 'react-query'
 import { v4 as uuidv4 } from 'uuid'
@@ -11,6 +12,8 @@ interface UseStakerPositionTotalQueryResult {
     balance: Decimal
     count: number
 }
+
+const BNZero = new BN(0)
 
 const StakerPositionsQueryKey = uuidv4()
 
@@ -24,9 +27,13 @@ export const useStakerPositionsQuery = (staker?: AccountId | string, api?: ApiPr
         async () => {
             if (staker === undefined || api === undefined) { return undefined }
             const entries = await api.query.miningStaking.staked.entries(staker)
-            return Object.fromEntries(entries.map(([{ args: [, miner] }, value]) => {
-                return [normalizeAddress(miner), value.unwrapOrDefault()]
-            }))
+            return Object.fromEntries(
+                entries
+                    .map(([{ args: [, miner] }, value]): [string, Balance] => {
+                        return [normalizeAddress(miner), value.unwrapOrDefault()]
+                    })
+                    .filter(([, balance]) => balance.gt(BNZero))
+            )
         }
     )
 }

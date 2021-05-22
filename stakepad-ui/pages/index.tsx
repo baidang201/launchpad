@@ -20,8 +20,6 @@ const Dashboard = ({ setMiners }: { setMiners: (miners: string[]) => void }): Re
     const [sortAsc, setSortAsc] = useState<boolean>()
     const [stashFilter, setStashFilter] = useState<string | undefined>(undefined)
 
-    console.log('Dashboard:', 'sort=', sort, ', sortAsc=', sortAsc)
-
     const [currentPage, setCurrentPage] = useState(1)
     const { data, isFetched } = useWorkersByStashQuery({
         filters, page: currentPage, pageSize: defaultPageSize, sort, sortAsc, stash: stashFilter
