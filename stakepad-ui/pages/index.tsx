@@ -1,12 +1,12 @@
 import { Pagination } from 'baseui/pagination'
 import React, { ReactElement, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { InjectedAccountSelect } from '../components/accounts/AccountSelect'
 import { MinerTable } from '../components/dashboard/MinerTable'
 import { StakeInit } from '../components/dashboard/StakeInit'
 import { PositionTable } from '../components/stakes/PositionTable'
-import { FindWorkerFilters, findWorkersByStash } from '../libs/apis/workers'
+import { FindWorkerFilters } from '../libs/apis/workers'
 import { SortingField } from '../libs/apis/workers/findWorkersByStash'
+import { useWorkersByStashQuery } from '../libs/queries/useWorkersByStash'
 
 const defaultPageSize = 10
 
@@ -23,13 +23,9 @@ const Dashboard = ({ setMiners }: { setMiners: (miners: string[]) => void }): Re
     console.log('Dashboard:', 'sort=', sort, ', sortAsc=', sortAsc)
 
     const [currentPage, setCurrentPage] = useState(1)
-    const { data, isFetched } = useQuery(
-        // TODO: extract this usequery
-        ['api', 'findWorkersByStash', filters, currentPage, defaultPageSize, stashFilter, sort, sortAsc],
-        async () => await findWorkersByStash({
-            filters, page: currentPage, pageSize: defaultPageSize, sort, sortAsc, stash: stashFilter
-        })
-    )
+    const { data, isFetched } = useWorkersByStashQuery({
+        filters, page: currentPage, pageSize: defaultPageSize, sort, sortAsc, stash: stashFilter
+    })
     const totalPages = useMemo(() => Math.ceil((data?.total ?? 0) / defaultPageSize), [data])
 
     const [selection, setSelection] = useState<string[]>()
