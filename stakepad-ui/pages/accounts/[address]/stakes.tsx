@@ -4,6 +4,7 @@ import { InjectedAccountSelect } from '../../../components/accounts/AccountSelec
 import { PositionTable } from '../../../components/stakes/PositionTable'
 import { useApiPromise } from '../../../libs/polkadot'
 import { useAddressNormalizer } from '../../../libs/queries/useAddressNormalizer'
+import { useStakerPendingsQuery } from '../../../libs/queries/usePendingStakeQuery'
 import { useStakerPositionsQuery } from '../../../libs/queries/useStakeQuery'
 
 const StakePositionTablePage = (): ReactElement => {
@@ -12,8 +13,15 @@ const StakePositionTablePage = (): ReactElement => {
     const { api } = useApiPromise()
     const normalizeAddress = useAddressNormalizer(api)
 
-    const { data } = useStakerPositionsQuery(address, api)
-    const miners = data === undefined ? undefined : Object.keys(data)
+    const { data: currentPositions } = useStakerPositionsQuery(address, api)
+    const { data: currentPendings } = useStakerPendingsQuery(address, api)
+    const miners = useMemo(() => [
+        // TODO: fix this costly array intersection
+        ...new Set([
+            ...Object.keys(currentPositions ?? {}),
+            ...Object.keys(currentPendings ?? {})]
+        )
+    ], [currentPendings, currentPositions])
 
     const { query: { address: urlAddress } } = useRouter()
     const defaultAddress = useMemo(() => {

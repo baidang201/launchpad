@@ -57,7 +57,7 @@ export const useStakerPendingsQuery = (staker?: AccountId | string, api?: ApiPro
                     }
                 })
 
-                return result
+                return Object.fromEntries(Object.entries(result).filter(([, { balance }]) => !balance.isZero()))
             })
         }
     )
