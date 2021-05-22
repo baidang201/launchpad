@@ -1,5 +1,6 @@
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types'
 import { createContext, PropsWithChildren, ReactElement, useContext, useEffect, useState } from 'react'
+import { useApiPromise } from './api'
 
 export type Readystate = 'disabled' | 'enabling' | 'ready' | 'failed'
 
@@ -20,6 +21,8 @@ const logInfo = console.info.bind(console, '[Web3Context]')
 export const Web3Provider = ({ children, originName }: PropsWithChildren<{ originName: string }>): ReactElement => {
     const [accounts, setAccounts] = useState<InjectedAccountWithMeta[]>([])
     const [readystate, setReadystate] = useState<Readystate>('disabled')
+
+    const { api } = useApiPromise()
 
     useEffect(() => {
         if (readystate === 'ready') { return }
@@ -56,7 +59,7 @@ export const Web3Provider = ({ children, originName }: PropsWithChildren<{ origi
             const unsub = await web3AccountsSubscribe(accounts => {
                 setAccounts(accounts)
                 logInfo('Updated injected accounts:', accounts.map(account => account.address).join(', '))
-            })
+            }, { ss58Format: api?.registry.chainSS58 })
             logDebug('Subscribed to account injection updates')
             return unsub
         }).catch(error => {
@@ -76,7 +79,7 @@ export const Web3Provider = ({ children, originName }: PropsWithChildren<{ origi
         })
 
         imported.then(async ({ web3Accounts }) => {
-            const accounts = await web3Accounts()
+            const accounts = await web3Accounts({ ss58Format: api?.registry.chainSS58 })
             setAccounts(accounts)
             logInfo('Injected accounts:', accounts.map(account => account.address).join(', '))
         }).catch(error => {
@@ -87,7 +90,7 @@ export const Web3Provider = ({ children, originName }: PropsWithChildren<{ origi
         return () => {
             unsub.then(unsub => unsub()).catch(() => { })
         }
-    }, [readystate])
+    }, [api?.registry.chainSS58, readystate])
 
     return (<Web3Context.Provider value={{ accounts, readystate }}>{children}</Web3Context.Provider>)
 }

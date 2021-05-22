@@ -21,8 +21,9 @@ const narrowItemProps = (width?: string): BlockProps => ({
     }
 })
 
-export const StakeInit = ({ currentFilters, onFilterChanged, onStashChanged }: {
+export const StakeInit = ({ currentFilters, onClickManual, onFilterChanged, onStashChanged }: {
     currentFilters: FindWorkerFilters
+    onClickManual: () => void
     onFilterChanged: (filters: FindWorkerFilters) => void
     onStashChanged: (stash: string) => void
 }): JSX.Element => {
@@ -37,7 +38,7 @@ export const StakeInit = ({ currentFilters, onFilterChanged, onStashChanged }: {
             </FlexGridItem>
 
             <FlexGridItem {...narrowItemProps(undefined)}>
-                <Button>自选抵押</Button>
+                <Button onClick={() => onClickManual()}>自选抵押</Button>
             </FlexGridItem>
 
             <FlexGridItem {...narrowItemProps('20em')}>
