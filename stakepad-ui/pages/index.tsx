@@ -6,6 +6,7 @@ import { MinerTable } from '../components/dashboard/MinerTable'
 import { StakeInit } from '../components/dashboard/StakeInit'
 import { PositionTable } from '../components/stakes/PositionTable'
 import { FindWorkerFilters, findWorkersByStash } from '../libs/apis/workers'
+import { SortingField } from '../libs/apis/workers/findWorkersByStash'
 
 const defaultPageSize = 10
 
@@ -15,12 +16,19 @@ const Dashboard = ({ setMiners }: { setMiners: (miners: string[]) => void }): Re
         mining: false,
         stakePending: false
     })
+    const [sort, setSort] = useState<SortingField>()
+    const [sortAsc, setSortAsc] = useState<boolean>()
     const [stashFilter, setStashFilter] = useState<string | undefined>(undefined)
+
+    console.log('Dashboard:', 'sort=', sort, ', sortAsc=', sortAsc)
 
     const [currentPage, setCurrentPage] = useState(1)
     const { data, isFetched } = useQuery(
-        ['api', 'findWorkersByStash', filters, currentPage, defaultPageSize, stashFilter],
-        async () => await findWorkersByStash(filters, currentPage, defaultPageSize, stashFilter)
+        // TODO: extract this usequery
+        ['api', 'findWorkersByStash', filters, currentPage, defaultPageSize, stashFilter, sort, sortAsc],
+        async () => await findWorkersByStash({
+            filters, page: currentPage, pageSize: defaultPageSize, sort, sortAsc, stash: stashFilter
+        })
     )
     const totalPages = useMemo(() => Math.ceil((data?.total ?? 0) / defaultPageSize), [data])
 
@@ -31,6 +39,11 @@ const Dashboard = ({ setMiners }: { setMiners: (miners: string[]) => void }): Re
         if (selection !== undefined && selection.length > 0) {
             setMiners(selection)
         }
+    }
+
+    const handleSortChange = (sort?: SortingField, asc?: boolean): void => {
+        setSort(sort)
+        setSortAsc(asc)
     }
 
     return (
@@ -48,6 +61,7 @@ const Dashboard = ({ setMiners }: { setMiners: (miners: string[]) => void }): Re
                 isLoading={!isFetched}
                 miners={data?.workers ?? []}
                 onSelectionChange={handleSelectionChange}
+                onSortChange={handleSortChange}
             />
 
             <Pagination
@@ -71,7 +85,7 @@ const DashboardPage = (): ReactElement => {
             </>
         )
     } else {
-        return <Dashboard setMiners={miners => setMiners(miners)} />
+        return (<Dashboard setMiners={miners => setMiners(miners)} />)
     }
 }
 
