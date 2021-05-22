@@ -1,4 +1,4 @@
-import { decodeAddress, encodeAddress } from '@polkadot/keyring'
+import { decodeAddress } from '@polkadot/keyring'
 import { AccountId } from '@polkadot/types/interfaces'
 import { Button, KIND as ButtonKind, SIZE as ButtonSize } from 'baseui/button'
 import { Overflow as OverflowIcon } from 'baseui/icon'
@@ -33,12 +33,12 @@ const LoadingColumn = ({ children }: PropsWithChildren<{}>): ReactElement => {
 const PayoutAddressColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
     const { api } = useApiPromise()
     const { data } = useStashInfoQuery(accountId, api)
+    const normalizeAddress = useAddressNormalizer(api)
+
     const target = data?.payoutPrefs.target
-    if (target !== undefined) {
-        return (<LoadingColumn>{encodeAddress(target)}</LoadingColumn>)
-    } else {
-        return (<LoadingColumn />)
-    }
+    const normalized = useMemo(() => target !== undefined && normalizeAddress(target), [normalizeAddress, target])
+
+    return (<LoadingColumn>{normalized}</LoadingColumn>)
 }
 
 const AccountBalanceColumn = ({ accountId }: { accountId: AccountId }): ReactElement => {
