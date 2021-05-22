@@ -19,7 +19,7 @@ const decimalZero = new Decimal(0)
 const StakerPendingQueryKey = uuidv4()
 
 export const useStakerPendingsQuery = (staker?: string, api?: ApiPromise): UseQueryResult<Record<string, PendingStake>> => {
-    const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
+    const tokenDecimals = useDecimalJsTokenDecimalMultiplier(api)
 
     return useQuery(
         [StakerPendingQueryKey, staker, api],

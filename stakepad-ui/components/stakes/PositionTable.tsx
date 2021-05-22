@@ -7,7 +7,7 @@ import { StyledSpinnerNext } from 'baseui/spinner'
 import { TableBuilder, TableBuilderColumn } from 'baseui/table-semantic'
 import BN from 'bn.js'
 import { Decimal } from 'decimal.js'
-import React, { ReactElement, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { ReactElement, useCallback, useMemo, useState } from 'react'
 import { stakeBatch } from '../../libs/extrinsics/stake'
 import { useApiPromise } from '../../libs/polkadot'
 import { ExtrinsicStatus } from '../../libs/polkadot/extrinsics'
@@ -52,7 +52,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker?: 
     const { data: currentPositions, refetch: refetchPositions } = useStakerPositionsQuery(staker, api)
     const { data: currentPendings, refetch: refetchPendings } = useStakerPendingsQuery(staker, api)
     const balanceZero = useMemo(() => api !== undefined ? bnToBalance(BNZero, api) : undefined, [api])
-    const tokenDecimals = useDecimalJsTokenDecimalMultiplier()
+    const tokenDecimals = useDecimalJsTokenDecimalMultiplier(api)
 
     const [targetPositions, setTargetPositions] = useState<Record<string, Decimal | undefined>>({})
 
