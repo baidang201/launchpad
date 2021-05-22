@@ -103,6 +103,7 @@ export const PositionTable = ({ miners, staker }: { miners?: string[], staker?: 
     const handleSubmit = (): void => {
         if (adjustments === undefined || api === undefined || staker === undefined || tokenDecimals === undefined) { return }
 
+        setExtrinsicError(undefined)
         setExtrinsicStatus(undefined)
 
         const batch = adjustments.map(([miner, offset]): [string, 'stake' | 'unstake', Balance] => {
