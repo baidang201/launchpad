@@ -1,10 +1,10 @@
 import { ApiPromise } from '@polkadot/api'
 import { AccountId, BalanceOf } from '@polkadot/types/interfaces'
-import { encodeAddress } from '@polkadot/util-crypto'
 import { Decimal } from 'decimal.js'
 import { useQuery, UseQueryResult } from 'react-query'
 import { v4 as uuidv4 } from 'uuid'
 import { bnToDecimal } from '../utils/balances'
+import { useAddressNormalizer } from './useAddressNormalizer'
 import { useDecimalJsTokenDecimalMultiplier } from './useTokenDecimals'
 
 interface PendingStake {
@@ -24,10 +24,11 @@ const decimalZero = new Decimal(0)
 const StakerPendingQueryKey = uuidv4()
 
 export const useStakerPendingsQuery = (staker?: AccountId | string, api?: ApiPromise): UseQueryResult<Record<string, PendingStake>> => {
+    const normalizeAddress = useAddressNormalizer(api)
     const tokenDecimals = useDecimalJsTokenDecimalMultiplier(api)
 
     return useQuery(
-        [StakerPendingQueryKey, staker, api],
+        [StakerPendingQueryKey, staker, api, normalizeAddress],
         async () => {
             if (api === undefined || staker === undefined || tokenDecimals === undefined) { return undefined }
 
@@ -38,13 +39,13 @@ export const useStakerPendingsQuery = (staker?: AccountId | string, api?: ApiPro
                 const result: Record<string, PendingStake> = {}
                 stakes.forEach(([{ args: [, miner] }, balance]) => {
                     const stake = balance.unwrapOrDefault()
-                    result[encodeAddress(miner)] = {
+                    result[normalizeAddress(miner)] = {
                         balance: bnToDecimal(stake, tokenDecimals),
                         staking: stake
                     }
                 })
                 unstakes.forEach(([{ args: [, miner] }, balance]) => {
-                    const address = encodeAddress(miner)
+                    const address = normalizeAddress(miner)
                     const unstake = balance.unwrapOrDefault()
                     const deciamlUnstake = bnToDecimal(unstake, tokenDecimals)
 
