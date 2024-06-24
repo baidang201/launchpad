@@ -1,80 +1,104 @@
-import * as phalaTypedef from '@phala/typedefs/src/phala-typedef'
-import 'antd/dist/antd.dark.min.css'
-import Layout from 'antd/lib/layout'
-import Menu from 'antd/lib/menu'
+import { Poc4 } from '@phala/typedefs'
+import { AppNavBar, NavItemT, setItemActive } from 'baseui/app-nav-bar'
+import { LayersManager } from 'baseui/layer'
+import { Spinner } from 'baseui/spinner'
+import { PLACEMENT as ToastPlacement, toaster, ToasterContainer } from 'baseui/toast'
 import { AppComponent, AppProps } from 'next/dist/next-server/lib/router/router'
 import { useRouter } from 'next/router'
-import { useEffect, useMemo, useState } from 'react'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import { WalletButton } from '../components/wallet/WalletButton'
-import { PolkadotProvider, usePolkadot } from '../libs/polkadot/context'
+import { Key, PropsWithChildren, ReactElement, useEffect, useMemo, useRef, useState } from 'react'
+import { QueryClient, QueryClientProvider, useIsFetching } from 'react-query'
+import { Provider as StyletronProvider } from 'styletron-react'
+import { v4 as uuidv4 } from 'uuid'
+import { endpoint as PhalaEndpoint } from '../libs/config'
+import { ApiPromiseProvider, AppName, Web3Provider } from '../libs/polkadot'
+import { createStyletron } from '../libs/styletron'
 import styles from '../styles/pages/_app.module.css'
-import { endpoint as PhalaEndpoint } from '../utils/polkadot'
 
-const ApiEnabler: React.FC = () => {
-    const { enableApi } = usePolkadot()
+interface NavItemWithTarget extends NavItemT {
+    info: {
+        target: string
+    }
+}
+
+const GlobalFetchingToasterContainerKey = uuidv4()
+
+const GlobalFetchingToasterContainer = ({ children }: PropsWithChildren<{}>): ReactElement => {
+    const isFetching = useIsFetching()
+
+    const loadingToaster = useRef<Key>()
+
     useEffect(() => {
-        enableApi().catch(() => {
-            // TODO: maybe some telemetry?
-            // TODO: reflect API enable error on UI
-        })
-    }, [enableApi])
+        if (isFetching > 0 && loadingToaster.current === undefined) {
+            loadingToaster.current = toaster.info(
+                <Spinner />,
+                {
+                    closeable: false,
+                    key: GlobalFetchingToasterContainerKey,
+                    overrides: {
+                        Body: {
+                            style: { backgroundColor: 'black', width: 'auto' }
+                        }
+                    }
+                }
+            )
+        }
 
-    return (<></>)
+        if (isFetching === 0 && loadingToaster.current !== undefined) {
+            toaster.clear(loadingToaster.current)
+            loadingToaster.current = undefined
+        }
+    }, [isFetching])
+
+    return (<ToasterContainer placement={ToastPlacement.bottomLeft}>{children}</ToasterContainer>)
 }
 
 const App: AppComponent = ({ Component, pageProps }: AppProps) => {
     const client = useMemo(() => new QueryClient(), [])
+    const styletron = useMemo(() => createStyletron(), [])
 
-    const [selectedTab, setSelectedTab] = useState<string>('dashboard')
-    const router = useRouter()
+    const { pathname, push } = useRouter()
 
-    const onSelectTab = (tab: string): void => {
-        setSelectedTab(tab)
-        router.push(tab).catch(() => { /* TODO: maybe some telemetry? */ })
+    const [mainItems, setMainItems] = useState<NavItemWithTarget[]>([
+        {
+            active: pathname === '/',
+            label: '主页',
+            info: { target: '/' }
+        }, {
+            active: pathname === '/accounts',
+            label: '账户',
+            info: { target: '/accounts' }
+        }
+    ])
+
+    const handleMainItemSelect = (item: NavItemWithTarget): void => {
+        push(item.info.target).catch(error => {
+            console.error(`[_app] Failed navigating to ${item.info.target}: ${(error as Error)?.message ?? error}`)
+        })
+        setMainItems(prev => setItemActive(prev, item) as NavItemWithTarget[])
     }
 
     return (
-        <PolkadotProvider endpoint={PhalaEndpoint} originName="Phala Stakepad" registryTypes={phalaTypedef.default}>
-            <QueryClientProvider client={client}>
-                <Layout hasSider>
-                    <Layout.Sider>
-                        <Menu selectable={false} selectedKeys={['stakepad']}>
-                            <Menu.Item key="1">Home</Menu.Item>
-                            <Menu.Item key="2">pWallet</Menu.Item>
-                            <Menu.Item key="3">Bridge</Menu.Item>
-                            <Menu.Item key="4">Swap</Menu.Item>
-                            <Menu.Item key="5">Tokens</Menu.Item>
-                            <Menu.Item key="6">Pairs</Menu.Item>
-                            <Menu.Item key="7">Transactions</Menu.Item>
-                            <Menu.Item key="stakepad">Stakepad</Menu.Item>
-                            <Menu.Item key="9">KSM Crowdioan</Menu.Item>
-                        </Menu>
-                    </Layout.Sider>
-                    <Layout className={styles.innerLayout}>
-                        <Layout.Header>
-                            <div className={styles.walletButtonContainer}><WalletButton /></div>
-                            <Menu
-                                className={styles.floatRight}
-                                mode="horizontal"
-                                onSelect={({ key }) => { onSelectTab(key as string) }}
-                                selectedKeys={[selectedTab]}
-                                theme="dark"
-                            >
-                                <Menu.Item key="dashboard">主页</Menu.Item>
-                                <Menu.Item key="user">我的抵押</Menu.Item>
-                                <Menu.Item key="browser">浏览器</Menu.Item>
-                                <Menu.Item key="retrievePha">获取Pha</Menu.Item>
-                            </Menu>
-                        </Layout.Header>
-                        <Layout.Content>
-                            <Component {...pageProps} />
-                        </Layout.Content>
-                    </Layout>
-                </Layout>
-            </QueryClientProvider>
-            <ApiEnabler />
-        </PolkadotProvider>
+        <ApiPromiseProvider endpoint={PhalaEndpoint} registryTypes={Poc4}>
+            <Web3Provider originName={AppName}>
+                <QueryClientProvider client={client}>
+                    <StyletronProvider value={styletron}>
+                        <LayersManager>
+                            <GlobalFetchingToasterContainer>
+                                <AppNavBar
+                                    mainItems={mainItems}
+                                    onMainItemSelect={item => handleMainItemSelect(item as NavItemWithTarget)}
+                                    title="Stakepad"
+                                />
+
+                                <div className={styles.container}>
+                                    <Component {...pageProps} />
+                                </div>
+                            </GlobalFetchingToasterContainer>
+                        </LayersManager>
+                    </StyletronProvider>
+                </QueryClientProvider>
+            </Web3Provider>
+        </ApiPromiseProvider >
     )
 }
 

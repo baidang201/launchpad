@@ -8,6 +8,8 @@ import { RealtimeRoundInfo } from '../lib/models/realtimeRoundInfo.js'
 import { HistoryRoundInfo } from '../lib/models/historyRoundInfo.js'
 import { getTokenInfo } from '../servers/tokeninfo.js'
 import { logger } from '../lib/utils/log.js'
+import { winningRate } from '../lib/utils/index.js'
+import { workerConfig } from '../config/index.js'
 
 const { default: Queue } = pQueue
 
@@ -54,6 +56,17 @@ const processRoundAt = async (header, roundNumber, api) => {
     const accumulatedFire2 = (await api.query.phala.accumulatedFire2.at(blockHash)) || new BN('0')
     const accumulatedFire2Decimal = new Decimal(accumulatedFire2.toString())
     const onlineWorkers = await api.query.phala.onlineWorkers.at(blockHash)
+
+    const initialReward = new Decimal(129600000) // 129600000 PHA
+    const decayInterval = new Decimal(180 * 24 * 60 * 60) // 180 days
+    const roundInterval = new Decimal(60 * 60) // 1 hour
+    const onlineRewardPercentage = await new Decimal(0.3) // rel: 37.5% post-taxed: 30%
+    const computeRewardPercentage = await new Decimal(0.5) // rel: 62.5% post-taxed: 50%
+
+    const roundReward = initialReward.div(decayInterval.div(roundInterval))
+    const sumOfOnlineReward = roundReward.mul(onlineRewardPercentage)
+    const sumOfComputeReward =  roundReward.mul(computeRewardPercentage)
+    const targetVirtualTaskCount = await api.query.phala.targetVirtualTaskCount.at(blockHash)
 
     const stashAccounts = {}
     const stashKeys = await api.query.phala.stashState.keysAt(blockHash)
@@ -106,11 +119,11 @@ const processRoundAt = async (header, roundNumber, api) => {
                 const payout = stashAccounts[stash].payout
                 const value = (await api.rpc.state.getStorage(k, blockHash)).toJSON()
                 stashAccounts[stash].overallScore = value.score.overallScore
+                accumulatedScore += value.score.overallScore
 
                 stashAccounts[stash].status = Object.keys(value.state)[0]
                 if (value.state.stakePending === undefined && value.state.miningPending === undefined && value.state.mining === undefined) { return }
                 stashAccounts[stash].onlineStatus = true
-                accumulatedScore += value.score.overallScore
 
                 validStashAccounts[stash] = stashAccounts[stash]
 
@@ -219,6 +232,9 @@ const processRoundAt = async (header, roundNumber, api) => {
         .div(1000)
         .div(1000)
 
+    const sumOfScore = accumulatedScore
+    const avgScore = new Decimal(accumulatedScore).div(stashCount)
+
     const accumulatedFire2PHA = accumulatedFire2Decimal
         .div(1000)
         .div(1000)
@@ -262,7 +278,44 @@ const processRoundAt = async (header, roundNumber, api) => {
             .div(1000)
             .div(1000)
 
-        const reward = (new Decimal(value.onlineReward)).plus(new Decimal(value.computeReward)).minus(new Decimal(value.slash))
+        const reward = (new Decimal(value.onlineReward)).add(new Decimal(value.computeReward)).sub(new Decimal(value.slash))
+
+        function getApy({
+            sumOfOnlineReward = new Decimal(0),
+            sumOfComputeReward = new Decimal(0),
+            sumOfScore = 0,
+            commission = 0,
+            targetVirtualTaskCount = 0,
+            userStake = new Decimal(0),
+            score = 0, 
+            stake = 0, 
+            miners = 0, 
+            avgScore = 0, 
+            avgStake = 0
+        }) {
+            if (0 === sumOfScore || 0 === score) {
+                return 0
+            }
+            if (userStake.isZero()) {
+                return 0
+            }
+            if (sumOfComputeReward.isZero()) {
+                return 0
+            }
+            const onlineReward = sumOfOnlineReward.mul((score / sumOfScore)) 
+            const computeReward = sumOfComputeReward.mul(winningRate({
+                score, 
+                stake, 
+                miners, 
+                avgScore, 
+                avgStake
+            }) ).div(  targetVirtualTaskCount.toNumber() )
+
+            const newRate = (100 - commission) / 100
+            const apy = onlineReward.add(computeReward).mul(newRate).mul(24 * 365).div(userStake).mul(100) //小数转为百分比 乘于100
+
+            return apy
+        }
 
         workers.push({
             stashAccount: key,
@@ -280,7 +333,32 @@ const processRoundAt = async (header, roundNumber, api) => {
             onlineReward: value.onlineReward,
             computeReward: value.computeReward,
             reward: reward,
-            apy: 1, // todo@@ 根据mongodb历史数据完善 看看产品更新公式
+            apy: getApy({
+                sumOfOnlineReward,
+                sumOfComputeReward,
+                sumOfScore,
+                commission: value.commission,
+                targetVirtualTaskCount,
+                userStake: userStake.isZero()? new Decimal(1): userStake,
+                score: value.overallScore, 
+                stake: parseInt(accumulatedStake.toDecimalPlaces(0)), 
+                miners: parseInt(onlineWorkers), 
+                avgScore: parseInt(avgScore.toDecimalPlaces(0)),
+                avgStake: parseInt(avgStake.toDecimalPlaces(0))
+            }), 
+            stakeToMinApy: getApy({
+                sumOfOnlineReward,
+                sumOfComputeReward,
+                sumOfScore,
+                commission: value.commission,
+                targetVirtualTaskCount,
+                userStake: userStake.isZero()? new Decimal(1): userStake,
+                score: value.overallScore, 
+                stake: parseInt(workerConfig.BASE_STAKE_PHA), 
+                miners: parseInt(onlineWorkers), 
+                avgScore: parseInt(avgScore.toDecimalPlaces(0)),
+                avgStake: parseInt(avgStake.toDecimalPlaces(0))
+            }), 
             penalty: value.slash
         })
 

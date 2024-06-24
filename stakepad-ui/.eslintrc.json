@@ -4,8 +4,10 @@
         "browser": true
     },
     "extends": [
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
         "plugin:import/errors",
         "plugin:import/typescript",
+        "plugin:import/warnings",
         "plugin:jsx-a11y/recommended",
         "plugin:react/recommended",
         "plugin:react-hooks/recommended",
@@ -33,6 +35,12 @@
                 "named": "never"
             }
         ],
+        "import/no-unassigned-import": [
+            "warn"
+        ],
+        "import/order": [
+            "warn"
+        ],
         "indent": [
             "error",
             4,
@@ -55,5 +63,16 @@
                 "asyncArrow": "always"
             }
         ]
+    },
+    "settings": {
+        "import/parser": {
+            "@typescript-eslint/parser": [
+                ".ts",
+                ".tsx"
+            ]
+        },
+        "react": {
+            "version": "detect"
+        }
     }
 }

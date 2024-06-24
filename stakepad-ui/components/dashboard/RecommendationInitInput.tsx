@@ -1,8 +1,19 @@
-import Search from 'antd/lib/input/Search'
+import { Button } from 'baseui/button'
+import { Input } from 'baseui/input'
 import React from 'react'
 
 export const RecommendationStakeInit: React.FC = () => {
     return (
-        <Search allowClear enterButton="推荐抵押" placeholder="抵押总额" />
+        <Input
+            clearable
+            disabled={true}
+            endEnhancer={
+                <Button
+                    disabled={true}
+                    overrides={{ BaseButton: { style: () => ({ width: '6em' }) } }}
+                >推荐抵押</Button>
+            }
+            placeholder="抵押总额"
+        />
     )
 }

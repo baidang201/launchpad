@@ -1,36 +1,37 @@
-import { FindWorkerFilters } from '.'
 import { GetWorkerResult } from '..'
-import { APIError } from '../errors'
-import { Api, requestDecoded } from '../proto'
+import { Api, requestSuccess } from '../proto'
+import { FindWorkerFilters } from '.'
 
-export const findWorkersByStash: (
-    filters: FindWorkerFilters, page: number, pageSize: number, stash?: string
-) => Promise<GetWorkerResult> = async (filters, page, pageSize, stash) => {
+export type SortingField = 'accumulatedStake' | 'apy' | 'commission' | 'machineScore' | 'profitLastMonth' | 'taskScore'
+
+export const findWorkersByStash = async ({ filters, page, pageSize, sort, sortAsc, stash }: {
+    filters: FindWorkerFilters
+    page: number
+    pageSize: number
+    sort?: SortingField
+    sortAsc?: boolean
+    stash?: string
+}): Promise<GetWorkerResult> => {
     const workerRequest: Api.IWorkerRequest = {
         filterCommissionLessThanLimit: filters.commissionRateLessThan20,
         filterRunning: filters.mining,
-        filterStakeLessThanMinimum: !filters.stakePending,
+        filterStakeLessThanMinimum: filters.stakePending,
         filterStashAccounts: stash === undefined ? [] : [stash],
         page,
-        pageSize
+        pageSize,
+        sortAsc,
+        sortFieldName: sort
     }
+
     const payload = Api.CommonRequest.encode(
         Api.CommonRequest.create({ workerRequest })
     ).finish()
 
-    const { status, result } = await requestDecoded(payload, Api.WorkerResponse.decode)
-
-    if (status?.success !== 0) {
-        throw new APIError(status?.msg ?? 'Unknown error', status?.success ?? undefined)
-    }
-
-    if (result === undefined || result === null) {
-        throw new APIError('Result is null or undefined')
-    }
+    const result = await requestSuccess(payload, Api.WorkerResponse.decode.bind(undefined))
 
     return ({
         total: result.total ?? 0,
-        workers: result.workers?.map?.(worker => ({
+        workers: result.workers?.map(worker => ({
             annualizedReturnRate: worker.apy ?? 0,
             commissionRate: worker.commission ?? 0,
             minerScore: worker.machineScore ?? 0,
